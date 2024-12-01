@@ -18,7 +18,7 @@ public class DraftManager : MonoBehaviour
     public Image DraftMainIcon;
     public GameObject ElaminationTextImage;
     public GameObject ChooseTextImage;
-
+    public GameObject DraftCanvas;
     public GameObject Mapobj;
     [Header("Game Data")]
     public GameData gameData; // Reference to the GameData ScriptableObject
@@ -62,7 +62,7 @@ public class DraftManager : MonoBehaviour
                 break;
             case GamePhase.PlaceMent:
                 Mapobj.SetActive(true);
-                gameObject.SetActive(false);
+                DraftCanvas.SetActive(false);
                 break;
         }
     }
@@ -231,7 +231,9 @@ public class DraftManager : MonoBehaviour
     private void AssignLastCardToCurrentPlayer()
     {
         if (instantiatedCards.Count != 1) return;
-
+        // Switch to the next player's turn
+        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
+        ChangeCurrentDraftMainICon(GameManager.Instance.currentPlayer);
         // Get the last card and its associated character
         GameObject lastCard = instantiatedCards[0];
         Character lastCharacter = gameData.GetCharacterByName(lastCard.name);
