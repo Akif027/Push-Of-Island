@@ -1,5 +1,4 @@
 using UnityEngine;
-
 using Unity.Cinemachine;
 
 public class MapScroll : MonoBehaviour
@@ -22,6 +21,8 @@ public class MapScroll : MonoBehaviour
 
     void Start()
     {
+        mainCamera = Camera.main;
+
         if (cinemachineCamera == null)
         {
             Debug.LogError("Cinemachine camera is not assigned!");
@@ -36,21 +37,17 @@ public class MapScroll : MonoBehaviour
 
         if (boundingShape != null)
         {
-            // Assign the bounding shape to the confiner
             confiner2D.BoundingShape2D = boundingShape;
         }
-        else
-        {
-            Debug.LogWarning("Bounding shape not assigned! Camera may go out of bounds.");
-        }
-
-        mainCamera = Camera.main;
     }
 
     void Update()
     {
-        HandleDrag();
-        HandleZoom();
+        if (!InteractionManager.IsDragging) // Disable scrolling if dragging
+        {
+            HandleDrag();
+            HandleZoom();
+        }
     }
 
     private void HandleDrag()
@@ -65,18 +62,15 @@ public class MapScroll : MonoBehaviour
             Vector3 currentPoint = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 difference = dragOrigin - currentPoint;
 
-            // Move the camera
             MoveCamera(difference);
         }
     }
 
     private void MoveCamera(Vector3 offset)
     {
-        // Get the current camera position
         Transform camTransform = cinemachineCamera.transform;
         Vector3 newPosition = camTransform.position + offset * scrollSpeed;
 
-        // Clamp the position within the bounds defined by the confiner
         if (confiner2D != null && boundingShape != null)
         {
             Bounds bounds = boundingShape.bounds;
@@ -84,29 +78,24 @@ public class MapScroll : MonoBehaviour
             newPosition.y = Mathf.Clamp(newPosition.y, bounds.min.y, bounds.max.y);
         }
 
-        // Apply the new position
         camTransform.position = new Vector3(newPosition.x, newPosition.y, camTransform.position.z);
     }
 
     private void HandleZoom()
     {
-        if (Input.touchCount == 2) // Pinch zoom
+        if (Input.touchCount == 2)
         {
             Touch touch0 = Input.GetTouch(0);
             Touch touch1 = Input.GetTouch(1);
 
-            // Find the position in the previous frame of each touch
             Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
             Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
 
-            // Find the magnitude of the vector (distance) between the touches in each frame
             float prevMagnitude = (touch0PrevPos - touch1PrevPos).magnitude;
             float currentMagnitude = (touch0.position - touch1.position).magnitude;
 
-            // Find the difference in the distances between each frame
             float difference = prevMagnitude - currentMagnitude;
 
-            // Adjust the orthographic size based on the zoomSpeed and the difference in magnitude
             mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize + difference * zoomSpeed, minZoom, maxZoom);
         }
     }

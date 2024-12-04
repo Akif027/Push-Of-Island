@@ -33,4 +33,13 @@ public class Character
 {
     public string characterName; // Name of the character
     public Sprite characterSprite; // Sprite representing the character
+
+    public Vector3 InitialPosition;
+}// Example enum for character types
+public enum CharacterType
+{
+    Mermaid,
+    Knight,
+    Golem,
+    Default
 }

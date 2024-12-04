@@ -104,7 +104,17 @@ public class GameManager : MonoBehaviour
 
         return gameData.GetCharacterByName(name);
     }
+    // public bool IsDragging { get; private set; }
 
+    // public void StartDragging()
+    // {
+    //     IsDragging = true;
+    // }
+
+    // public void StopDragging()
+    // {
+    //     IsDragging = false;
+    // }
     /// <summary>
     /// Get a character by index from the GameData.
     /// </summary>
