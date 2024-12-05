@@ -6,17 +6,19 @@ public class GameManager : MonoBehaviour
     public static GameManager Instance; // Singleton instance for global access
     public GameData gameData; // Reference to the GameData ScriptableObject
     public DraftManager draftManager;
+    public TokenSpawnManager tokenSpawnManager;
+
     public Int32 currentPlayer; // Current player's turn (1 or 2)
     [Header("Phase Management")]
     public GamePhase currentPhase; // Current phase of the game
     public PlayerInfo[] players = new PlayerInfo[2];
+
     void Awake()
     {
         // Ensure only one instance of GameManager exists
         if (Instance == null)
         {
             Instance = this;
-            //  DontDestroyOnLoad(gameObject); // Persist GameManager across scenes
         }
         else
         {
@@ -41,32 +43,36 @@ public class GameManager : MonoBehaviour
     {
         if (data is TossResult tossResult)
         {
-
             Debug.Log("Winner " + tossResult.WinnerSprite);
             // Pass both winner and loser sprites to the GameManager or an event
             SetPlayerInfo(tossResult.WinnerSprite, tossResult.LoserSprite);
 
             // Transition to the elimination phase
             ChangePhase(GamePhase.Elimination);
-            if (draftManager != null)
-            {
-                draftManager.TransitionToPhase(GamePhase.Elimination);
-            }
-            else
-            {
-                Debug.Log("DraftManager null");
-            }
+           //    if (draftManager != null)
+           // {
+          //      draftManager.TransitionToPhase(GamePhase.Elimination);
+          //  }
+           // else
+           // {
+          //      Debug.Log("DraftManager null");
+          //  }
+            draftManager?.TransitionToPhase(GamePhase.Elimination);
 
             EventManager.Unsubscribe("TossResult", OnTossResult);
         }
     }
 
-    public void ChangePlayerTurn(int player)
+    public void ChangePlayerTurn(int playerNumber)
     {
-        // Update the current player
-        currentPlayer = player;
+        if (playerNumber < 1 || playerNumber > players.Length)
+        {
+            Debug.LogError($"Invalid player number: {playerNumber}. Must be 1 or 2.");
+            return;
+        }
 
-        Debug.Log($"Player Turn Changed: {currentPlayer}");
+        currentPlayer = playerNumber; // Update the current player
+        Debug.Log($"Player turn changed to: Player {currentPlayer}");
     }
 
     public void SetPlayerInfo(Sprite firstIcon, Sprite secondIcon)
@@ -85,13 +91,13 @@ public class GameManager : MonoBehaviour
 
         throw new Exception("Player not found!");
     }
+
     public Int32 GetCurrentPlayer()
     {
-
         return currentPlayer;
-
     }
-    /// <summary>
+
+  /// <summary>
     /// Get a character by name from the GameData.
     /// </summary>
     public Character GetCharacter(string name)
@@ -104,7 +110,7 @@ public class GameManager : MonoBehaviour
 
         return gameData.GetCharacterByName(name);
     }
-    // public bool IsDragging { get; private set; }
+     // public bool IsDragging { get; private set; }
 
     // public void StartDragging()
     // {
@@ -118,6 +124,7 @@ public class GameManager : MonoBehaviour
     /// <summary>
     /// Get a character by index from the GameData.
     /// </summary>
+
     public Character GetCharacter(int index)
     {
         if (gameData == null)
@@ -133,9 +140,33 @@ public class GameManager : MonoBehaviour
     {
         currentPhase = newPhase;
 
+        // Additional logic for handling phases
+        switch (newPhase)
+        {
+            case GamePhase.PlaceMent:
+                Debug.Log("Transitioning to Placement Phase.");
+                StartPlacementPhase();
+                break;
+            // Add cases for other phases if needed
+        }
+    }
 
+    private void StartPlacementPhase()
+    {
+        if (tokenSpawnManager != null)
+        {
+            tokenSpawnManager.SpawnPlayerTokens(
+                draftManager.player1Characters,
+                draftManager.player2Characters
+            );
+        }
+        else
+        {
+            Debug.LogError("TokenSpawnManager is not assigned in GameManager!");
+        }
     }
 }
+
 public struct PlayerInfo
 {
     public int PlayerNumber;
@@ -147,6 +178,7 @@ public struct PlayerInfo
         PlayerIcon = playerIcon;
     }
 }
+
 public enum GamePhase
 {
     CoinToss,

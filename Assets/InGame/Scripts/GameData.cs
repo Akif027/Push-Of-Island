@@ -8,6 +8,7 @@ public class GameData : ScriptableObject
     public List<Character> characters; // List of all character data
     public GameObject CharacterCardPrefab;
 
+
     /// <summary>
     /// Retrieve a character by name.
     /// </summary>
@@ -35,6 +36,7 @@ public class Character
     public Sprite characterSprite; // Sprite representing the character
 
     public Vector3 InitialPosition;
+    public GameObject characterTokenPrefab; // Prefab for the character's token
 }// Example enum for character types
 public enum CharacterType
 {
