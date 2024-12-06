@@ -337,7 +337,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &142597682
 Transform:
   m_ObjectHideFlags: 0
@@ -3799,7 +3799,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!114 &1217043716
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4413,6 +4413,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameData: {fileID: 11400000, guid: 0e7a01797a175f747a3bf7bc48781631, type: 2}
   draftManager: {fileID: 1482824643}
+  tokenSpawnManager: {fileID: 2021547199}
   currentPlayer: 0
   currentPhase: 0
 --- !u!114 &1482824642
@@ -5644,7 +5645,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2021547198}
-  - component: {fileID: 2021547197}
+  - component: {fileID: 2021547199}
   m_Layer: 0
   m_Name: character spawner
   m_TagString: Untagged
@@ -5652,22 +5653,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &2021547197
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2021547196}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ca04c9fe697ab2c44969a3c81f94e24b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  characterTokenPrefabs:
-  - {fileID: 0}
-  player1SpawnArea: {fileID: 930271322}
-  player2SpawnArea: {fileID: 1138690157}
 --- !u!4 &2021547198
 Transform:
   m_ObjectHideFlags: 0
@@ -5685,6 +5670,22 @@ Transform:
   - {fileID: 1138690157}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2021547199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2021547196}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 189110b91fe590947bf48960454ba2cd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player1SpawnArea: {fileID: 930271322}
+  player2SpawnArea: {fileID: 1138690157}
+  tokenSpacing: {x: 100, y: 0}
+  verticalSpacing: 50
 --- !u!1 &2080852705
 GameObject:
   m_ObjectHideFlags: 0
