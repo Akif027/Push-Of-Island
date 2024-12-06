@@ -16,7 +16,11 @@ public class TokenSpawnManager : MonoBehaviour
     private List<GameObject> player1Tokens = new List<GameObject>();
     private List<GameObject> player2Tokens = new List<GameObject>();
 
-    // Public method to spawn tokens for both players
+    /// <summary>
+    /// Spawns tokens for both players based on their selected characters.
+    /// </summary>
+    /// <param name="player1Characters">List of Player 1's selected characters</param>
+    /// <param name="player2Characters">List of Player 2's selected characters</param>
     public void SpawnPlayerTokens(List<Character> player1Characters, List<Character> player2Characters)
     {
         if (player1SpawnArea == null || player2SpawnArea == null)
@@ -29,14 +33,20 @@ public class TokenSpawnManager : MonoBehaviour
         ClearTokens();
 
         // Spawn tokens for Player 1
-        SpawnTokensForPlayer(player1Characters, player1SpawnArea, player1Tokens);
+        SpawnTokensForPlayer(player1Characters, player1SpawnArea, player1Tokens, true);
 
         // Spawn tokens for Player 2
-        SpawnTokensForPlayer(player2Characters, player2SpawnArea, player2Tokens);
+        SpawnTokensForPlayer(player2Characters, player2SpawnArea, player2Tokens, false);
     }
 
-    // Private method to handle spawning tokens for a single player
-    private void SpawnTokensForPlayer(List<Character> characters, RectTransform spawnArea, List<GameObject> tokenList)
+    /// <summary>
+    /// Spawns tokens for a specific player in the given spawn area.
+    /// </summary>
+    /// <param name="characters">List of characters to spawn tokens for</param>
+    /// <param name="spawnArea">The RectTransform area where tokens will be spawned</param>
+    /// <param name="tokenList">The list to store spawned tokens</param>
+    /// <param name="isPlayer1">Indicates if the tokens are for Player 1</param>
+    private void SpawnTokensForPlayer(List<Character> characters, RectTransform spawnArea, List<GameObject> tokenList, bool isPlayer1)
     {
         if (characters == null || characters.Count == 0)
         {
@@ -79,10 +89,37 @@ public class TokenSpawnManager : MonoBehaviour
             {
                 Debug.LogWarning($"Token prefab for {character.characterName} is missing a RectTransform component.");
             }
+
+            // Enable the appropriate border
+            EnablePlayerBorders(token, isPlayer1);
         }
     }
 
-    // Public method to access all tokens for a player
+    /// <summary>
+    /// Enables the correct border for the token based on the player's team.
+    /// </summary>
+    /// <param name="token">The token GameObject</param>
+    /// <param name="isPlayer1">True if the token is for Player 1, otherwise false</param>
+    private void EnablePlayerBorders(GameObject token, bool isPlayer1)
+    {
+        Transform border1 = token.transform.Find("Player1Border"); // Replace with the exact child name
+        Transform border2 = token.transform.Find("Player2Border"); // Replace with the exact child name
+
+        if (border1 != null && border2 != null)
+        {
+            border1.gameObject.SetActive(isPlayer1);
+            border2.gameObject.SetActive(!isPlayer1);
+        }
+        else
+        {
+            Debug.LogWarning("Token prefab is missing one or both border child objects.");
+        }
+    }
+
+    /// <summary>
+    /// Gets the list of tokens for a specific player.
+    /// </summary>
+    /// <param name="playerNumber">The player number (1 or 2)</param>
     public List<GameObject> GetPlayerTokens(int playerNumber)
     {
         if (playerNumber == 1)
@@ -100,7 +137,11 @@ public class TokenSpawnManager : MonoBehaviour
         }
     }
 
-    // Public method to access a specific token by index
+    /// <summary>
+    /// Gets a specific token by its index for the given player.
+    /// </summary>
+    /// <param name="playerNumber">The player number (1 or 2)</param>
+    /// <param name="tokenIndex">The index of the token in the list</param>
     public GameObject GetTokenByIndex(int playerNumber, int tokenIndex)
     {
         List<GameObject> tokenList = (playerNumber == 1) ? player1Tokens : player2Tokens;
@@ -116,17 +157,19 @@ public class TokenSpawnManager : MonoBehaviour
         }
     }
 
-    // Method to clear previously spawned tokens
+    /// <summary>
+    /// Clears all previously spawned tokens for both players.
+    /// </summary>
     public void ClearTokens()
     {
-        // Destroy all player 1 tokens
+        // Destroy all Player 1 tokens
         foreach (var token in player1Tokens)
         {
             Destroy(token);
         }
         player1Tokens.Clear();
 
-        // Destroy all player 2 tokens
+        // Destroy all Player 2 tokens
         foreach (var token in player2Tokens)
         {
             Destroy(token);
@@ -134,7 +177,11 @@ public class TokenSpawnManager : MonoBehaviour
         player2Tokens.Clear();
     }
 
-    // Method to remove a specific token (e.g., when eliminating a character or token)
+    /// <summary>
+    /// Removes a specific token by its index for the given player.
+    /// </summary>
+    /// <param name="playerNumber">The player number (1 or 2)</param>
+    /// <param name="tokenIndex">The index of the token to remove</param>
     public void RemoveToken(int playerNumber, int tokenIndex)
     {
         List<GameObject> tokenList = (playerNumber == 1) ? player1Tokens : player2Tokens;
