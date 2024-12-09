@@ -14,43 +14,84 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characters:
   - characterName: Golem
-    characterSprite: {fileID: 8575408702948848099, guid: c65d99f168f0ef34ab4733f7398f2f0c, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 367366570517100872, guid: b5c7c5d54e200f742b41ff51e5a410b3, type: 3}
+    characterType: 2
+    characterCardSprite: {fileID: 8575408702948848099, guid: c65d99f168f0ef34ab4733f7398f2f0c, type: 3}
+    characterTokenSprite: {fileID: 6972900203753238645, guid: 57ca11e543342a94bac2d0e130770772, type: 3}
+    invalidTokenSprite: {fileID: 1503947286883275996, guid: 469566a4c4e632f4b81808682c15329a, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Dwarf
-    characterSprite: {fileID: -8787135276234811881, guid: e128e344ead9db94c9a8fd2f1e9758df, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 1438425581270835407, guid: 75f0e393f5b0d5346ad778f5db8ef746, type: 3}
+    characterType: 3
+    characterCardSprite: {fileID: -8787135276234811881, guid: e128e344ead9db94c9a8fd2f1e9758df, type: 3}
+    characterTokenSprite: {fileID: 151406558943083838, guid: 5db99124704811b4a886a5aa97f0384b, type: 3}
+    invalidTokenSprite: {fileID: 3730651765333556949, guid: ad9d77ef22ee78f48818f40286307f57, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Gryphon
-    characterSprite: {fileID: -1361954986278766482, guid: f14029e1049a4fc4eba0a80545a72eea, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 1968719922476233685, guid: c530ba262d29c634ea6f70f7b06bd77e, type: 3}
+    characterType: 4
+    characterCardSprite: {fileID: -1361954986278766482, guid: f14029e1049a4fc4eba0a80545a72eea, type: 3}
+    characterTokenSprite: {fileID: 1283384851773549571, guid: 1a9da694bfc7de64d83659c4f58e85b4, type: 3}
+    invalidTokenSprite: {fileID: -6375748815614426306, guid: ed228c7e1a44d3e4399c396a61b31551, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: King
-    characterSprite: {fileID: 4848920258119504805, guid: 2c7fba47e7ba1ff4fa0b52554637a396, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 1611080364105039479, guid: aa2057d5cef479742a8b7cbb2d2ea13d, type: 3}
+    characterType: 5
+    characterCardSprite: {fileID: 4848920258119504805, guid: 2c7fba47e7ba1ff4fa0b52554637a396, type: 3}
+    characterTokenSprite: {fileID: -1707989517857129159, guid: c018d79372e82594ba99ba853e0d11ee, type: 3}
+    invalidTokenSprite: {fileID: 6521963813213292928, guid: c45b776fa60834042869b92e086aecd6, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Thief
-    characterSprite: {fileID: 876205814860920778, guid: 0c587eea9569b9841a1fad40a0eb6734, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 4776727401736367959, guid: 4202d1cf3cbd31a498bbedb3a50a298a, type: 3}
+    characterType: 6
+    characterCardSprite: {fileID: 876205814860920778, guid: 0c587eea9569b9841a1fad40a0eb6734, type: 3}
+    characterTokenSprite: {fileID: -4197067549948662441, guid: 41016f26b6dc8064babedd8b44829d23, type: 3}
+    invalidTokenSprite: {fileID: 7722535215446278856, guid: b5bacfb61d6750642883caadeaa64f58, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Rogue
-    characterSprite: {fileID: -8666444169232215368, guid: 15a82a887745eac4eaff744c98ffbe9a, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 933823679204095993, guid: c94d10d906688dc45aedf66f4d3aa150, type: 3}
+    characterType: 7
+    characterCardSprite: {fileID: -8666444169232215368, guid: 15a82a887745eac4eaff744c98ffbe9a, type: 3}
+    characterTokenSprite: {fileID: -5751814824985863532, guid: 017ad40995a5cb046b1dc86779644d59, type: 3}
+    invalidTokenSprite: {fileID: 1029793793720435256, guid: 7b08cd44bb66a1b4b9038170d8294a54, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Satyr
-    characterSprite: {fileID: -2263466023888957439, guid: b89c579d0f36fb34ab938329631b2bad, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 1477564451951925160, guid: af0466872f4de15498d33431980350c5, type: 3}
+    characterType: 8
+    characterCardSprite: {fileID: -2263466023888957439, guid: b89c579d0f36fb34ab938329631b2bad, type: 3}
+    characterTokenSprite: {fileID: -913550469375740556, guid: d5d2ded09638f4146b926a0d335ae597, type: 3}
+    invalidTokenSprite: {fileID: -6277585156938866052, guid: 02088de823d456845996c364e825b22a, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Enchantress
-    characterSprite: {fileID: -1265872457109709990, guid: e7059f3fee682404eaab1fffa9367ac1, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 823025473611012662, guid: c35970effb66fbe41a95def1974824d2, type: 3}
+    characterType: 9
+    characterCardSprite: {fileID: -1265872457109709990, guid: e7059f3fee682404eaab1fffa9367ac1, type: 3}
+    characterTokenSprite: {fileID: 7197568307356981599, guid: bed226cd97d5bbf4695331349fea328b, type: 3}
+    invalidTokenSprite: {fileID: 5909094233696361944, guid: 63d9191820b760e42bb19a7bd7561a0f, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   - characterName: Mermaid
-    characterSprite: {fileID: 7457939531803209288, guid: 3f5be36f084e0df4aafc8128a07e1353, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 8579254460283077194, guid: 5eecf48c0108f8b4592d4d77c9ab40a8, type: 3}
+    characterType: 0
+    characterCardSprite: {fileID: 7457939531803209288, guid: 3f5be36f084e0df4aafc8128a07e1353, type: 3}
+    characterTokenSprite: {fileID: 729840642494031660, guid: fb7cf4372d44f034f95dd01d3d492647, type: 3}
+    invalidTokenSprite: {fileID: -3249891612557984692, guid: a3297b242a4766646a80f7321eaca6e9, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 400
   - characterName: Knight
-    characterSprite: {fileID: -2582392756301984743, guid: cba67455b546b004eaa2f154ddcb80e7, type: 3}
-    InitialPosition: {x: 0, y: 0, z: 0}
-    characterTokenPrefab: {fileID: 2306553288078539861, guid: f40ba681c365118469913bbc451350a6, type: 3}
+    characterType: 1
+    characterCardSprite: {fileID: -2582392756301984743, guid: cba67455b546b004eaa2f154ddcb80e7, type: 3}
+    characterTokenSprite: {fileID: 7793441753341476238, guid: 3a0ef54ca63749f439eca72916883f7d, type: 3}
+    invalidTokenSprite: {fileID: 5909094233696361944, guid: 63d9191820b760e42bb19a7bd7561a0f, type: 3}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 384
   CharacterCardPrefab: {fileID: 8160458717162521867, guid: 01de1499145a1be44b59dd3d62d5a319, type: 3}
+  TokenPrefab: {fileID: 7403747386613742195, guid: c9cdc5135cd79ef44980f4078d4fc679, type: 3}

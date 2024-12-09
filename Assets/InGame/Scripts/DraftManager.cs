@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using TMPro;
+
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
 public class DraftManager : MonoBehaviour
@@ -20,20 +21,119 @@ public class DraftManager : MonoBehaviour
     public GameObject ChooseTextImage;
     public GameObject DraftCanvas;
     public GameObject Mapobj;
+
+    [Header("Spawn Positions")]
+    public Transform player1SpawnPosition; // Spawn position for Player 1
+    public Transform player2SpawnPosition; // Spawn position for Player 2
     [Header("Game Data")]
     public GameData gameData; // Reference to the GameData ScriptableObject
 
     private List<GameObject> instantiatedCards = new List<GameObject>(); // Track instantiated cards
-    private Character selectedCharacter = null;
+    private CharacterData selectedCharacter = null;
     private GameObject selectedCardObject = null; // Reference to the selected card GameObject
-    public List<Character> player1Characters = new List<Character>(); // List of Player 1's selected characters
-    public List<Character> player2Characters = new List<Character>(); // List of Player 2's selected characters
+    public List<CharacterData> player1Characters = new List<CharacterData>(); // List of Player 1's selected characters
+    public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
+    public List<CharacterData> RemainingCards = new List<CharacterData>(); // List of Player 2's selected characters
     public GameManager gameManager;
-    // void Start()
-    // {
-    //     gameManager = GameManager.Instance;
-    //     UpdateTurnIcons();
-    // }
+
+    [SerializeField] private Tilemap tilemap; // Reference to your Tilemap
+    private bool isSelectionLocked = false;
+    // Start Placement Phase
+    public void StartPlacementPhase()
+    {
+        GameManager.Instance.ChangePlayerTurn(1);
+        LowerTilemapOpacity(0.3f);
+        InstantiatePlayerTokens(player1Characters, player1SpawnPosition, 1);
+        InstantiatePlayerTokens(player2Characters, player2SpawnPosition, 2);
+    }
+
+    private void InstantiatePlayerTokens(List<CharacterData> characterList, Transform spawnPosition, int playerNumber)
+    {
+        Vector3 spawnAreaCenter = spawnPosition.position;
+        float spawnRadius = 0.5f; // Radius around the spawn position
+        float tokenSpacing = 1f; // Minimum spacing between tokens
+
+        List<Vector3> usedPositions = new List<Vector3>();
+
+        foreach (var character in characterList)
+        {
+            Vector3 randomPosition;
+            int maxAttempts = 10; // Prevent infinite loops
+            int attempts = 0;
+
+            // Find a random position that doesn't overlap
+            do
+            {
+                float randomX = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
+                float randomY = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
+
+
+                randomPosition = spawnAreaCenter + new Vector3(randomX, randomY, -0.6f);
+                attempts++;
+            } while (IsOverlapping(randomPosition, usedPositions, tokenSpacing) && attempts < maxAttempts);
+
+            // Add the position to the list of used positions
+            usedPositions.Add(randomPosition);
+
+            // Instantiate the token
+            GameObject token = Instantiate(gameData.TokenPrefab, randomPosition, Quaternion.identity);
+
+            // Assign PlacementManager values
+            var placementManager = token.GetComponent<PlacementManager>();
+            if (placementManager != null)
+            {
+                placementManager.characterType = character.characterType;
+                placementManager.InitialPosition = randomPosition;
+                placementManager.InvalidValidToken = character.invalidTokenSprite;
+                placementManager.ValidToken = character.characterTokenSprite;
+                placementManager.raycastMask = character.Mask;
+            }
+        }
+    }
+    public void LowerTilemapOpacity(float newOpacity)
+    {
+        if (tilemap == null)
+        {
+            Debug.LogWarning("Tilemap reference is missing! ");
+            return;
+        }
+
+        // Clamp the opacity value between 0 (fully transparent) and 1 (fully opaque)
+        newOpacity = Mathf.Clamp(newOpacity, 0f, 1f);
+
+        // Get the current color of the tilemap
+        Color tilemapColor = tilemap.color;
+
+        // Update the alpha (opacity) value
+        tilemapColor.a = newOpacity;
+
+        // Apply the updated color back to the tilemap
+        tilemap.color = tilemapColor;
+
+        Debug.Log($"Tilemap opacity set to {newOpacity}");
+    }
+    // Helper method to check if a position overlaps with existing tokens
+    private bool IsOverlapping(Vector3 position, List<Vector3> usedPositions, float spacing)
+    {
+        foreach (var usedPosition in usedPositions)
+        {
+            if (Vector3.Distance(position, usedPosition) < spacing)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void TransitionToPlacementPhase()
+    {
+        DraftCanvas.SetActive(false); // Hide draft UI
+        Mapobj.SetActive(true); // Show the map
+
+        // Instantiate tokens for both players
+        StartPlacementPhase();
+    }
+
     public void TransitionToPhase(GamePhase newPhase)
     {
 
@@ -54,15 +154,14 @@ public class DraftManager : MonoBehaviour
             case GamePhase.Selection:
                 ChooseTextImage.SetActive(true);
                 ElaminationTextImage.SetActive(false);
-                ChangeCurrentDraftMainICon(1);
                 Debug.Log("Phase 3: Selection");
                 GameManager.Instance.ChangePlayerTurn(1);
                 DraftPanel.SetActive(true);
                 SelectedCardPanel.SetActive(false);
+                ChangeCurrentDraftMainICon(1);
                 break;
             case GamePhase.PlaceMent:
-                Mapobj.SetActive(true);
-                DraftCanvas.SetActive(false);
+                TransitionToPlacementPhase();
                 break;
         }
     }
@@ -93,17 +192,18 @@ public class DraftManager : MonoBehaviour
     }
     public void ChangeCurrentDraftMainICon(Int32 Player)
     {
-        DraftMainIcon.sprite = GameManager.Instance.GetPlayerInfo(Player).PlayerIcon;
+        DraftMainIcon.sprite = GameManager.Instance.GetCurrentPlayerIcon();
+        Debug.Log(GameManager.Instance.GetCurrentPlayerIcon());
 
     }
-    private void InitializeCharacterCard(GameObject card, Character character)
+    private void InitializeCharacterCard(GameObject card, CharacterData character)
     {
         card.name = character.characterName;
 
         Image cardImage = card.GetComponent<Image>();
         if (cardImage != null)
         {
-            cardImage.sprite = character.characterSprite;
+            cardImage.sprite = character.characterCardSprite;
         }
 
         Button cardButton = card.GetComponent<Button>();
@@ -119,8 +219,10 @@ public class DraftManager : MonoBehaviour
         }
     }
 
-    private void OnCharacterClicked(Character character, GameObject card)
+    private void OnCharacterClicked(CharacterData character, GameObject card)
     {
+        if (GameManager.Instance.currentPhase == GamePhase.Selection && isSelectionLocked == true) return;
+
         selectedCharacter = character;
         selectedCardObject = card;
 
@@ -138,17 +240,21 @@ public class DraftManager : MonoBehaviour
         if (GameManager.Instance.currentPhase == GamePhase.Elimination)
         {
             ConfirmButton.onClick.AddListener(() => OnEliminateSelection());
+            RemainingCards.Add(character);
             //  ConfirmButton.GetComponentInChildren<TMP_Text>().text = "Eliminate";
         }
         else if (GameManager.Instance.currentPhase == GamePhase.Selection)
         {
+            isSelectionLocked = true;
             ConfirmButton.onClick.AddListener(() => OnConfirmCharacterSelection());
             // ConfirmButton.GetComponentInChildren<TMP_Text>().text = "Confirm";
         }
+
     }
 
     private void OnCancelSelection()
     {
+        isSelectionLocked = false;
         Debug.Log("Selection canceled.");
         // Hide SelectedCardPanel and return to DraftPanel
         SelectedCardPanel.SetActive(false);
@@ -206,6 +312,7 @@ public class DraftManager : MonoBehaviour
             1.5f,                     // Scale factor (scale up during flight)
             () =>
             {
+                isSelectionLocked = false;
                 // Check if only one card is left
                 if (instantiatedCards.Count == 1)
                 {
@@ -227,70 +334,26 @@ public class DraftManager : MonoBehaviour
         selectedCharacter = null;
         selectedCardObject = null;
     }
-
     private void AssignLastCardToCurrentPlayer()
     {
         if (instantiatedCards.Count != 1) return;
-        // Switch to the next player's turn
-        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
-        ChangeCurrentDraftMainICon(GameManager.Instance.currentPlayer);
+
         // Get the last card and its associated character
         GameObject lastCard = instantiatedCards[0];
-        Character lastCharacter = gameData.GetCharacterByName(lastCard.name);
+        CharacterData lastCharacter = gameData.GetCharacterByName(lastCard.name);
 
-        // Assign the last card to the current player
-        if (GameManager.Instance.GetCurrentPlayer() == 1)
-        {
-            player1Characters.Add(lastCharacter);
-        }
-        else if (GameManager.Instance.GetCurrentPlayer() == 2)
-        {
-            player2Characters.Add(lastCharacter);
-        }
-
-        // Duplicate the last card outside the grid
-        GameObject duplicateCard = Instantiate(lastCard, DraftPanel.transform);
-
-        // Ensure duplicate card retains proper size and appearance
-        RectTransform duplicateRect = duplicateCard.GetComponent<RectTransform>();
-        RectTransform lastCardRect = lastCard.GetComponent<RectTransform>();
-
-        if (duplicateRect != null && lastCardRect != null)
-        {
-            duplicateRect.sizeDelta = lastCardRect.sizeDelta; // Copy size
-            duplicateRect.position = lastCardRect.position; // Copy position
-            duplicateRect.localScale = lastCardRect.localScale; // Copy scale
-        }
-        else
-        {
-            Debug.LogError("RectTransform is missing on one of the cards.");
-        }
+        RemainingCards.Add(lastCharacter);
 
         // Remove the last card from the grid
         instantiatedCards.Remove(lastCard);
         Destroy(lastCard);
 
-        // Animate the duplicate card flying to the DraftMainIcon
-        DoTweenHelper.FlyToTarget(
-            duplicateCard,
-            DraftMainIcon.transform,
-            1.5f,
-            1.5f,
-            () =>
-            {
-                Debug.Log("Last card successfully animated to DraftMainIcon.");
-
-                // Ensure duplicateCard is destroyed after animation
-                Destroy(duplicateCard);
-                gameManager.ChangePhase(GamePhase.PlaceMent);
-                TransitionToPhase(GamePhase.PlaceMent);
-                // End selection phase
-                Debug.Log("Selection Phase Complete. Game setup is done!");
-            }
-        );
+        gameManager.ChangePhase(GamePhase.PlaceMent);
+        TransitionToPhase(GamePhase.PlaceMent);
 
         // Reset selection UI
         SelectedCardPanel.SetActive(false);
     }
+
 }
 

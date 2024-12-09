@@ -3,9 +3,11 @@ using UnityEngine;
 public class PlacementManager : MonoBehaviour
 {
     public CharacterType characterType; // Enum defining character types (e.g., Mermaid, Knight, etc.)
+    public Sprite ValidToken; // Sprite for valid placement
+    public Sprite InvalidValidToken; // Sprite for invalid placement
 
     private bool isValidPlacement;
-    private Renderer tokenRenderer;
+    private SpriteRenderer spriteRenderer; // Renderer for the token sprite
     public Vector3 InitialPosition;
     private Vector3 offset;
     private Camera mainCamera;
@@ -18,7 +20,12 @@ public class PlacementManager : MonoBehaviour
 
     void Start()
     {
-        tokenRenderer = GetComponent<Renderer>();
+        spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        if (spriteRenderer == null)
+        {
+            Debug.LogError("No SpriteRenderer found on the first child of the token!");
+        }
+        CheckPlacementRules();
         InitialPosition = transform.position;
         mainCamera = Camera.main;
     }
@@ -56,7 +63,6 @@ public class PlacementManager : MonoBehaviour
 
         if (Input.GetMouseButton(0) && isBeingDragged)
         {
-            Debug.Log("Dragging " + gameObject.name);
             Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = transform.position.z;
             transform.position = mousePosition + offset;
@@ -64,7 +70,6 @@ public class PlacementManager : MonoBehaviour
 
         if (Input.GetMouseButtonUp(0) && isBeingDragged)
         {
-            Debug.Log("Mouse Released...");
             isBeingDragged = false;
             InteractionManager.IsDragging = false; // Reset interaction state
 
@@ -102,16 +107,16 @@ public class PlacementManager : MonoBehaviour
                 break;
         }
 
-        // Change token color based on placement validity
-        if (tokenRenderer != null)
+        // Update sprite based on placement validity
+        if (spriteRenderer != null)
         {
-            tokenRenderer.material.color = isValidPlacement ? Color.green : Color.red;
+            spriteRenderer.sprite = isValidPlacement ? ValidToken : InvalidValidToken;
         }
     }
 
     private bool CheckPlacementWithRaycast(string tag)
     {
-        // Cast a ray in the -Z direction from the object's position
+
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.back, rayLength, raycastMask);
         if (hit.collider != null)
         {
@@ -135,10 +140,10 @@ public class PlacementManager : MonoBehaviour
 
     private void DebugDrawRay()
     {
-        // Visualize the ray in the Scene view in the -Z direction
         Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);
     }
 }
+
 public static class InteractionManager
 {
     public static bool IsDragging { get; set; } = false;
