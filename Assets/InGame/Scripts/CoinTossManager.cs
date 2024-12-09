@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
@@ -77,34 +78,23 @@ public class CoinTossManager : MonoBehaviour
         // Add a bounce effect to the winning coin
         DoTweenHelper.Bounce(activeCoin, 1.2f, 1f);
 
-        // Use the helper method to animate the winner text
+        // Animate the winner text
         DoTweenHelper.AnimateText(
             textPrefab,
             parentCanvas,
             spawnPosition,
-            $"Winner!!",
+            "Winner!!",
             textAnimationDuration,
-           3
+            3
         );
 
-        // Trigger the event after a short delay to allow effects to complete
+        // Trigger the event after a short delay
         DOVirtual.DelayedCall(1.5f, () =>
         {
-            EventManager.TriggerEvent("TossResult", new TossResult
-            {
-                Winner = winner,
-                WinnerSprite = winnerSprite,
-                LoserSprite = loserSprite
-            });
-
+            EventManager.TriggerEvent("TossResult", winnerSprite, loserSprite); // Correctly uses the two-parameter TriggerEvent
             coinPanel.SetActive(false);
         });
     }
+
 }
 
-public class TossResult
-{
-    public int Winner { get; set; }
-    public Sprite WinnerSprite { get; set; }
-    public Sprite LoserSprite { get; set; }
-}

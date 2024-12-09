@@ -34,29 +34,24 @@ public class GameManager : MonoBehaviour
         currentPhase = GamePhase.CoinToss;
         InitializeCoinToss();
     }
-
     private void InitializeCoinToss()
     {
         Debug.Log("Phase 1: Coin Toss");
-        EventManager.Subscribe("TossResult", OnTossResult);
+        // Explicit cast to avoid method group ambiguity
+        EventManager.Subscribe("TossResult", (Action<Sprite, Sprite>)OnTossResult);
     }
 
-    private void OnTossResult(object data)
+    private void OnTossResult(Sprite winnerSprite, Sprite loserSprite)
     {
-        if (data is TossResult tossResult)
-        {
-            Debug.Log("Winner " + tossResult.WinnerSprite + tossResult.LoserSprite);
+        // Map player icons
+        SetPlayerIcons(1, winnerSprite);
+        SetPlayerIcons(2, loserSprite);
 
-            // Map player icons
-            SetPlayerIcons(1, tossResult.WinnerSprite);
-            SetPlayerIcons(2, tossResult.LoserSprite);
-
-            // Transition to the elimination phase
-            ChangePhase(GamePhase.Elimination);
-            draftManager?.TransitionToPhase(GamePhase.Elimination);
-
-            EventManager.Unsubscribe("TossResult", OnTossResult);
-        }
+        // Transition to the elimination phase
+        ChangePhase(GamePhase.Elimination);
+        draftManager?.TransitionToPhase(GamePhase.Elimination);
+        // Unsubscribe to avoid duplicate callbacks
+        EventManager.Unsubscribe("TossResult", (Action<Sprite, Sprite>)OnTossResult);
     }
     public Sprite GetCurrentPlayerIcon()
     {

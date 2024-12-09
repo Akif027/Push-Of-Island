@@ -1,29 +1,117 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine;
 
 public static class EventManager
 {
-    // Dictionary to store events with no parameters
-    private static Dictionary<string, Action> eventDictionary = new Dictionary<string, Action>();
-    // Dictionary to store events with parameters
-    private static Dictionary<string, Action<object>> eventDictionaryWithParams = new Dictionary<string, Action<object>>();
-
+    // Unified dictionary to manage all events with any parameter type
+    private static Dictionary<string, Delegate> eventDictionary = new Dictionary<string, Delegate>();
     /// <summary>
     // Add events with parameters
     public static event Action<int, int> CoinAdd;
     public static event Action<int, int> CoinDeduct;
+    /// <summary>
+    /// Subscribe to an event with one parameter.
+    /// </summary>
+    public static void Subscribe<T>(string eventName, Action<T> listener)
+    {
+        if (!eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            eventDictionary[eventName] = listener;
+        }
+        else
+        {
+            eventDictionary[eventName] = Delegate.Combine(existingDelegate, listener);
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribe from an event with one parameter.
+    /// </summary>
+    public static void Unsubscribe<T>(string eventName, Action<T> listener)
+    {
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            var currentDelegate = Delegate.Remove(existingDelegate, listener);
+            if (currentDelegate == null)
+            {
+                eventDictionary.Remove(eventName);
+            }
+            else
+            {
+                eventDictionary[eventName] = currentDelegate;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Trigger an event with one parameter.
+    /// </summary>
+    public static void TriggerEvent<T>(string eventName, T parameter)
+    {
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            (existingDelegate as Action<T>)?.Invoke(parameter);
+        }
+    }
+
+    /// <summary>
+    /// Subscribe to an event with two parameters.
+    /// </summary>
+    public static void Subscribe<T1, T2>(string eventName, Action<T1, T2> listener)
+    {
+        if (!eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            eventDictionary[eventName] = listener;
+        }
+        else
+        {
+            eventDictionary[eventName] = Delegate.Combine(existingDelegate, listener);
+        }
+    }
+
+    /// <summary>
+    /// Unsubscribe from an event with two parameters.
+    /// </summary>
+    public static void Unsubscribe<T1, T2>(string eventName, Action<T1, T2> listener)
+    {
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            var currentDelegate = Delegate.Remove(existingDelegate, listener);
+            if (currentDelegate == null)
+            {
+                eventDictionary.Remove(eventName);
+            }
+            else
+            {
+                eventDictionary[eventName] = currentDelegate;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Trigger an event with two parameters.
+    /// </summary>
+    public static void TriggerEvent<T1, T2>(string eventName, T1 param1, T2 param2)
+    {
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
+        {
+            (existingDelegate as Action<T1, T2>)?.Invoke(param1, param2);
+        }
+    }
+
+    /// <summary>
     /// Subscribe to an event with no parameters.
     /// </summary>
     public static void Subscribe(string eventName, Action listener)
     {
-        if (!eventDictionary.TryGetValue(eventName, out var existingListener))
+        if (!eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
             eventDictionary[eventName] = listener;
         }
-        else if (existingListener == null || !existingListener.GetInvocationList().Contains(listener))
+        else
         {
-            eventDictionary[eventName] += listener;
+            eventDictionary[eventName] = Delegate.Combine(existingDelegate, listener);
         }
     }
 
@@ -32,12 +120,16 @@ public static class EventManager
     /// </summary>
     public static void Unsubscribe(string eventName, Action listener)
     {
-        if (eventDictionary.ContainsKey(eventName))
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            eventDictionary[eventName] -= listener;
-            if (eventDictionary[eventName] == null)
+            var currentDelegate = Delegate.Remove(existingDelegate, listener);
+            if (currentDelegate == null)
             {
                 eventDictionary.Remove(eventName);
+            }
+            else
+            {
+                eventDictionary[eventName] = currentDelegate;
             }
         }
     }
@@ -47,52 +139,12 @@ public static class EventManager
     /// </summary>
     public static void TriggerEvent(string eventName)
     {
-        if (eventDictionary.ContainsKey(eventName))
+        if (eventDictionary.TryGetValue(eventName, out var existingDelegate))
         {
-            eventDictionary[eventName]?.Invoke();
+            (existingDelegate as Action)?.Invoke();
         }
     }
 
-    /// <summary>
-    /// Subscribe to an event with parameters.
-    /// </summary>
-    public static void Subscribe(string eventName, Action<object> listener)
-    {
-        if (!eventDictionaryWithParams.TryGetValue(eventName, out var existingListener))
-        {
-            eventDictionaryWithParams[eventName] = listener;
-        }
-        else if (existingListener == null || !existingListener.GetInvocationList().Contains(listener))
-        {
-            eventDictionaryWithParams[eventName] += listener;
-        }
-    }
-
-    /// <summary>
-    /// Unsubscribe from an event with parameters.
-    /// </summary>
-    public static void Unsubscribe(string eventName, Action<object> listener)
-    {
-        if (eventDictionaryWithParams.ContainsKey(eventName))
-        {
-            eventDictionaryWithParams[eventName] -= listener;
-            if (eventDictionaryWithParams[eventName] == null)
-            {
-                eventDictionaryWithParams.Remove(eventName);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Trigger an event with parameters.
-    /// </summary>
-    public static void TriggerEvent(string eventName, object parameter)
-    {
-        if (eventDictionaryWithParams.ContainsKey(eventName))
-        {
-            eventDictionaryWithParams[eventName]?.Invoke(parameter);
-        }
-    }
 
     /// <summary>
     /// Trigger the CoinAdd event.
@@ -109,5 +161,4 @@ public static class EventManager
     {
         CoinDeduct?.Invoke(playerNumber, coinAmount);
     }
-
 }

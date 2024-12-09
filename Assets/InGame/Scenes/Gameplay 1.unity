@@ -4015,7 +4015,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1303589662}
   m_Layer: 0
-  m_Name: SpawnPlayer2Area (1)
+  m_Name: SpawnPlayer1Area (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4367,7 +4367,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1398124615}
   m_Layer: 0
-  m_Name: SpawnPlayer1Area
+  m_Name: SpawnPlayer2Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4688,8 +4688,8 @@ MonoBehaviour:
   ChooseTextImage: {fileID: 1378358703}
   DraftCanvas: {fileID: 1217043715}
   Mapobj: {fileID: 142597681}
-  player1SpawnPosition: {fileID: 1398124615}
-  player2SpawnPosition: {fileID: 1303589662}
+  player1SpawnPosition: {fileID: 1303589662}
+  player2SpawnPosition: {fileID: 1398124615}
   gameData: {fileID: 11400000, guid: 0e7a01797a175f747a3bf7bc48781631, type: 2}
   player1Characters: []
   player2Characters: []
@@ -6129,8 +6129,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1398124615}
   - {fileID: 1303589662}
+  - {fileID: 1398124615}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2021547199
