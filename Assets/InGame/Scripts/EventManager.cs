@@ -10,6 +10,9 @@ public static class EventManager
     private static Dictionary<string, Action<object>> eventDictionaryWithParams = new Dictionary<string, Action<object>>();
 
     /// <summary>
+    // Add events with parameters
+    public static event Action<int, int> CoinAdd;
+    public static event Action<int, int> CoinDeduct;
     /// Subscribe to an event with no parameters.
     /// </summary>
     public static void Subscribe(string eventName, Action listener)
@@ -90,4 +93,21 @@ public static class EventManager
             eventDictionaryWithParams[eventName]?.Invoke(parameter);
         }
     }
+
+    /// <summary>
+    /// Trigger the CoinAdd event.
+    /// </summary>
+    public static void TriggerCoinAdd(int playerNumber, int coinAmount)
+    {
+        CoinAdd?.Invoke(playerNumber, coinAmount);
+    }
+
+    /// <summary>
+    /// Trigger the CoinDeduct event.
+    /// </summary>
+    public static void TriggerCoinDeduct(int playerNumber, int coinAmount)
+    {
+        CoinDeduct?.Invoke(playerNumber, coinAmount);
+    }
+
 }
