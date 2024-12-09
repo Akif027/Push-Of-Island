@@ -4695,6 +4695,7 @@ MonoBehaviour:
   player2Characters: []
   RemainingCards: []
   gameManager: {fileID: 1482824641}
+  mapScroll: {fileID: 142597683}
   tilemap: {fileID: 266497955}
 --- !u!4 &1482824644
 Transform:

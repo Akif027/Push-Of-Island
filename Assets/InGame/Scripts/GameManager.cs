@@ -135,5 +135,6 @@ public enum GamePhase
     CoinToss,
     Elimination,
     Selection,
-    PlaceMent
+    PlaceMent,
+    GamePlay
 }

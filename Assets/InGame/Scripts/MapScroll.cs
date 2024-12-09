@@ -1,5 +1,6 @@
 using UnityEngine;
 using Unity.Cinemachine;
+using System.Collections;
 
 public class MapScroll : MonoBehaviour
 {
@@ -49,7 +50,38 @@ public class MapScroll : MonoBehaviour
             HandleZoom();
         }
     }
+    private Coroutine transitionCoroutine;
 
+    // Smoothly transition the camera to a target position
+    public void SmoothTransitionToPosition(Vector3 targetPosition, float duration)
+    {
+        if (transitionCoroutine != null)
+        {
+            StopCoroutine(transitionCoroutine);
+        }
+        transitionCoroutine = StartCoroutine(SmoothTransitionCoroutine(targetPosition, duration));
+    }
+
+    private IEnumerator SmoothTransitionCoroutine(Vector3 targetPosition, float duration)
+    {
+        Transform camTransform = cinemachineCamera.transform;
+        Vector3 startPosition = camTransform.position;
+        targetPosition.z = startPosition.z; // Keep the Z value unchanged
+
+        float elapsed = 0f;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+
+            // Interpolate position
+            camTransform.position = Vector3.Lerp(startPosition, targetPosition, t);
+            yield return null;
+        }
+
+        camTransform.position = targetPosition; // Ensure the final position is exactly the target
+    }
     private void HandleDrag()
     {
         if (Input.GetMouseButtonDown(0)) // On mouse (or finger) press

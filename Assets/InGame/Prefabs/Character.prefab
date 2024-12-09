@@ -225,6 +225,7 @@ MonoBehaviour:
   characterType: 2
   ValidToken: {fileID: 0}
   InvalidValidToken: {fileID: 0}
+  owner: 0
   InitialPosition: {x: 0, y: 0, z: 0}
   rayLength: -1
   rayColor: {r: 1, g: 0, b: 0, a: 1}

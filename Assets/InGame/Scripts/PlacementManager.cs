@@ -5,6 +5,7 @@ public class PlacementManager : MonoBehaviour
     public CharacterType characterType; // Enum defining character types (e.g., Mermaid, Knight, etc.)
     public Sprite ValidToken; // Sprite for valid placement
     public Sprite InvalidValidToken; // Sprite for invalid placement
+    public int owner; // Player number who owns this token (e.g., 1 or 2)
 
     private bool isValidPlacement;
     private SpriteRenderer spriteRenderer; // Renderer for the token sprite
@@ -17,7 +18,8 @@ public class PlacementManager : MonoBehaviour
     public float rayLength = 10f; // Length of the ray
     public Color rayColor = Color.red; // Color of the ray for visualization
     public LayerMask raycastMask; // LayerMask to exclude the object's own collider
-
+    public bool isTokenPlaced = false;
+    bool Drag = false;
     void Start()
     {
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
@@ -26,10 +28,22 @@ public class PlacementManager : MonoBehaviour
             Debug.LogError("No SpriteRenderer found on the first child of the token!");
         }
         CheckPlacementRules();
+        DragEnableOrDisable(true);
         InitialPosition = transform.position;
         mainCamera = Camera.main;
     }
+    private void DragEnableOrDisable(bool isTrue)
+    {
 
+        Drag = isTrue;
+
+    }
+
+    public bool ReturnDragStatus()
+    {
+        return Drag;
+
+    }
     void Update()
     {
         HandleDrag();
@@ -46,18 +60,20 @@ public class PlacementManager : MonoBehaviour
 
     private void HandleDrag()
     {
+        if (!Drag) return;
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
+            // Allow drag only if the token belongs to the current player
+            if (hit.collider != null && hit.collider.gameObject == gameObject && owner == GameManager.Instance.GetCurrentPlayer())
             {
                 isBeingDragged = true;
                 InteractionManager.IsDragging = true; // Notify interaction manager
                 Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
-                Debug.Log("Mouse Down on " + gameObject.name);
+                Debug.Log($"Player {owner} is dragging token: " + gameObject.name);
             }
         }
 
@@ -97,10 +113,31 @@ public class PlacementManager : MonoBehaviour
                 isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Knight:
-                isValidPlacement = CheckPlacementWithRaycast("Land") && CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Golem:
-                isValidPlacement = CheckPlacementWithRaycast("Land") && !CheckPlacementWithRaycast("Water");
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Dwarf:
+                isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.King:
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Gryphon:
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Thief:
+                isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Rogue:
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Enchantress:
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                break;
+            case CharacterType.Satyr:
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             default:
                 isValidPlacement = CheckPlacementWithRaycast("Base");
@@ -116,7 +153,6 @@ public class PlacementManager : MonoBehaviour
 
     private bool CheckPlacementWithRaycast(string tag)
     {
-
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.back, rayLength, raycastMask);
         if (hit.collider != null)
         {
@@ -129,13 +165,17 @@ public class PlacementManager : MonoBehaviour
     private void ConfirmPlacement()
     {
         Debug.Log($"{characterType} placed successfully at {transform.position}");
-        enabled = false; // Disable further movement
+        DragEnableOrDisable(false);
+        isTokenPlaced = true;
+        EventManager.TriggerEvent<bool>("TokenPlaced", true);
+
     }
 
     private void ResetPosition()
     {
         Debug.Log("Invalid placement. Resetting token position.");
         transform.position = InitialPosition;
+        EventManager.TriggerEvent<bool>("TokenPlaced", false);
     }
 
     private void DebugDrawRay()
