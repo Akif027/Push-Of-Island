@@ -4642,6 +4642,7 @@ MonoBehaviour:
   draftManager: {fileID: 1482824643}
   currentPlayer: 1
   currentPhase: 0
+  playerInfos: []
 --- !u!114 &1482824642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4694,7 +4695,7 @@ MonoBehaviour:
   player1Characters: []
   player2Characters: []
   RemainingCards: []
-  Tokens: []
+  PlacementManager: []
   gameManager: {fileID: 1482824641}
   mapScroll: {fileID: 142597683}
   DisplayAllCardPanel: {fileID: 742036758}
