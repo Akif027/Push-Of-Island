@@ -34,7 +34,8 @@ public class DraftManager : MonoBehaviour
     public List<CharacterData> player1Characters = new List<CharacterData>(); // List of Player 1's selected characters
     public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
     public List<CharacterData> RemainingCards = new List<CharacterData>(); // Remaining cards after elimination
-    public List<PlacementManager> Tokens = new List<PlacementManager>(); // List of placement managers
+    public List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
+                                                                                   //  public List<CharacterData> AllCharacterCard = new List<CharacterData>(); // List of placement managers
 
     public GameManager gameManager;
     public MapScroll mapScroll;
@@ -64,6 +65,7 @@ public class DraftManager : MonoBehaviour
         float tokenSpacing = 1f; // Minimum spacing between tokens
 
         List<Vector3> usedPositions = new List<Vector3>();
+        List<Token> TokensList = new List<Token>();
 
         foreach (var character in characterList)
         {
@@ -85,7 +87,12 @@ public class DraftManager : MonoBehaviour
             GameObject token = Instantiate(gameData.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
 
             var placementManager = token.GetComponent<PlacementManager>();
-            Tokens.Add(placementManager);
+            Token tokens = token.GetComponent<Token>();
+
+            tokens.characterData = character;
+
+            PlacementManager.Add(placementManager);
+            TokensList.Add(tokens);
 
             if (placementManager != null)
             {
@@ -97,11 +104,26 @@ public class DraftManager : MonoBehaviour
                 placementManager.owner = playerNumber;
             }
         }
+
+        foreach (Token item in TokensList)
+        {
+            item.IsUnlocked = true;
+            Debug.Log(item.IsUnlocked + " " + item);
+        }
+
+        // Create and set PlayerInfo
+        PlayerInfo info = new PlayerInfo(playerNumber, TokensList);
+        GameManager.Instance.SetPlayerInfo(playerNumber, info);
+
+
     }
+
+
+
 
     private bool AllTokenPlacedCheck()
     {
-        foreach (PlacementManager t in Tokens)
+        foreach (PlacementManager t in PlacementManager)
         {
             if (!t.isTokenPlaced)
             {
@@ -167,7 +189,7 @@ public class DraftManager : MonoBehaviour
                 ChangeCurrentDraftMainICon(1);
                 break;
 
-            case GamePhase.PlaceMent:
+            case GamePhase.Placement:
                 TransitionToPlacementPhase();
                 break;
 
@@ -235,6 +257,7 @@ public class DraftManager : MonoBehaviour
         foreach (var character in gameData.characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardPrefab, characterGrid);
+
             InitializeCharacterCard(card, character);
             instantiatedCards.Add(card);
         }
@@ -245,7 +268,7 @@ public class DraftManager : MonoBehaviour
         DraftMainIcon.sprite = GameManager.Instance.GetCurrentPlayerIcon();
     }
 
-    private void InitializeCharacterCard(GameObject card, CharacterData character)
+    public void InitializeCharacterCard(GameObject card, CharacterData character)
     {
         // Set the card's name
         card.name = character.characterName;
@@ -317,7 +340,7 @@ public class DraftManager : MonoBehaviour
     {
         if (selectedCardObject != null && GameManager.Instance.currentPhase == GamePhase.Elimination)
         {
-            Debug.Log($"Eliminated character: {selectedCharacter.characterName}");
+            Debug.Log($"Eliminated  character: {selectedCharacter.characterName}");
 
             instantiatedCards.Remove(selectedCardObject);
             Destroy(selectedCardObject);
@@ -389,8 +412,8 @@ public class DraftManager : MonoBehaviour
         instantiatedCards.Remove(lastCard);
         Destroy(lastCard);
 
-        gameManager.ChangePhase(GamePhase.PlaceMent);
-        TransitionToPhase(GamePhase.PlaceMent);
+        gameManager.ChangePhase(GamePhase.Placement);
+        TransitionToPhase(GamePhase.Placement);
 
         SelectedCardPanel.SetActive(false);
     }

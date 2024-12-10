@@ -185,6 +185,7 @@ GameObject:
   - component: {fileID: 3254964577384362942}
   - component: {fileID: 212718225265954070}
   - component: {fileID: 4344771212392254161}
+  - component: {fileID: 7848299491056243650}
   m_Layer: 0
   m_Name: Character
   m_TagString: Untagged
@@ -232,6 +233,7 @@ MonoBehaviour:
   raycastMask:
     serializedVersion: 2
     m_Bits: 128
+  isTokenPlaced: 0
 --- !u!58 &4344771212392254161
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -268,6 +270,18 @@ CircleCollider2D:
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
   m_Radius: 0.15
+--- !u!114 &7848299491056243650
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7403747386613742195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a6bca6e49e70d84ab79dae4897ad825, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &8631015255936333686
 GameObject:
   m_ObjectHideFlags: 0
