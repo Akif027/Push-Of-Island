@@ -247,31 +247,26 @@ public class GameManager : MonoBehaviour
         playerInfo.tokens.Remove(tokenToRemove);
         Debug.Log($"Removed token of type {characterType} from Player {playerNumber}.");
     }
-    public List<CharacterData> GetKnockoutTokensForPlayer(int playerNumber)
+    public List<CharacterData> GetAllTokensOfPlayer(int playerNumber)
     {
-        List<CharacterData> missingCharacters = new List<CharacterData>();
+        List<CharacterData> playerTokens = new List<CharacterData>();
 
         // Get the PlayerInfo for the specified player
         PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
         if (playerInfo == null)
         {
             Debug.LogError($"PlayerInfo for player {playerNumber} not found!");
-            return missingCharacters; // Return empty list if PlayerInfo doesn't exist
+            return playerTokens; // Return empty list if PlayerInfo doesn't exist
         }
 
-        // Extract the character types of the player's tokens
-        var playerCharacterTypes = playerInfo.tokens
+        // Extract CharacterData from each token and add it to the list
+        playerTokens = playerInfo.tokens
             .Where(token => token.characterData != null) // Exclude null characterData
-            .Select(token => token.characterData.characterType)
-            .ToHashSet(); // Use a HashSet for fast lookups
-
-        // Find all characters in gameData.characters that are not in the player's tokens
-        missingCharacters = gameData.characters
-            .Where(character => !playerCharacterTypes.Contains(character.characterType))
+            .Select(token => token.characterData)
             .ToList();
 
-        Debug.Log($"Player {playerNumber} is missing {missingCharacters.Count} characters.");
-        return missingCharacters;
+        Debug.Log($"Player {playerNumber} has {playerTokens.Count} tokens.");
+        return playerTokens;
     }
 }
 

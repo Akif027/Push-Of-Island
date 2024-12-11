@@ -1,0 +1,128 @@
+using UnityEngine;
+using UnityEngine.UI;
+using System.Collections.Generic;
+
+public class HiringManager : MonoBehaviour
+{
+    public GameObject characterCardPrefab; // Reference to the prefab for character cards
+    public Transform gridLayout;          // Parent grid layout transform
+    public GameManager gameManager;       // Reference to the GameManager
+    public GameObject hiringPanel;        // Reference to the hiring panel
+    public Transform spawnTokenPositionPlayer1; // Spawn position for Player 1 tokens
+    public Transform spawnTokenPositionPlayer2; // Spawn position for Player 2 tokens
+
+    /// <summary>
+    /// Open the hiring panel and display player characters.
+    /// </summary>
+    public void OpenHiringPanel()
+    {
+        ShowPlayerCharacters(gameManager.GetCurrentPlayer());
+    }
+
+    /// <summary>
+    /// Displays the player's characters as cards in the grid layout.
+    /// </summary>
+    public void ShowPlayerCharacters(int playerNumber)
+    {
+        if (characterCardPrefab == null || gridLayout == null)
+        {
+            Debug.LogError("Character card prefab or grid layout is not assigned!");
+            return;
+        }
+
+        // Activate the hiring panel
+        hiringPanel.SetActive(true);
+
+        // Clear existing cards in the grid
+        foreach (Transform child in gridLayout)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Fetch player characters
+        List<CharacterData> playerCharacters = gameManager.GetAllTokensOfPlayer(playerNumber);
+
+        if (playerCharacters == null || playerCharacters.Count == 0)
+        {
+            Debug.Log("No characters found for the player.");
+            return;
+        }
+
+        // Instantiate and initialize a card for each character
+        foreach (CharacterData character in playerCharacters)
+        {
+            GameObject card = Instantiate(characterCardPrefab, gridLayout);
+            InitializeCharacterCard(card, character);
+        }
+    }
+
+    /// <summary>
+    /// Initializes a character card with the provided data.
+    /// </summary>
+    private void InitializeCharacterCard(GameObject card, CharacterData character)
+    {
+        if (card == null || character == null)
+        {
+            Debug.LogError("Card or CharacterData is null!");
+            return;
+        }
+
+        // Set the card's name to the character's name
+        card.name = character.characterName;
+
+        // Assign the sprite to the card's image
+        Image cardImage = card.GetComponent<Image>();
+        if (cardImage != null)
+        {
+            cardImage.sprite = character.characterCardSprite;
+        }
+        else
+        {
+            Debug.LogError($"No Image component found on the card for character: {character.characterName}");
+        }
+
+        // Assign functionality to the button
+        Button cardButton = card.GetComponent<Button>();
+        if (cardButton != null)
+        {
+            cardButton.onClick.RemoveAllListeners();
+            cardButton.onClick.AddListener(() => PurchaseCharacter(character));
+        }
+        else
+        {
+            Debug.LogError($"No Button component found on the card for character: {character.characterName}");
+        }
+    }
+
+    /// <summary>
+    /// Handle the purchase of a character.
+    /// </summary>
+    private void PurchaseCharacter(CharacterData character)
+    {
+        int playerNumber = gameManager.GetCurrentPlayer();
+
+        // Determine the correct spawn position based on the player number
+        Transform spawnPosition = playerNumber == 1 ? spawnTokenPositionPlayer1 : spawnTokenPositionPlayer2;
+
+        // int cost = character.characterCost; // Commented out until character cost is added
+
+        // Deduct coins
+        // EventManager.TriggerCoinDeduct(playerNumber, cost); // Commented out until cost is used
+
+        // Spawn the token
+        gameManager.InstantiateSinglePlayerToken(character, spawnPosition, playerNumber);
+
+        // Update player info
+        gameManager.AddTokenToPlayer(playerNumber, character.characterType);
+
+        Debug.Log($"Character {character.characterName} purchased by Player {playerNumber}.");
+    }
+
+    /// <summary>
+    /// Close the hiring panel.
+    /// </summary>
+    public void CloseHiringPanel()
+    {
+        hiringPanel.SetActive(false);
+    }
+}
