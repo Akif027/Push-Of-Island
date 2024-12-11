@@ -7331,6 +7331,7 @@ GameObject:
   - component: {fileID: 1482824641}
   - component: {fileID: 1482824645}
   - component: {fileID: 1482824646}
+  - component: {fileID: 1482824647}
   m_Layer: 0
   m_Name: gameManager
   m_TagString: Untagged
@@ -7455,7 +7456,21 @@ MonoBehaviour:
   gridLayout: {fileID: 95090465}
   gameManager: {fileID: 1482824641}
   hiringPanel: {fileID: 2126929848}
-  spawnPosition: {fileID: 0}
+  spawnTokenPositionPlayer1: {fileID: 1303589662}
+  spawnTokenPositionPlayer2: {fileID: 1398124615}
+  scoreManager: {fileID: 1482824647}
+--- !u!114 &1482824647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1482824640}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d9dcce9114d0c2242a824adea900c1ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1490033566
 GameObject:
   m_ObjectHideFlags: 0

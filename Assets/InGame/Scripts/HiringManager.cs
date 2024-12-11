@@ -10,13 +10,23 @@ public class HiringManager : MonoBehaviour
     public GameObject hiringPanel;        // Reference to the hiring panel
     public Transform spawnTokenPositionPlayer1; // Spawn position for Player 1 tokens
     public Transform spawnTokenPositionPlayer2; // Spawn position for Player 2 tokens
+    public ScoreManager scoreManager;     // Reference to the ScoreManager
 
     /// <summary>
     /// Open the hiring panel and display player characters.
     /// </summary>
+
     public void OpenHiringPanel()
     {
         ShowPlayerCharacters(gameManager.GetCurrentPlayer());
+    }
+    void Update()
+    {
+        // Check if the space key is pressed
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            OpenHiringPanel();
+        }
     }
 
     /// <summary>
@@ -100,14 +110,21 @@ public class HiringManager : MonoBehaviour
     private void PurchaseCharacter(CharacterData character)
     {
         int playerNumber = gameManager.GetCurrentPlayer();
+        float characterCost = character.CharacterCost; // Get the character cost
+
+        // Check if the player has enough coins using ScoreManager
+        int playerCoins = scoreManager.GetCoins(playerNumber);
+        if (playerCoins < characterCost)
+        {
+            Debug.Log($"Player {playerNumber} does not have enough coins to purchase {character.characterName}. Required: {characterCost}, Available: {playerCoins}");
+            return;
+        }
+
+        // Deduct coins from the current player
+        EventManager.TriggerCoinDeduct(playerNumber, (int)characterCost);
 
         // Determine the correct spawn position based on the player number
         Transform spawnPosition = playerNumber == 1 ? spawnTokenPositionPlayer1 : spawnTokenPositionPlayer2;
-
-        // int cost = character.characterCost; // Commented out until character cost is added
-
-        // Deduct coins
-        // EventManager.TriggerCoinDeduct(playerNumber, cost); // Commented out until cost is used
 
         // Spawn the token
         gameManager.InstantiateSinglePlayerToken(character, spawnPosition, playerNumber);
@@ -115,7 +132,7 @@ public class HiringManager : MonoBehaviour
         // Update player info
         gameManager.AddTokenToPlayer(playerNumber, character.characterType);
 
-        Debug.Log($"Character {character.characterName} purchased by Player {playerNumber}.");
+        Debug.Log($"Character {character.characterName} purchased by Player {playerNumber} for {characterCost} coins.");
     }
 
     /// <summary>

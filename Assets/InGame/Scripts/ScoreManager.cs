@@ -1,9 +1,12 @@
 using UnityEngine;
+using TMPro;
 using System.Collections.Generic;
 
 public class ScoreManager : MonoBehaviour
 {
     private Dictionary<int, int> playerCoins = new Dictionary<int, int>(); // Stores coin balance per player
+    public TMP_Text coinText; // Reference to the coin UI text
+    private int currentPlayerNumber = 1; // Default current player (set dynamically in your game)
 
     private void OnEnable()
     {
@@ -20,7 +23,7 @@ public class ScoreManager : MonoBehaviour
     /// <summary>
     /// Handles the CoinAdd event.
     /// </summary>
-    private void OnCoinAdd(int playerNumber, int coinAmount)
+    public void OnCoinAdd(int playerNumber, int coinAmount)
     {
         if (!playerCoins.ContainsKey(playerNumber))
         {
@@ -28,13 +31,13 @@ public class ScoreManager : MonoBehaviour
         }
 
         playerCoins[playerNumber] += coinAmount;
-        UpdateCoinUI(playerNumber); // Update UI to reflect changes
+        UpdateCoinUI(playerNumber);
     }
 
     /// <summary>
     /// Handles the CoinDeduct event.
     /// </summary>
-    private void OnCoinDeduct(int playerNumber, int coinAmount)
+    public void OnCoinDeduct(int playerNumber, int coinAmount)
     {
         if (!playerCoins.ContainsKey(playerNumber))
         {
@@ -42,7 +45,7 @@ public class ScoreManager : MonoBehaviour
         }
 
         playerCoins[playerNumber] = Mathf.Max(0, playerCoins[playerNumber] - coinAmount); // Ensure coins don’t go below 0
-        UpdateCoinUI(playerNumber); // Update UI to reflect changes
+        UpdateCoinUI(playerNumber);
     }
 
     /// <summary>
@@ -58,11 +61,34 @@ public class ScoreManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the coin UI for a specific player.
+    /// Updates the coin UI for the current player.
     /// </summary>
-    private void UpdateCoinUI(int playerNumber)
+    public void UpdateCoinUI(int playerNumber)
     {
-        // Implement UI update logic here (e.g., finding a player UI component and setting coin text)
-        Debug.Log($"Player {playerNumber} has {playerCoins[playerNumber]} coins.");
+        if (playerNumber == currentPlayerNumber)
+        {
+            if (coinText != null)
+            {
+                coinText.text = $"Coins: {playerCoins[playerNumber]}";
+            }
+            else
+            {
+                Debug.LogError("CoinText reference is missing!");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Switch to a new current player.
+    /// </summary>
+    public void SetCurrentPlayer(int playerNumber)
+    {
+        currentPlayerNumber = playerNumber;
+
+        // Immediately update the UI for the new current player
+        if (coinText != null)
+        {
+            coinText.text = $"Coins: {GetCoins(playerNumber)}";
+        }
     }
 }
