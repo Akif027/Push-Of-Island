@@ -33,6 +33,7 @@ public class GameData : ScriptableObject
 public class CharacterData
 {
     public string characterName; // Name of the character
+    public float CharacterCost = 10f;
     public CharacterType characterType; // Sprite representing the character
     public Sprite characterCardSprite; // Sprite representing the character
     public Sprite characterTokenSprite; // Sprite representing the character
