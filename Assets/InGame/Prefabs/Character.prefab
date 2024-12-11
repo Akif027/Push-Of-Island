@@ -282,6 +282,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8a6bca6e49e70d84ab79dae4897ad825, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isUnlocked: 0
+  characterData:
+    characterName: 
+    characterType: 0
+    characterCardSprite: {fileID: 0}
+    characterTokenSprite: {fileID: 0}
+    invalidTokenSprite: {fileID: 0}
+    Mask:
+      serializedVersion: 2
+      m_Bits: 0
 --- !u!1 &8631015255936333686
 GameObject:
   m_ObjectHideFlags: 0
