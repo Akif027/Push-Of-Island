@@ -67,7 +67,7 @@ public class PlacementManager : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
             // Allow drag only if the token belongs to the current player
-            if (hit.collider != null && hit.collider.gameObject == gameObject && owner == GameManager.Instance.GetCurrentPlayer())
+            if (hit.collider != null && hit.collider.gameObject == gameObject)
             {
                 isBeingDragged = true;
                 InteractionManager.IsDragging = true; // Notify interaction manager
@@ -102,7 +102,12 @@ public class PlacementManager : MonoBehaviour
             }
         }
     }
+    public void SetToDynamic()
+    {
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
 
+
+    }
     private void CheckPlacementRules()
     {
         isValidPlacement = false;
@@ -168,7 +173,7 @@ public class PlacementManager : MonoBehaviour
         DragEnableOrDisable(false);
         isTokenPlaced = true;
         EventManager.TriggerEvent<bool>("TokenPlaced", true);
-
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
     }
 
     private void ResetPosition()

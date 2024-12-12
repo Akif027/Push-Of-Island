@@ -38,7 +38,7 @@ public class DraftManager : MonoBehaviour
                                                                                    //  public List<CharacterData> AllCharacterCard = new List<CharacterData>(); // List of placement managers
 
     public GameManager gameManager;
-    public MapScroll mapScroll;
+    // public MapScroll mapScroll;
 
     public GameObject DisplayAllCardPanel;
     [SerializeField] private Tilemap tilemap; // Reference to your Tilemap
@@ -50,7 +50,7 @@ public class DraftManager : MonoBehaviour
     public void StartPlacementPhase()
     {
         GameManager.Instance.ChangePlayerTurn(1);
-        mapScroll.SmoothTransitionToPosition(player1SpawnPosition.position, 0.5f);
+        MapScroll.Instance.SmoothTransitionToPosition(player1SpawnPosition.position, 0.5f);
         currentCamPostion = player1SpawnPosition;
         LowerTilemapOpacity(0.3f);
         InstantiatePlayerTokens(player1Characters, player1SpawnPosition, 1);
@@ -61,8 +61,8 @@ public class DraftManager : MonoBehaviour
     private void InstantiatePlayerTokens(List<CharacterData> characterList, Transform spawnPosition, Int32 playerNumber)
     {
         Vector3 spawnAreaCenter = spawnPosition.position;
-        float spawnRadius = 0.5f; // Radius around the spawn position
-        float tokenSpacing = 1f; // Minimum spacing between tokens
+        float spawnRadius = 1f; // Reduced radius
+        float tokenSpacing = 0.5f; // Reduced spacing for tighter grouping
 
         List<Vector3> usedPositions = new List<Vector3>();
         List<Token> TokensList = new List<Token>();
@@ -75,20 +75,23 @@ public class DraftManager : MonoBehaviour
 
             do
             {
+                // Generate random offsets within the spawn radius
                 float randomX = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
                 float randomY = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
 
-                randomPosition = spawnAreaCenter + new Vector3(randomX, randomY, -0.6f);
+                randomPosition = spawnAreaCenter + new Vector3(randomX, randomY, -0.6f); // Keep Z consistent
                 attempts++;
             } while (IsOverlapping(randomPosition, usedPositions, tokenSpacing) && attempts < maxAttempts);
 
             usedPositions.Add(randomPosition);
 
+            // Instantiate the token
             GameObject token = Instantiate(gameData.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
 
             var placementManager = token.GetComponent<PlacementManager>();
             Token tokens = token.GetComponent<Token>();
 
+            // Assign character data to the token
             tokens.characterData = character;
 
             PlacementManager.Add(placementManager);
@@ -114,11 +117,18 @@ public class DraftManager : MonoBehaviour
         // Create and set PlayerInfo
         PlayerInfo info = new PlayerInfo(playerNumber, TokensList);
         GameManager.Instance.SetPlayerInfo(playerNumber, info);
-
-
     }
 
+    private void AllTokenToDynamic()
+    {
+        foreach (PlacementManager t in PlacementManager)
+        {
 
+            t.SetToDynamic();
+
+        }
+
+    }
 
 
     private bool AllTokenPlacedCheck()
@@ -127,6 +137,7 @@ public class DraftManager : MonoBehaviour
         {
             if (!t.isTokenPlaced)
             {
+                t.SetToDynamic();
                 return false;
             }
         }
@@ -201,6 +212,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
+        AllTokenToDynamic();
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
         DraftCanvas.SetActive(true);
@@ -228,11 +240,11 @@ public class DraftManager : MonoBehaviour
         {
             GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
             currentCamPostion = currentCamPostion == player1SpawnPosition ? player2SpawnPosition : player1SpawnPosition;
-            mapScroll.SmoothTransitionToPosition(currentCamPostion.position, 0.5f);
+            MapScroll.Instance.SmoothTransitionToPosition(currentCamPostion.position, 0.5f);
 
             if (AllTokenPlacedCheck())
             {
-                Debug.Log("All tokens placed.");
+                Debug.Log("All tokens placed .");
                 GameManager.Instance.ChangePhase(GamePhase.GamePlay);
                 TransitionToPhase(GamePhase.GamePlay);
             }

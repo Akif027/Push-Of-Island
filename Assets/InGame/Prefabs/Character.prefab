@@ -102,7 +102,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4054642359236290986
 Transform:
   m_ObjectHideFlags: 0
@@ -113,7 +113,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.5070286, w: 0.8619293}
   m_LocalPosition: {x: -0.3303, y: 0.0641, z: 0}
-  m_LocalScale: {x: 0.4, y: 0.4, z: 0.4}
+  m_LocalScale: {x: 0.2, y: 0.2, z: 0.2}
   m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 802744636863912329}
@@ -404,8 +404,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isUnlocked: 0
+  owner: 0
   characterData:
     characterName: 
+    CharacterCost: 10
+    Size: 0
+    Weight: 1
+    Speed: 1
     characterType: 0
     characterCardSprite: {fileID: 0}
     characterTokenSprite: {fileID: 0}
@@ -414,12 +419,8 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
   arrow: {fileID: 4054642359236290986}
-  throwForce: 10
   tokenRigidbody: {fileID: 5620412087962402747}
   linearDrag: 2
-  ignoredLayers:
-    serializedVersion: 2
-    m_Bits: 468
 --- !u!50 &5620412087962402747
 Rigidbody2D:
   serializedVersion: 5
@@ -428,7 +429,7 @@ Rigidbody2D:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7403747386613742195}
-  m_BodyType: 1
+  m_BodyType: 0
   m_Simulated: 1
   m_UseFullKinematicContacts: 0
   m_UseAutoMass: 0

@@ -161,6 +161,10 @@ public class GameManager : MonoBehaviour
         currentPhase = newPhase;
     }
 
+    public GamePhase getCurrentPhase()
+    {
+        return currentPhase;
+    }
 
     public void InstantiateSinglePlayerToken(CharacterData character, Transform spawnPosition, int playerNumber)
     {

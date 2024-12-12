@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class Token : MonoBehaviour
@@ -16,14 +15,13 @@ public class Token : MonoBehaviour
         }
     }
 
+    public int owner; // Player who owns this token
     public CharacterData characterData;
 
     [SerializeField]
     private Transform arrow; // Arrow GameObject for direction
 
-    [SerializeField]
-    private float throwForce = 10f; // Force for movement
-
+    private float throwForce = 10f; // Base force for movement
     public Rigidbody2D tokenRigidbody;
 
     [SerializeField]
@@ -36,7 +34,7 @@ public class Token : MonoBehaviour
     private void Start()
     {
         arrow.gameObject.SetActive(false);
-
+        owner = gameObject.GetComponent<PlacementManager>().owner;
         // Validate required components
         if (tokenRigidbody == null)
         {
@@ -53,19 +51,35 @@ public class Token : MonoBehaviour
             Debug.LogError("CharacterData is not assigned.");
         }
 
-        // Set Rigidbody to Dynamic and disable gravity
-        tokenRigidbody.bodyType = RigidbodyType2D.Dynamic;
         tokenRigidbody.gravityScale = 0; // Disable gravity
         tokenRigidbody.linearDamping = linearDrag; // Set linear drag
+
+        // Initialize properties based on character type
+        InitializeProperties();
     }
 
-    public void SetForce(float force)
+    public void InitializeProperties()
     {
-        throwForce = force;
+        if (characterData == null) return;
+
+        // Set weight and force modifiers from CharacterData
+        tokenRigidbody.mass = characterData.Weight;
+        Debug.Log($"Initialized {characterData.characterName} with Weight: {characterData.Weight}, Speed: {characterData.Speed}");
+    }
+
+    public void SetForce(float sliderForce)
+    {
+        if (!IsCurrentPlayerOwner()) return;
+
+        // Calculate the adjusted force based on the player's slider input
+        throwForce = sliderForce * characterData.Speed / Mathf.Max(tokenRigidbody.mass, 0.1f); // Scale with speed and weight
+        Debug.Log($"{name} set throw force to: {throwForce} (Slider Force: {sliderForce}, Speed: {characterData.Speed}, Weight: {characterData.Weight})");
     }
 
     public void OnTokenSelected()
     {
+        if (!IsCurrentPlayerOwner()) return;
+        UIManager.Instance.OpenPlayAttackLowerPanel();
         arrow.gameObject.SetActive(true);
         tokenRigidbody.linearVelocity = Vector2.zero; // Stop any residual movement
         tokenRigidbody.angularVelocity = 0; // Stop any rotation
@@ -75,21 +89,24 @@ public class Token : MonoBehaviour
 
     public void OnTokenDeselected()
     {
+
         isDragging = false;
+        UIManager.Instance.ClosePlayAttackLowerPanel();
         arrow.gameObject.SetActive(false);
         Debug.Log($"{name} is deselected.");
     }
 
     public void StartDragging(Vector3 mouseWorldPosition)
     {
-        if (isThrown) return;
-
+        if (isThrown || !IsCurrentPlayerOwner()) return;
+        MapScroll.Instance.DisableScroll();
         isDragging = true;
         previousMousePosition = mouseWorldPosition;
     }
 
     public void StopDragging()
     {
+        MapScroll.Instance.EnableScroll();
         isDragging = false;
     }
 
@@ -118,7 +135,7 @@ public class Token : MonoBehaviour
 
     public void DragToRotate(Vector3 mouseWorldPosition)
     {
-        if (!isDragging || isThrown) return;
+        if (!isDragging || isThrown || !IsCurrentPlayerOwner()) return;
 
         // Calculate the direction vectors
         Vector3 directionToPrevious = previousMousePosition - transform.position;
@@ -134,20 +151,9 @@ public class Token : MonoBehaviour
         previousMousePosition = mouseWorldPosition;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
-    {
-        // Check if the collision is with another token
-        Token otherToken = collision.collider.GetComponent<Token>();
-        if (otherToken != null)
-        {
-            Debug.Log($"{name} collided with {otherToken.name}.");
-            // Physics is handled automatically since both tokens are Dynamic
-        }
-    }
-
     public void Launch()
     {
-        if (isThrown) return;
+        if (isThrown || !IsCurrentPlayerOwner()) return;
 
         Vector2 movementDirection = (transform.position - arrow.position).normalized;
 
@@ -157,6 +163,16 @@ public class Token : MonoBehaviour
         tokenRigidbody.linearVelocity = Vector2.zero; // Reset velocity
         tokenRigidbody.AddForce(movementDirection * throwForce, ForceMode2D.Impulse);
 
-        Debug.Log($"{name} launched in direction {movementDirection}.");
+        Debug.Log($"{name} launched with force: {throwForce} in direction {movementDirection}");
+    }
+
+    private bool IsCurrentPlayerOwner()
+    {
+        if (GameManager.Instance.GetCurrentPlayer() != owner)
+        {
+            Debug.LogWarning($"Player {GameManager.Instance.GetCurrentPlayer()} is not the owner of {name} (Owner: {owner}). Action denied.");
+            return false;
+        }
+        return true;
     }
 }

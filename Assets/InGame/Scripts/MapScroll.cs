@@ -20,6 +20,24 @@ public class MapScroll : MonoBehaviour
     private Camera mainCamera; // Main Unity Camera
     private Vector3 dragOrigin; // Stores the position where dragging started
 
+    public static MapScroll Instance { get; private set; }
+
+    // New: Toggle for enabling/disabling map scroll
+    private bool isScrollEnabled = true;
+
+    void Awake()
+    {
+        // Singleton initialization
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        else if (Instance != this)
+        {
+            Destroy(gameObject);
+        }
+    }
+
     void Start()
     {
         mainCamera = Camera.main;
@@ -44,15 +62,15 @@ public class MapScroll : MonoBehaviour
 
     void Update()
     {
-        if (!InteractionManager.IsDragging) // Disable scrolling if dragging
+        if (isScrollEnabled && !InteractionManager.IsDragging) // Disable scrolling if dragging or manually disabled
         {
             HandleDrag();
             HandleZoom();
         }
     }
+
     private Coroutine transitionCoroutine;
 
-    // Smoothly transition the camera to a target position
     public void SmoothTransitionToPosition(Vector3 targetPosition, float duration)
     {
         if (transitionCoroutine != null)
@@ -82,6 +100,7 @@ public class MapScroll : MonoBehaviour
 
         camTransform.position = targetPosition; // Ensure the final position is exactly the target
     }
+
     private void HandleDrag()
     {
         if (Input.GetMouseButtonDown(0)) // On mouse (or finger) press
@@ -130,5 +149,17 @@ public class MapScroll : MonoBehaviour
 
             mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize + difference * zoomSpeed, minZoom, maxZoom);
         }
+    }
+
+    // New: Public method to enable scrolling
+    public void EnableScroll()
+    {
+        isScrollEnabled = true;
+    }
+
+    // New: Public method to disable scrolling
+    public void DisableScroll()
+    {
+        isScrollEnabled = false;
     }
 }

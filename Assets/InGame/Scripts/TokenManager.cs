@@ -28,6 +28,7 @@ public class TokenManager : MonoBehaviour
 
     private void HandleMouseInput()
     {
+        if (GameManager.Instance.getCurrentPhase() != GamePhase.GamePlay) return;
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         mousePosition.z = 0f; // Ensure Z-plane consistency
 
