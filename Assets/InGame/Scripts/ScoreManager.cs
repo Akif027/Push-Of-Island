@@ -28,15 +28,17 @@ public class ScoreManager : MonoBehaviour
 
     private void InitializePlayers()
     {
+        // Initialize coins for both players
         for (int playerNumber = 1; playerNumber <= 2; playerNumber++) // Adjust for more players
         {
             if (!playerCoins.ContainsKey(playerNumber))
             {
                 playerCoins[playerNumber] = 30; // Starting coins
             }
-        }
 
-        UpdateCoinUI(currentPlayerNumber); // Show the initial coins for the current player
+            // Update the UI for all players
+            UpdateCoinUI(playerNumber);
+        }
     }
 
     public void OnCoinAdd(int playerNumber, int coinAmount)
@@ -62,6 +64,7 @@ public class ScoreManager : MonoBehaviour
 
     public void UpdateCoinUI(int playerNumber)
     {
+        // Update UI only for the current player
         if (playerNumber == currentPlayerNumber && coinText != null)
         {
             coinText.text = string.Format(coinTextFormat, playerCoins[playerNumber]);
