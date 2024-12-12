@@ -5,9 +5,13 @@ using System.Collections.Generic;
 public class HiringManager : MonoBehaviour
 {
     public GameObject characterCardPrefab; // Reference to the prefab for character cards
-    public Transform gridLayout;          // Parent grid layout transform
+    public Transform gridLayout;          // Parent grid layout transform for the hiring panel
     public GameManager gameManager;       // Reference to the GameManager
     public GameObject hiringPanel;        // Reference to the hiring panel
+    public GameObject infoPanel;          // Reference to the info panel
+    public Transform infoGridLayout;      // Grid layout transform for the info panel
+    public Transform playerIcon1;         // UI element for Player 1's icon in the info panel
+    public Transform playerIcon2;         // UI element for Player 2's icon in the info panel
     public Transform spawnTokenPositionPlayer1; // Spawn position for Player 1 tokens
     public Transform spawnTokenPositionPlayer2; // Spawn position for Player 2 tokens
     public ScoreManager scoreManager;     // Reference to the ScoreManager
@@ -15,17 +19,28 @@ public class HiringManager : MonoBehaviour
     /// <summary>
     /// Open the hiring panel and display player characters.
     /// </summary>
-
     public void OpenHiringPanel()
     {
         ShowPlayerCharacters(gameManager.GetCurrentPlayer());
     }
+
     void Update()
     {
-        // Check if the space key is pressed
         if (Input.GetKeyDown(KeyCode.Space))
         {
             OpenHiringPanel();
+        }
+
+        if (Input.GetKeyDown(KeyCode.I))
+        {
+            OpenInfoPanel();
+            Debug.Log("Info Panel Opened.");
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            CloseInfoPanel();
+            Debug.Log("Info Panel Closed.");
         }
     }
 
@@ -141,5 +156,74 @@ public class HiringManager : MonoBehaviour
     public void CloseHiringPanel()
     {
         hiringPanel.SetActive(false);
+    }
+
+    /// <summary>
+    /// Open the info panel and display the next player's characters and icon.
+    /// </summary>
+    public void OpenInfoPanel()
+    {
+        if (characterCardPrefab == null || infoGridLayout == null || infoPanel == null || playerIcon1 == null || playerIcon2 == null)
+        {
+            Debug.LogError("Character card prefab, info grid layout, info panel, or player icon UI elements are not assigned!");
+            return;
+        }
+
+        // Determine the next player's number
+        int currentPlayer = gameManager.GetCurrentPlayer();
+        int nextPlayer = currentPlayer == 1 ? 2 : 1;
+
+        // Activate the info panel
+        infoPanel.SetActive(true);
+
+        // Clear existing cards in the info grid
+        foreach (Transform child in infoGridLayout)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Update the player icons in the UI
+        Sprite player1Icon = gameManager.GetPlayerIcon(1);
+        Sprite player2Icon = gameManager.GetPlayerIcon(2);
+
+        if (player1Icon != null && player2Icon != null)
+        {
+            Image icon1Image = playerIcon1.GetComponent<Image>();
+            Image icon2Image = playerIcon2.GetComponent<Image>();
+
+            if (icon1Image != null && icon2Image != null)
+            {
+                icon1Image.sprite = currentPlayer == 1 ? player2Icon : player1Icon;
+                icon2Image.sprite = currentPlayer == 2 ? player1Icon : player2Icon;
+            }
+        }
+        else
+        {
+            Debug.LogError("Player icons could not be found or assigned.");
+        }
+
+        // Fetch next player's characters
+        List<CharacterData> nextPlayerCharacters = gameManager.GetAllTokensOfPlayer(nextPlayer);
+
+        if (nextPlayerCharacters == null || nextPlayerCharacters.Count == 0)
+        {
+            Debug.Log("No characters found for the next player.");
+            return;
+        }
+
+        // Instantiate and initialize a card for each character
+        foreach (CharacterData character in nextPlayerCharacters)
+        {
+            GameObject card = Instantiate(characterCardPrefab, infoGridLayout);
+            InitializeCharacterCard(card, character);
+        }
+    }
+
+    /// <summary>
+    /// Close the info panel.
+    /// </summary>
+    public void CloseInfoPanel()
+    {
+        infoPanel.SetActive(false);
     }
 }

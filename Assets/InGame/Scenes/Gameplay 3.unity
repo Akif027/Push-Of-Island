@@ -2863,7 +2863,7 @@ GameObject:
   - component: {fileID: 441332798}
   - component: {fileID: 441332797}
   m_Layer: 5
-  m_Name: Image (1)
+  m_Name: icon2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4727,7 +4727,7 @@ GameObject:
   - component: {fileID: 989688970}
   - component: {fileID: 989688969}
   m_Layer: 5
-  m_Name: Image
+  m_Name: icon 1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -7554,6 +7554,7 @@ MonoBehaviour:
   gridLayout: {fileID: 95090465}
   gameManager: {fileID: 1482824641}
   hiringPanel: {fileID: 2126929848}
+  infoPanel: {fileID: 1794873625}
   spawnTokenPositionPlayer1: {fileID: 1303589662}
   spawnTokenPositionPlayer2: {fileID: 1398124615}
   scoreManager: {fileID: 1482824647}
