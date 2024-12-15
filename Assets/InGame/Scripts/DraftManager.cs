@@ -86,26 +86,19 @@ public class DraftManager : MonoBehaviour
             usedPositions.Add(randomPosition);
 
             // Instantiate the token
-            GameObject token = Instantiate(gameData.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
+            GameObject token = Instantiate(character.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
 
             var placementManager = token.GetComponent<PlacementManager>();
             Token tokens = token.GetComponent<Token>();
 
             // Assign character data to the token
             tokens.characterData = character;
+            tokens.owner = playerNumber;
+            placementManager.owner = playerNumber;
 
             PlacementManager.Add(placementManager);
             TokensList.Add(tokens);
 
-            if (placementManager != null)
-            {
-                placementManager.characterType = character.characterType;
-                placementManager.InitialPosition = randomPosition;
-                placementManager.InvalidValidToken = character.invalidTokenSprite;
-                placementManager.ValidToken = character.characterTokenSprite;
-                placementManager.raycastMask = character.Mask;
-                placementManager.owner = playerNumber;
-            }
         }
 
         foreach (Token item in TokensList)
@@ -119,16 +112,6 @@ public class DraftManager : MonoBehaviour
         GameManager.Instance.SetPlayerInfo(playerNumber, info);
     }
 
-    private void AllTokenToDynamic()
-    {
-        foreach (PlacementManager t in PlacementManager)
-        {
-
-            t.SetToDynamic();
-
-        }
-
-    }
 
 
     private bool AllTokenPlacedCheck()
@@ -137,7 +120,7 @@ public class DraftManager : MonoBehaviour
         {
             if (!t.isTokenPlaced)
             {
-                t.SetToDynamic();
+
                 return false;
             }
         }
@@ -212,7 +195,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
-        AllTokenToDynamic();
+
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
         DraftCanvas.SetActive(true);

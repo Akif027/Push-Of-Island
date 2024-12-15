@@ -7,7 +7,7 @@ public class GameData : ScriptableObject
     [Header("Character Data")]
     public List<CharacterData> characters; // List of all character data
     public GameObject CharacterCardPrefab;
-    public GameObject TokenPrefab;
+
 
     /// <summary>
     /// Retrieve a character by name.
@@ -37,13 +37,13 @@ public class CharacterData
     public float Size;
     public float Weight;
     public float Speed;
-    public CharacterType characterType; // Sprite representing the character
+    public CharacterType characterType; // Enum for character type
     public Sprite characterCardSprite; // Sprite representing the character
-    public Sprite characterTokenSprite; // Sprite representing the character
-    public Sprite invalidTokenSprite; // Prefab for invalid token
+    public GameObject TokenPrefab;
     public LayerMask Mask;
 
-}// Example enum for character types
+    public CharacterAbility ability; // Reference to the character's ability
+}
 public enum CharacterType
 {
     Mermaid,

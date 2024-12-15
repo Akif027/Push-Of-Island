@@ -177,7 +177,7 @@ public class GameManager : MonoBehaviour
             -0.6f
         );
 
-        GameObject token = Instantiate(gameData.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
+        GameObject token = Instantiate(character.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
 
         var placementManager = token.GetComponent<PlacementManager>();
         var tokenComponent = token.GetComponent<Token>();
@@ -185,16 +185,17 @@ public class GameManager : MonoBehaviour
         if (tokenComponent != null)
         {
             tokenComponent.characterData = character;
+
+            tokenComponent.owner = playerNumber;
         }
 
         if (placementManager != null)
         {
-            placementManager.characterType = character.characterType;
-            placementManager.InitialPosition = randomPosition;
-            placementManager.InvalidValidToken = character.invalidTokenSprite;
-            placementManager.ValidToken = character.characterTokenSprite;
-            placementManager.raycastMask = character.Mask;
+
+
+
             placementManager.owner = playerNumber;
+
         }
 
         if (tokenComponent != null)

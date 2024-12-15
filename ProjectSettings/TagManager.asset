@@ -9,6 +9,7 @@ TagManager:
   - Land
   - Token
   - ignorelayer
+  - Vault
   layers:
   - Default
   - TransparentFX

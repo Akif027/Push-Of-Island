@@ -2,11 +2,12 @@ using UnityEngine;
 
 public class PlacementManager : MonoBehaviour
 {
-    public CharacterType characterType; // Enum defining character types (e.g., Mermaid, Knight, etc.)
-    public Sprite ValidToken; // Sprite for valid placement
-    public Sprite InvalidValidToken; // Sprite for invalid placement
+    CharacterType characterType;
     public int owner; // Player number who owns this token (e.g., 1 or 2)
-
+    public GameObject MainSpriteObj;
+    public GameObject CannotPlaceInvalidObj;
+    public GameObject BlueBorder;
+    public GameObject YellowBorder;
     private bool isValidPlacement;
     private SpriteRenderer spriteRenderer; // Renderer for the token sprite
     public Vector3 InitialPosition;
@@ -22,6 +23,7 @@ public class PlacementManager : MonoBehaviour
     bool Drag = false;
     void Start()
     {
+
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
@@ -31,6 +33,11 @@ public class PlacementManager : MonoBehaviour
         DragEnableOrDisable(true);
         InitialPosition = transform.position;
         mainCamera = Camera.main;
+
+        characterType = GetComponent<Token>().characterData.characterType;
+        HandleBorder();
+
+
     }
     private void DragEnableOrDisable(bool isTrue)
     {
@@ -44,10 +51,16 @@ public class PlacementManager : MonoBehaviour
         return Drag;
 
     }
+
+
     void Update()
     {
         HandleDrag();
+        if (GameManager.Instance.getCurrentPhase() == GamePhase.GamePlay && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic)
+        {
+            SetToDynamic();
 
+        }
         // Continuously check placement validity while dragging
         if (isBeingDragged)
         {
@@ -150,12 +163,35 @@ public class PlacementManager : MonoBehaviour
         }
 
         // Update sprite based on placement validity
-        if (spriteRenderer != null)
+        if (isValidPlacement)
         {
-            spriteRenderer.sprite = isValidPlacement ? ValidToken : InvalidValidToken;
+            MainSpriteObj.SetActive(true);
+            CannotPlaceInvalidObj.SetActive(false);
+            HandleBorder();
+        }
+        else
+        {
+            CannotPlaceInvalidObj.SetActive(true);
+            MainSpriteObj.SetActive(false);
+            BlueBorder.SetActive(false);
+            YellowBorder.SetActive(false);
         }
     }
+    private void HandleBorder()
+    {
 
+        if (owner == 1)
+        {
+            BlueBorder.SetActive(true);
+            YellowBorder.SetActive(false);
+        }
+        else
+        {
+            YellowBorder.SetActive(true);
+            BlueBorder.SetActive(false);
+        }
+
+    }
     private bool CheckPlacementWithRaycast(string tag)
     {
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.back, rayLength, raycastMask);
@@ -170,6 +206,10 @@ public class PlacementManager : MonoBehaviour
     private void ConfirmPlacement()
     {
         Debug.Log($"{characterType} placed successfully at {transform.position}");
+
+        // Notify the Token script about placement
+        GetComponent<Token>()?.OnTokenPlaced();
+
         DragEnableOrDisable(false);
         isTokenPlaced = true;
         EventManager.TriggerEvent<bool>("TokenPlaced", true);
