@@ -21,9 +21,10 @@ public class PlacementManager : MonoBehaviour
     public LayerMask raycastMask; // LayerMask to exclude the object's own collider
     public bool isTokenPlaced = false;
     bool Drag = false;
+    Token token;
     void Start()
     {
-
+        token = GetComponent<Token>();
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
@@ -34,7 +35,7 @@ public class PlacementManager : MonoBehaviour
         InitialPosition = transform.position;
         mainCamera = Camera.main;
 
-        characterType = GetComponent<Token>().characterData.characterType;
+        characterType = token.characterData.characterType;
         HandleBorder();
 
 
@@ -73,25 +74,29 @@ public class PlacementManager : MonoBehaviour
 
     private void HandleDrag()
     {
-        if (!Drag) return;
+        // Do not allow dragging if Drag is disabled or the token does not belong to the current player
+        if (!Drag || !token.IsCurrentPlayerOwner()) return;
+
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
-            // Allow drag only if the token belongs to the current player
+            // Allow drag only if the token itself is clicked
             if (hit.collider != null && hit.collider.gameObject == gameObject)
             {
                 isBeingDragged = true;
-                InteractionManager.IsDragging = true; // Notify interaction manager
+
+                MapScroll.Instance.DisableScroll();
                 Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
-                Debug.Log($"Player {owner} is dragging token: " + gameObject.name);
+                Debug.Log($"Player {owner} is dragging token: {gameObject.name}");
             }
         }
 
         if (Input.GetMouseButton(0) && isBeingDragged)
         {
+            UIManager.Instance.OkButton.gameObject.SetActive(false);
             Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             mousePosition.z = transform.position.z;
             transform.position = mousePosition + offset;
@@ -100,14 +105,14 @@ public class PlacementManager : MonoBehaviour
         if (Input.GetMouseButtonUp(0) && isBeingDragged)
         {
             isBeingDragged = false;
-            InteractionManager.IsDragging = false; // Reset interaction state
+            MapScroll.Instance.EnableScroll(); // Reset interaction state
 
             // Validate placement after drag ends
             CheckPlacementRules();
 
             if (isValidPlacement)
             {
-                ConfirmPlacement();
+                EventManager.TriggerEvent<PlacementManager>("TokenPlaced", GetComponent<PlacementManager>());
             }
             else
             {
@@ -115,6 +120,7 @@ public class PlacementManager : MonoBehaviour
             }
         }
     }
+
     public void SetToDynamic()
     {
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
@@ -203,19 +209,20 @@ public class PlacementManager : MonoBehaviour
         return false;
     }
 
-    private void ConfirmPlacement()
+    public void ConfirmPlacement()
     {
         Debug.Log($"{characterType} placed successfully at {transform.position}");
 
-        // Notify the Token script about placement
-        GetComponent<Token>()?.OnTokenPlaced();
-
+        // Disable dragging and mark the token as placed
         DragEnableOrDisable(false);
         isTokenPlaced = true;
-        EventManager.TriggerEvent<bool>("TokenPlaced", true);
-        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
-    }
 
+        // Set Rigidbody to Kinematic to prevent further movement
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+
+        // Trigger an event for other systems (like turn progression)
+        EventManager.TriggerEvent("OnTurnEnd");
+    }
     private void ResetPosition()
     {
         Debug.Log("Invalid placement. Resetting token position.");
@@ -229,7 +236,3 @@ public class PlacementManager : MonoBehaviour
     }
 }
 
-public static class InteractionManager
-{
-    public static bool IsDragging { get; set; } = false;
-}

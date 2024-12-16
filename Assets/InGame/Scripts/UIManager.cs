@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pausePanel;
     //  [SerializeField] private GameObject hiringPanel;
     [SerializeField] private GameObject infoPanel;
-
+    public Button OkButton;
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -21,7 +22,6 @@ public class UIManager : MonoBehaviour
         Instance = this;
 
     }
-
     public void OpenPanel(GameObject panel)
     {
         if (panel != null)

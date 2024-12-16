@@ -104,8 +104,9 @@ public class Token : MonoBehaviour
     }
     private void HandleTokenMovement()
     {
-        if (tokenRigidbody.linearVelocity.magnitude < 0.1f) // Token has stopped moving
+        if (tokenRigidbody.linearVelocity.magnitude < 0.01f) // Token has stopped moving
         {
+            EventManager.TriggerEvent("OnTurnEnd");
             if (characterData?.ability != null)
             {
                 // Validate the final position based on the token's ability
@@ -151,6 +152,7 @@ public class Token : MonoBehaviour
         if (!IsCurrentPlayerOwner()) return;
 
         UIManager.Instance.OpenPlayAttackLowerPanel();
+
         arrow.gameObject.SetActive(true);
         StopMovement();
         Debug.Log($"{name} is selected.");
@@ -158,7 +160,9 @@ public class Token : MonoBehaviour
 
     public void OnTokenDeselected()
     {
+        Debug.LogError("OnDeselected");
         isDragging = false;
+
         UIManager.Instance.ClosePlayAttackLowerPanel();
         arrow.gameObject.SetActive(false);
     }
@@ -174,7 +178,7 @@ public class Token : MonoBehaviour
 
     public void StopDragging()
     {
-        MapScroll.Instance.EnableScroll();
+        // MapScroll.Instance.EnableScroll();
         isDragging = false;
     }
 
@@ -194,7 +198,7 @@ public class Token : MonoBehaviour
     public void Launch()
     {
         if (isThrown || !IsCurrentPlayerOwner()) return;
-
+        MapScroll.Instance.StartFollowing(gameObject);
         Vector2 movementDirection = (transform.position - arrow.position).normalized;
 
         isThrown = true;
@@ -209,16 +213,19 @@ public class Token : MonoBehaviour
         isThrown = false;
         StopMovement();
         arrow.gameObject.SetActive(false);
+
     }
 
     private void StopMovement()
     {
+        MapScroll.Instance.StopFollowing();
+
         tokenRigidbody.linearVelocity = Vector2.zero;
         tokenRigidbody.angularVelocity = 0f;
         transform.rotation = Quaternion.identity;
     }
 
-    private bool IsCurrentPlayerOwner()
+    public bool IsCurrentPlayerOwner()
     {
         if (GameManager.Instance.GetCurrentPlayer() != owner)
         {

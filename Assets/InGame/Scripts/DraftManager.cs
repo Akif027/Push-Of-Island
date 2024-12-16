@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
 
@@ -15,7 +16,7 @@ public class DraftManager : MonoBehaviour
     public Button CancelButton; // Button to cancel selection
     public Button ConfirmButton; // Button to confirm a character (was EliminateButton)
 
-    public Button OkButton;
+
     public Image DraftMainIcon;
     public GameObject ElaminationTextImage;
     public GameObject ChooseTextImage;
@@ -56,7 +57,7 @@ public class DraftManager : MonoBehaviour
         LowerTilemapOpacity(0.3f);
         InstantiatePlayerTokens(player1Characters, player1SpawnPosition, 1);
         InstantiatePlayerTokens(player2Characters, player2SpawnPosition, 2);
-        EventManager.Subscribe<bool>("TokenPlaced", HandleTokenPlaced);
+        EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
     }
 
     private void InstantiatePlayerTokens(List<CharacterData> characterList, Transform spawnPosition, Int32 playerNumber)
@@ -196,6 +197,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
+
         LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
@@ -203,8 +205,8 @@ public class DraftManager : MonoBehaviour
         DisplayAllCardPanel.SetActive(true);
         player1SpawnPosition.gameObject.SetActive(false);
         player2SpawnPosition.gameObject.SetActive(false);
-        EventManager.Unsubscribe<bool>("TokenPlaced", HandleTokenPlaced);
-
+        EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
+        MapScroll.Instance.SmoothTransitionToPosition(player1SpawnPosition.position, 0.5f);
         StartCoroutine(Delay());
     }
 
@@ -216,33 +218,41 @@ public class DraftManager : MonoBehaviour
         DisplayAllCardPanel.SetActive(false);
         player1SpawnPosition.gameObject.SetActive(true);
         player2SpawnPosition.gameObject.SetActive(true);
+
     }
-
-    private void HandleTokenPlaced(bool isPlaced)
+    private UnityAction okButtonListener;
+    private void HandleTokenPlaced(PlacementManager p)
     {
+        UIManager.Instance.OkButton.gameObject.SetActive(true);
 
-        if (isPlaced)
+        // Remove previous listener if it exists
+        if (okButtonListener != null)
         {
-            OkButton.gameObject.SetActive(true);
-            OkButton.onClick.RemoveListener(OnTokenPlaced);
-            OkButton.onClick.AddListener(OnTokenPlaced);
+            UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
         }
-    }
-    private void OnTokenPlaced()
-    {
 
-        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
-        currentCamPostion = currentCamPostion == player1SpawnPosition ? player2SpawnPosition : player1SpawnPosition;
-        MapScroll.Instance.SmoothTransitionToPosition(currentCamPostion.position, 0.5f);
+        // Assign a new listener reference
+        okButtonListener = () => OnTokenPlaced(p);
+
+        // Add the listener
+        UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
+    }
+
+    private void OnTokenPlaced(PlacementManager p)
+    {
+        p.ConfirmPlacement();
 
         if (AllTokenPlacedCheck())
         {
-            Debug.Log("All tokens placed .");
+            Debug.Log("All tokens placed.");
             GameManager.Instance.ChangePhase(GamePhase.GamePlay);
             TransitionToPhase(GamePhase.GamePlay);
         }
-        OkButton.gameObject.SetActive(false);
+        UIManager.Instance.OkButton.gameObject.SetActive(false);
 
+        // Clean up: Remove the listener to prevent future issues
+        UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
+        okButtonListener = null;
     }
     private void InitializeDraftUI()
     {

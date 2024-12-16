@@ -6,11 +6,12 @@ public class MapScroll : MonoBehaviour
 {
     [Header("Cinemachine References")]
     public CinemachineCamera cinemachineCamera; // Reference to the Cinemachine camera
-    public CinemachineConfiner2D confiner2D;    // Reference to the Cinemachine Confiner 2D component
-    public Collider2D boundingShape;           // Collider used as the bounding shape for the confiner
+    public CinemachineConfiner2D confiner2D;    // Reference to the Cinemachine Confiner 2D component      // Reference to the Cinemachine Confiner 2D component
+    public Collider2D boundingShape;                 // Collider used as the bounding shape for the confiner
 
     [Header("Scroll Settings")]
     public float scrollSpeed = 0.5f; // Speed of the scroll
+    public float FollowSpeed = 2f; // Speed of the scroll
 
     [Header("Zoom Settings")]
     public float minZoom = 5f; // Minimum orthographic size for the camera
@@ -22,12 +23,12 @@ public class MapScroll : MonoBehaviour
 
     public static MapScroll Instance { get; private set; }
 
-    // New: Toggle for enabling/disabling map scroll
     private bool isScrollEnabled = true;
+    private GameObject followTarget; // The target the camera will follow
+    private bool isFollowing = false;
 
     void Awake()
     {
-        // Singleton initialization
         if (Instance == null)
         {
             Instance = this;
@@ -62,12 +63,18 @@ public class MapScroll : MonoBehaviour
 
     void Update()
     {
-        if (isScrollEnabled && !InteractionManager.IsDragging) // Disable scrolling if dragging or manually disabled
+        if (isFollowing && followTarget != null)
+        {
+            FollowTarget();
+        }
+        if (isScrollEnabled)
         {
             HandleDrag();
             HandleZoom();
         }
     }
+
+
 
     private Coroutine transitionCoroutine;
 
@@ -101,18 +108,18 @@ public class MapScroll : MonoBehaviour
         camTransform.position = targetPosition; // Ensure the final position is exactly the target
     }
 
+
     private void HandleDrag()
     {
-        if (Input.GetMouseButtonDown(0)) // On mouse (or finger) press
+        if (Input.GetMouseButtonDown(0))
         {
             dragOrigin = mainCamera.ScreenToWorldPoint(Input.mousePosition);
         }
 
-        if (Input.GetMouseButton(0)) // While holding mouse (or finger)
+        if (Input.GetMouseButton(0))
         {
             Vector3 currentPoint = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             Vector3 difference = dragOrigin - currentPoint;
-
             MoveCamera(difference);
         }
     }
@@ -131,7 +138,38 @@ public class MapScroll : MonoBehaviour
 
         camTransform.position = new Vector3(newPosition.x, newPosition.y, camTransform.position.z);
     }
+    /// <summary>
+    /// Makes the camera follow the specified GameObject.
+    /// </summary>
+    /// <param name="target">The GameObject to follow.</param>
+    public void StartFollowing(GameObject target)
+    {
+        followTarget = target;
+        isFollowing = true;
+    }
 
+    /// <summary>
+    /// Stops the camera from following the GameObject.
+    /// </summary>
+    public void StopFollowing()
+    {
+        followTarget = null;
+        isFollowing = false;
+    }
+
+    /// <summary>
+    /// Updates the camera position to follow the target GameObject.
+    /// </summary>
+    private void FollowTarget()
+    {
+        if (followTarget == null) return;
+
+        Vector3 targetPosition = followTarget.transform.position;
+        targetPosition.z = cinemachineCamera.transform.position.z; // Keep the Z value unchanged
+
+        Transform camTransform = cinemachineCamera.transform;
+        camTransform.position = Vector3.Lerp(camTransform.position, targetPosition, FollowSpeed * Time.deltaTime);
+    }
     private void HandleZoom()
     {
         if (Input.touchCount == 2)
@@ -151,15 +189,15 @@ public class MapScroll : MonoBehaviour
         }
     }
 
-    // New: Public method to enable scrolling
     public void EnableScroll()
     {
         isScrollEnabled = true;
+
     }
 
-    // New: Public method to disable scrolling
     public void DisableScroll()
     {
         isScrollEnabled = false;
+
     }
 }

@@ -33,10 +33,27 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-
         // Start with the Coin Toss phase
         currentPhase = GamePhase.CoinToss;
         InitializeCoinToss();
+        EventManager.Subscribe("OnTurnEnd", HandleTurn);
+    }
+    void OnDisable()
+    {
+        EventManager.Unsubscribe("OnTurnEnd", HandleTurn);
+
+    }
+    private void HandleTurn()
+    {
+        // Switch the current player turn
+        ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
+        Debug.LogError(currentPlayer);
+        // Smoothly transition the camera to the respective player's spawn position
+        MapScroll.Instance.SmoothTransitionToPosition(
+            currentPlayer == 1
+                ? draftManager.player1SpawnPosition.position
+                : draftManager.player2SpawnPosition.position,
+            0.5f);
     }
 
     private void InitializeCoinToss()
