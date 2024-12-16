@@ -15,6 +15,7 @@ public class DraftManager : MonoBehaviour
     public Button CancelButton; // Button to cancel selection
     public Button ConfirmButton; // Button to confirm a character (was EliminateButton)
 
+    public Button OkButton;
     public Image DraftMainIcon;
     public GameObject ElaminationTextImage;
     public GameObject ChooseTextImage;
@@ -195,7 +196,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
-
+        LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
         DraftCanvas.SetActive(true);
@@ -221,19 +222,24 @@ public class DraftManager : MonoBehaviour
     {
         if (isPlaced)
         {
-            GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
-            currentCamPostion = currentCamPostion == player1SpawnPosition ? player2SpawnPosition : player1SpawnPosition;
-            MapScroll.Instance.SmoothTransitionToPosition(currentCamPostion.position, 0.5f);
-
-            if (AllTokenPlacedCheck())
-            {
-                Debug.Log("All tokens placed .");
-                GameManager.Instance.ChangePhase(GamePhase.GamePlay);
-                TransitionToPhase(GamePhase.GamePlay);
-            }
+            OkButton.onClick.RemoveListener(OnTokenPlaced);
+            OkButton.onClick.AddListener(OnTokenPlaced);
         }
     }
+    private void OnTokenPlaced()
+    {
 
+        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
+        currentCamPostion = currentCamPostion == player1SpawnPosition ? player2SpawnPosition : player1SpawnPosition;
+        MapScroll.Instance.SmoothTransitionToPosition(currentCamPostion.position, 0.5f);
+
+        if (AllTokenPlacedCheck())
+        {
+            Debug.Log("All tokens placed .");
+            GameManager.Instance.ChangePhase(GamePhase.GamePlay);
+            TransitionToPhase(GamePhase.GamePlay);
+        }
+    }
     private void InitializeDraftUI()
     {
         ChangeCurrentDraftMainICon(2);
