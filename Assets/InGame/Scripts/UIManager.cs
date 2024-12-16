@@ -19,7 +19,7 @@ public class UIManager : MonoBehaviour
             return;
         }
         Instance = this;
-        DontDestroyOnLoad(gameObject);
+
     }
 
     public void OpenPanel(GameObject panel)
