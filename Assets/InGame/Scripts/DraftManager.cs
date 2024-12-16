@@ -242,6 +242,7 @@ public class DraftManager : MonoBehaviour
             TransitionToPhase(GamePhase.GamePlay);
         }
         OkButton.gameObject.SetActive(false);
+
     }
     private void InitializeDraftUI()
     {
