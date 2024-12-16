@@ -54,7 +54,7 @@ public class Token : MonoBehaviour
         tokenRigidbody.gravityScale = 0;
         tokenRigidbody.linearDamping = linearDrag;
 
-        Debug.Log($"Initialized {characterData.characterName} with Weight: {characterData.Weight}, Speed: {characterData.Speed}");
+
     }
 
     private void Update()
@@ -143,7 +143,7 @@ public class Token : MonoBehaviour
         float safeMass = Mathf.Max(tokenRigidbody.mass, 0.1f); // Avoid division by zero
         throwForce = sliderForce * characterData.ability.speedMultiplier / safeMass;
 
-        Debug.Log($"{name} set throw force to: {throwForce} (Slider: {sliderForce}, Speed: {characterData.Speed}, Weight: {safeMass})");
+        //  Debug.Log($"{name} set throw force to: {throwForce} (Slider: {sliderForce}, Speed: {characterData.Speed}, Weight: {safeMass})");
     }
 
     public void OnTokenSelected()

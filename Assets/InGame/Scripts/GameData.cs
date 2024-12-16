@@ -34,9 +34,7 @@ public class CharacterData
 {
     public string characterName; // Name of the character
     public float CharacterCost = 10f;
-    public float Size;
-    public float Weight;
-    public float Speed;
+
     public CharacterType characterType; // Enum for character type
     public Sprite characterCardSprite; // Sprite representing the character
     public GameObject TokenPrefab;
