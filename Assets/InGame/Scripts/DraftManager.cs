@@ -220,8 +220,10 @@ public class DraftManager : MonoBehaviour
 
     private void HandleTokenPlaced(bool isPlaced)
     {
+
         if (isPlaced)
         {
+            OkButton.gameObject.SetActive(true);
             OkButton.onClick.RemoveListener(OnTokenPlaced);
             OkButton.onClick.AddListener(OnTokenPlaced);
         }
@@ -239,6 +241,7 @@ public class DraftManager : MonoBehaviour
             GameManager.Instance.ChangePhase(GamePhase.GamePlay);
             TransitionToPhase(GamePhase.GamePlay);
         }
+        OkButton.gameObject.SetActive(false);
     }
     private void InitializeDraftUI()
     {
@@ -418,4 +421,6 @@ public class DraftManager : MonoBehaviour
 
         SelectedCardPanel.SetActive(false);
     }
+
+
 }

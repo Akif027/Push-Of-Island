@@ -497,9 +497,6 @@ MonoBehaviour:
   characterData:
     characterName: 
     CharacterCost: 10
-    Size: 0
-    Weight: 1
-    Speed: 1
     characterType: 0
     characterCardSprite: {fileID: 0}
     TokenPrefab: {fileID: 0}
