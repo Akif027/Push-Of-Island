@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -12,6 +13,9 @@ public class UIManager : MonoBehaviour
     //  [SerializeField] private GameObject hiringPanel;
     [SerializeField] private GameObject infoPanel;
     public Button OkButton;
+
+    [SerializeField] private TMP_Text TurnCount;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)

@@ -23,6 +23,9 @@ public class DraftManager : MonoBehaviour
     public GameObject DraftCanvas;
     public GameObject Mapobj;
 
+    public SpriteRenderer[] AllCoatOfArmsLand1;
+    public SpriteRenderer[] AllCoatOfArmsLand2;
+
     [Header("Spawn Positions")]
     public Transform player1SpawnPosition; // Spawn position for Player 1
     public Transform player2SpawnPosition; // Spawn position for Player 2
@@ -158,6 +161,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToPlacementPhase()
     {
+        SetCoatOfArmsToLand();
         DraftCanvas.SetActive(false);
         Mapobj.SetActive(true);
         StartPlacementPhase();
@@ -219,6 +223,9 @@ public class DraftManager : MonoBehaviour
         player1SpawnPosition.gameObject.SetActive(true);
         player2SpawnPosition.gameObject.SetActive(true);
 
+        UIManager.Instance.OpenPlayLowerPanel();
+        UIManager.Instance.OpenPlayUpperPanel();
+
     }
     private UnityAction okButtonListener;
     private void HandleTokenPlaced(PlacementManager p)
@@ -237,7 +244,20 @@ public class DraftManager : MonoBehaviour
         // Add the listener
         UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
     }
+    public void SetCoatOfArmsToLand()
+    {
 
+        foreach (var item in AllCoatOfArmsLand1)
+        {
+            item.sprite = GameManager.Instance.GetPlayerIcon(1);
+        }
+        foreach (var item in AllCoatOfArmsLand2)
+        {
+            item.sprite = GameManager.Instance.GetPlayerIcon(2);
+        }
+
+
+    }
     private void OnTokenPlaced(PlacementManager p)
     {
         p.ConfirmPlacement();

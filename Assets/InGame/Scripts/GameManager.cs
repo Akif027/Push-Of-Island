@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     [Header("Player Info")]
     public Dictionary<int, Sprite> playerIcons = new Dictionary<int, Sprite>(); // Maps player numbers to their icons
     public List<PlayerInfo> playerInfos = new List<PlayerInfo>();
+    public TextMapper textMapper;
 
     void Awake()
     {
@@ -45,8 +46,9 @@ public class GameManager : MonoBehaviour
     }
     private void HandleTurn()
     {
-        // Switch the current player turn
+        incrementCurrentPlayerTurn();
         ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
+
         Debug.LogError(currentPlayer);
         // Smoothly transition the camera to the respective player's spawn position
         MapScroll.Instance.SmoothTransitionToPosition(
@@ -55,7 +57,11 @@ public class GameManager : MonoBehaviour
                 : draftManager.player2SpawnPosition.position,
             0.5f);
     }
+    void Update()
+    {
 
+
+    }
     private void InitializeCoinToss()
     {
         Debug.Log("Phase 1: Coin Toss");
@@ -86,7 +92,14 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+
         currentPlayer = playerNumber;
+
+        if (currentPhase == GamePhase.GamePlay || playerInfos.Count != 0)
+        {
+            textMapper.UpdateTurnIcon(currentPlayer);
+            textMapper.UpdateTurn(currentPlayer, GetPlayerHasTurnCount());
+        }
         Debug.Log($"Player turn changed to: Player {currentPlayer}");
     }
 
@@ -176,6 +189,8 @@ public class GameManager : MonoBehaviour
     public void ChangePhase(GamePhase newPhase)
     {
         currentPhase = newPhase;
+
+
     }
 
     public GamePhase getCurrentPhase()
@@ -290,6 +305,43 @@ public class GameManager : MonoBehaviour
         Debug.Log($"Player {playerNumber} has {playerTokens.Count} tokens.");
         return playerTokens;
     }
+
+    public int GetPlayerHasTurnCount()
+    {
+
+
+        PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
+
+        return playerInfo.HasTurn;
+    }
+    public bool IsTurnLimitReachedOrTokensEmpty()
+    {
+        // Get the PlayerInfo for the current player
+        PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
+
+        if (playerInfo == null)
+        {
+            Debug.LogError($"PlayerInfo for Player {currentPlayer} not found!");
+            return false;
+        }
+
+        // Check if HasTurn has reached 20 or the token list is empty
+        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count == 0)
+        {
+            return true;
+        }
+
+        return false;
+    }
+    public void incrementCurrentPlayerTurn()
+    {
+        if (currentPhase != GamePhase.GamePlay && playerInfos != null) return;
+        PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
+        textMapper.UpdateTurn(currentPlayer, playerInfo.HasTurn);
+        playerInfo.HasTurn++;
+
+
+    }
 }
 
 [System.Serializable]
@@ -297,6 +349,24 @@ public class PlayerInfo
 {
     public Int32 PlayerNumber;
     public List<Token> tokens;
+
+    [SerializeField] private int _hasTurn;
+
+    /// <summary>
+    /// Gets or sets the HasTurn value with a maximum cap of 20.
+    /// </summary>
+    public int HasTurn
+    {
+        get => _hasTurn;
+        set
+        {
+            _hasTurn = Mathf.Clamp(value, 0, 20); // Ensure HasTurn stays between 0 and 20
+            if (value > 20)
+            {
+                Debug.LogWarning($"Player {PlayerNumber}'s HasTurn capped at 20.");
+            }
+        }
+    }
 
     public PlayerInfo(Int32 PlayerNumber_, List<Token> _tokens = null)
     {

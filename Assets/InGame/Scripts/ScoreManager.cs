@@ -5,25 +5,35 @@ using System.Collections.Generic;
 public class ScoreManager : MonoBehaviour
 {
     private Dictionary<int, int> playerCoins = new Dictionary<int, int>();
+
     public TMP_Text coinText;
+    public TextMapper textMapper;
+
     public string coinTextFormat = "{0}"; // Customizable format string
     private int currentPlayerNumber = 1;
+
 
     private void OnEnable()
     {
         EventManager.CoinAdd += OnCoinAdd;
         EventManager.CoinDeduct += OnCoinDeduct;
+        EventManager.GloryPointAdd += OnGloryPointAdded;
+        EventManager.GloryPointDeduct += OnGloryPointDeducted;
     }
 
     private void OnDisable()
     {
         EventManager.CoinAdd -= OnCoinAdd;
         EventManager.CoinDeduct -= OnCoinDeduct;
+        EventManager.GloryPointAdd -= OnGloryPointAdded;
+        EventManager.GloryPointDeduct -= OnGloryPointDeducted;
     }
 
     private void Start()
     {
         InitializePlayers();
+
+
     }
 
     private void InitializePlayers()
@@ -56,7 +66,20 @@ public class ScoreManager : MonoBehaviour
         Debug.Log($"Player {playerNumber} deducted {coinAmount} coins. Total: {playerCoins[playerNumber]}.");
         UpdateCoinUI(playerNumber);
     }
+    void OnGloryPointAdded(int playerNumber, int gloryPoints)
+    {
 
+        textMapper.AddPlayerGloryPoints(playerNumber, gloryPoints);
+
+    }
+
+    void OnGloryPointDeducted(int playerNumber, int gloryPoints)
+    {
+        SetupPlayer(playerNumber);
+        playerCoins[playerNumber] = Mathf.Max(0, playerCoins[playerNumber] - gloryPoints);
+
+        UpdateCoinUI(playerNumber);
+    }
     public int GetCoins(int playerNumber)
     {
         return playerCoins.TryGetValue(playerNumber, out int coins) ? coins : 0;

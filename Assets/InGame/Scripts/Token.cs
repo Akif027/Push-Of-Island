@@ -127,13 +127,17 @@ public class Token : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("Vault"))
+        {
+            Debug.LogError("Vault");
             characterData.ability?.OnVaultInteraction(this);
+        }
+
     }
 
 
     private void EliminateToken()
     {
-
+        GameManager.Instance.RemoveTokenFromPlayer(owner, characterData.characterType);
         Destroy(gameObject);
     }
 
@@ -150,7 +154,7 @@ public class Token : MonoBehaviour
     public void OnTokenSelected()
     {
         if (!IsCurrentPlayerOwner()) return;
-
+        UIManager.Instance.ClosePlayLowerPanel();
         UIManager.Instance.OpenPlayAttackLowerPanel();
 
         arrow.gameObject.SetActive(true);
@@ -163,6 +167,7 @@ public class Token : MonoBehaviour
         Debug.LogError("OnDeselected");
         isDragging = false;
 
+        UIManager.Instance.OpenPlayLowerPanel();
         UIManager.Instance.ClosePlayAttackLowerPanel();
         arrow.gameObject.SetActive(false);
     }
@@ -213,7 +218,8 @@ public class Token : MonoBehaviour
         isThrown = false;
         StopMovement();
         arrow.gameObject.SetActive(false);
-
+        UIManager.Instance.OpenPlayLowerPanel();
+        UIManager.Instance.ClosePlayAttackLowerPanel();
     }
 
     private void StopMovement()

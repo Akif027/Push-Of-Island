@@ -10,6 +10,9 @@ public static class EventManager
     // Add events with parameters
     public static event Action<int, int> CoinAdd;
     public static event Action<int, int> CoinDeduct;
+
+    public static event Action<int, int> GloryPointAdd;    // Add Glory Point
+    public static event Action<int, int> GloryPointDeduct; // Deduct Glory Point
     /// <summary>
     /// Subscribe to an event with one parameter.
     /// </summary>
@@ -160,5 +163,18 @@ public static class EventManager
     public static void TriggerCoinDeduct(int playerNumber, int coinAmount)
     {
         CoinDeduct?.Invoke(playerNumber, coinAmount);
+    }
+
+    public static void TriggerGloryPointAdd(int playerNumber, int gloryPointAmount)
+    {
+        GloryPointAdd?.Invoke(playerNumber, gloryPointAmount);
+    }
+
+    /// <summary>
+    /// Trigger the GloryPointDeduct event.
+    /// </summary>
+    public static void TriggerGloryPointDeduct(int playerNumber, int gloryPointAmount)
+    {
+        GloryPointDeduct?.Invoke(playerNumber, gloryPointAmount);
     }
 }
