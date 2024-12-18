@@ -18,8 +18,8 @@ MonoBehaviour:
   becomesImmobileOnPlacement: 0
   isVaultInteraction: 1
   coinsPerCaptureVault: 5
-  coinsPerCaptureBase: 5
+  coinsPerCaptureBase: 30
   bonusPointsOnPlaced: 0
   bonusCoins: 30
-  speedMultiplier: 1
-  weightMultiplier: 2
+  speedMultiplier: 6
+  weightMultiplier: 8

@@ -76,7 +76,8 @@ public class CharacterAbility : ScriptableObject
                     if (baseS.ownerID != token.owner) // Only capture opponent bases
                     {
 
-                        EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureBase);
+                        //EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureBase);
+                        EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
                         Debug.Log("Player " + token.owner + "has Captured the base");
                     }
 

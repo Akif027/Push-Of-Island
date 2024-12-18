@@ -27,7 +27,6 @@ public class Token : MonoBehaviour
     private Vector3 previousMousePosition;
     private bool isThrown = false;
     private float throwForce = 10f; // Base force for movement
-
     private void Awake()
     {
         tokenRigidbody = GetComponent<Rigidbody2D>();

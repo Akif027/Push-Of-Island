@@ -47,21 +47,19 @@ public class GameManager : MonoBehaviour
     private void HandleTurn()
     {
         incrementCurrentPlayerTurn();
-        ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
+        CheckAndRewardThiefVaultInteraction(); // Check for thief-vault interaction
 
+        ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
         Debug.LogError(currentPlayer);
-        // Smoothly transition the camera to the respective player's spawn position
+
         MapScroll.Instance.SmoothTransitionToPosition(
             currentPlayer == 1
                 ? draftManager.player1SpawnPosition.position
                 : draftManager.player2SpawnPosition.position,
             0.5f);
     }
-    void Update()
-    {
 
 
-    }
     private void InitializeCoinToss()
     {
         Debug.Log("Phase 1: Coin Toss");
@@ -101,6 +99,45 @@ public class GameManager : MonoBehaviour
             textMapper.UpdateTurn(currentPlayer, GetPlayerHasTurnCount());
         }
         Debug.Log($"Player turn changed to: Player {currentPlayer}");
+    }
+    /// <summary>
+    /// Checks if a thief token is still triggering the vault.
+    /// Awards 5 coins to the player if a thief token is interacting with the vault.
+    /// </summary>
+    public void CheckAndRewardThiefVaultInteraction()
+    {
+        foreach (PlayerInfo playerInfo in playerInfos)
+        {
+            foreach (Token token in playerInfo.tokens)
+            {
+                if (token == null || token.characterData == null) continue;
+
+                // Check if the token is a thief and is interacting with a vault
+                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingVault(token))
+                {
+                    EventManager.TriggerCoinAdd(token.owner, 5); // Award 5 coins
+                    Debug.Log($"Player {token.owner} awarded 5 coins for a thief interacting with the vault.");
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Determines if a token is currently touching a vault.
+    /// </summary>
+    /// <param name="token">The token to check.</param>
+    /// <returns>True if the token is touching a vault; otherwise, false.</returns>
+    private bool IsTokenTouchingVault(Token token)
+    {
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(token.transform.position, 0.1f);
+        foreach (Collider2D collider in colliders)
+        {
+            if (collider.CompareTag("Vault"))
+            {
+                return true; // Token is interacting with a vault
+            }
+        }
+        return false;
     }
 
     public void SetPlayerIcons(int playerNumber, Sprite icon)
