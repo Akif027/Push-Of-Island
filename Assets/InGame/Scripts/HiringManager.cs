@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections;
 using System.Collections.Generic;
 
 public class HiringManager : MonoBehaviour
@@ -18,9 +19,16 @@ public class HiringManager : MonoBehaviour
     [SerializeField] private ScoreManager scoreManager;
     [SerializeField] private TMP_Text coinTextTMP;
 
+    private Coroutine infoPanelUpdater; // Coroutine to update next player information
+
     public void OpenHiringPanel()
     {
         ShowPlayerCharacters(gameManager.GetCurrentPlayer());
+    }
+
+    public void CloseHiringPanel()
+    {
+        hiringPanel.SetActive(false); // Close the hiring panel
     }
 
     void Update()
@@ -28,6 +36,12 @@ public class HiringManager : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             OpenHiringPanel();
+        }
+
+        if (Input.GetKeyDown(KeyCode.H))
+        {
+            CloseHiringPanel();
+            Debug.Log("Hiring Panel Closed.");
         }
 
         if (Input.GetKeyDown(KeyCode.I))
@@ -105,6 +119,7 @@ public class HiringManager : MonoBehaviour
     {
         int currentPlayer = gameManager.GetCurrentPlayer();
         int nextPlayer = currentPlayer == 1 ? 2 : 1;
+
         infoPanel.SetActive(true);
 
         foreach (Transform child in infoGridLayout)
@@ -113,8 +128,42 @@ public class HiringManager : MonoBehaviour
         }
 
         UpdatePlayerIcons(currentPlayer, nextPlayer);
-        DisplayNextPlayerCharacters(nextPlayer);
         UpdateCoinText(nextPlayer);
+
+        if (infoPanelUpdater != null) // Stop existing coroutine if running
+        {
+            StopCoroutine(infoPanelUpdater);
+        }
+
+        // Start coroutine to refresh next player characters periodically
+        infoPanelUpdater = StartCoroutine(RefreshNextPlayerCharacters(nextPlayer));
+    }
+
+    public void CloseInfoPanel()
+    {
+        infoPanel.SetActive(false);
+
+        // Stop updating characters when the panel is closed
+        if (infoPanelUpdater != null)
+        {
+            StopCoroutine(infoPanelUpdater);
+            infoPanelUpdater = null;
+        }
+    }
+
+    private IEnumerator RefreshNextPlayerCharacters(int nextPlayer)
+    {
+        while (infoPanel.activeSelf)
+        {
+            foreach (Transform child in infoGridLayout)
+            {
+                Destroy(child.gameObject);
+            }
+
+            DisplayNextPlayerCharacters(nextPlayer);
+
+            yield return new WaitForSeconds(2.0f); // Refresh every 2 seconds
+        }
     }
 
     private void UpdatePlayerIcons(int currentPlayer, int nextPlayer)
@@ -156,14 +205,5 @@ public class HiringManager : MonoBehaviour
         {
             Debug.LogError("Coin Text TMP reference is missing!");
         }
-    }
-
-    public void CloseInfoPanel()
-    {
-        infoPanel.SetActive(false);
-    }
-    public void CloseHiringPanel()
-    {
-        hiringPanel.SetActive(false);
     }
 }
