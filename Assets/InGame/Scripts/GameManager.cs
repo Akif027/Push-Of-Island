@@ -18,7 +18,14 @@ public class GameManager : MonoBehaviour
     public Dictionary<int, Sprite> playerIcons = new Dictionary<int, Sprite>(); // Maps player numbers to their icons
     public List<PlayerInfo> playerInfos = new List<PlayerInfo>();
     public TextMapper textMapper;
+    public Transform spawnTokenPositionPlayer1;
+    public Transform spawnTokenPositionPlayer2;
 
+    public Transform MermaidSpawnAreaPlayer1;
+    public Transform MermaidSpawnAreaPlayer2;
+
+    public List<Token> PlayeOneTokens = new List<Token>();
+    public List<Token> PlayeTwoTokens = new List<Token>();
     void Awake()
     {
         // Ensure only one instance of GameManager exists
@@ -43,6 +50,9 @@ public class GameManager : MonoBehaviour
     {
         EventManager.Unsubscribe("OnTurnEnd", HandleTurn);
 
+        PlayeOneTokens.Clear();
+        PlayeTwoTokens.Clear();
+
     }
     private void HandleTurn()
     {
@@ -54,9 +64,11 @@ public class GameManager : MonoBehaviour
 
         MapScroll.Instance.SmoothTransitionToPosition(
             currentPlayer == 1
-                ? draftManager.player1SpawnPosition.position
-                : draftManager.player2SpawnPosition.position,
+                ? spawnTokenPositionPlayer1.position
+                : spawnTokenPositionPlayer2.position,
             0.5f);
+        UpdatePlayerTokenStatus();
+
     }
 
 
@@ -222,7 +234,63 @@ public class GameManager : MonoBehaviour
 
         return gameData.GetCharacterByIndex(index);
     }
+    public void PopulatePlayersToken()
+    {
+        PlayeOneTokens = GetAllCurrentTokensOfPlayer(1).ToList(); // Create a shallow copy
+        PlayeTwoTokens = GetAllCurrentTokensOfPlayer(2).ToList(); // Create a shallow copy
+        UpdatePlayerTokenStatus();
+    }
 
+
+    private void UpdatePlayerTokenStatus()
+    {
+
+        for (int i = 0; i < PlayeOneTokens.Count; i++)
+        {
+            if (GetAllCurrentTokensOfPlayer(1)[i].IsUnlocked && GetAllCurrentTokensOfPlayer(1)[i].characterData.characterType == PlayeOneTokens[i].characterData.characterType)
+            {
+
+                PlayeOneTokens[i].IsUnlocked = true;
+            }
+            else
+            {
+                PlayeOneTokens[i].IsUnlocked = false;
+
+            }
+
+        }
+        for (int i = 0; i < PlayeTwoTokens.Count; i++)
+        {
+            if (GetAllCurrentTokensOfPlayer(2)[i].IsUnlocked && GetAllCurrentTokensOfPlayer(2)[i].characterData.characterType == PlayeTwoTokens[i].characterData.characterType)
+            {
+
+                PlayeTwoTokens[i].IsUnlocked = true;
+            }
+            else
+            {
+                PlayeTwoTokens[i].IsUnlocked = false;
+
+            }
+
+        }
+
+    }
+    public List<Token> GetPlayerTokens(int playerNumber)
+    {
+        if (playerNumber == 1)
+        {
+            return PlayeOneTokens;
+        }
+        else if (playerNumber == 2)
+        {
+            return PlayeTwoTokens;
+        }
+        else
+        {
+            Debug.LogError($"Invalid player number: {playerNumber}. Must be 1 or 2.");
+            return new List<Token>(); // Return an empty list for invalid player numbers
+        }
+    }
     public void ChangePhase(GamePhase newPhase)
     {
         currentPhase = newPhase;
@@ -235,18 +303,23 @@ public class GameManager : MonoBehaviour
         return currentPhase;
     }
 
-    public void InstantiateSinglePlayerToken(CharacterData character, Transform spawnPosition, int playerNumber)
+    public void InstantiateSinglePlayerToken(CharacterData character, int playerNumber)
     {
-        Vector3 spawnAreaCenter = spawnPosition.position;
-        float spawnRadius = 0.5f;
+        Transform spawnPosition;
+        if (character.characterType != CharacterType.Mermaid)
+        {
+            spawnPosition = playerNumber == 1 ? spawnTokenPositionPlayer1 : spawnTokenPositionPlayer2;
+        }
+        else
+        {
+            spawnPosition = playerNumber == 1 ? MermaidSpawnAreaPlayer1 : MermaidSpawnAreaPlayer2;
+        }
 
-        Vector3 randomPosition = spawnAreaCenter + new Vector3(
-            UnityEngine.Random.Range(-spawnRadius, spawnRadius),
-            UnityEngine.Random.Range(-spawnRadius, spawnRadius),
-            -0.6f
-        );
+        // Adjust the Z position of the spawn position
+        Vector3 adjustedSpawnPosition = new Vector3(spawnPosition.position.x, spawnPosition.position.y, -0.6f);
 
-        GameObject token = Instantiate(character.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
+        // Instantiate the token at the adjusted spawn position
+        GameObject token = Instantiate(character.TokenPrefab, adjustedSpawnPosition, Quaternion.identity, spawnPosition);
 
         var placementManager = token.GetComponent<PlacementManager>();
         var tokenComponent = token.GetComponent<Token>();
@@ -254,17 +327,13 @@ public class GameManager : MonoBehaviour
         if (tokenComponent != null)
         {
             tokenComponent.characterData = character;
-
             tokenComponent.owner = playerNumber;
         }
 
         if (placementManager != null)
         {
-
-
-
             placementManager.owner = playerNumber;
-
+            placementManager.isTokenPlaced = true;
         }
 
         if (tokenComponent != null)
@@ -281,7 +350,12 @@ public class GameManager : MonoBehaviour
         }
 
         playerInfo.tokens.Add(tokenComponent);
+
+        draftManager.HandleSingleTokenPlaced(placementManager);
+
     }
+
+
     public void AddTokenToPlayer(int playerNumber, CharacterType characterType)
     {
         PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
@@ -321,7 +395,7 @@ public class GameManager : MonoBehaviour
         playerInfo.tokens.Remove(tokenToRemove);
         Debug.Log($"Removed token of type {characterType} from Player {playerNumber}.");
     }
-    public List<CharacterData> GetAllTokensOfPlayer(int playerNumber)
+    public List<CharacterData> GetAllCharacterDataOfPlayer(int playerNumber)
     {
         List<CharacterData> playerTokens = new List<CharacterData>();
 
@@ -343,6 +417,20 @@ public class GameManager : MonoBehaviour
         return playerTokens;
     }
 
+    public List<Token> GetAllCurrentTokensOfPlayer(int playerNumber)
+    {
+        // Get the PlayerInfo for the specified player
+        PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
+        if (playerInfo == null)
+        {
+            Debug.LogError($"PlayerInfo for player {playerNumber} not found!");
+            return new List<Token>(); // Return empty list if PlayerInfo doesn't exist
+        }
+
+        // Return the tokens of the specified player
+        Debug.Log($"Player {playerNumber} has {playerInfo.tokens.Count} tokens.");
+        return playerInfo.tokens;
+    }
     public int GetPlayerHasTurnCount()
     {
 

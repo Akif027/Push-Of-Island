@@ -442,7 +442,7 @@ MonoBehaviour:
   rayColor: {r: 1, g: 0, b: 0, a: 1}
   raycastMask:
     serializedVersion: 2
-    m_Bits: 384
+    m_Bits: 400
   isTokenPlaced: 0
 --- !u!58 &4344771212392254161
 CircleCollider2D:

@@ -58,6 +58,7 @@ public class Token : MonoBehaviour
 
     private void Update()
     {
+        CheckTokenPosition();
         if (isThrown)
             HandleTokenMovement();
 
@@ -122,6 +123,27 @@ public class Token : MonoBehaviour
             ResetToken(); // Reset token for the next turn
         }
     }
+    private void CheckTokenPosition()
+    {
+        if (tokenRigidbody.linearVelocity.magnitude < 0.01f && GameManager.Instance.currentPhase == GamePhase.GamePlay) // Token has stopped moving
+        {
+
+            if (characterData?.ability != null)
+            {
+                // Validate the final position based on the token's ability
+                bool isValid = characterData.ability.ValidateFinalPosition(this);
+                if (!isValid)
+                {
+                    EliminateToken(); // Eliminate if conditions are not met
+                    return; // Exit further processing
+                }
+
+
+            }
+
+
+        }
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -137,6 +159,7 @@ public class Token : MonoBehaviour
     private void EliminateToken()
     {
         GameManager.Instance.RemoveTokenFromPlayer(owner, characterData.characterType);
+        isUnlocked = false;
         Destroy(gameObject);
     }
 

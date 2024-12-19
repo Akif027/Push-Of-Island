@@ -17,13 +17,18 @@ public class MermaidAbility : CharacterAbility
 
             if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
             {
-                Debug.Log($"{token.characterData.characterName} stopped on land or base and will be eliminated.");
+                Debug.Log($"{token.characterData.characterName} stopped on land or base and will be eliminated. {hit.collider.gameObject.name}");
                 return false; // Mermaid cannot stop on land or base
             }
         }
+
 
         // Default: Mermaid is eliminated if no valid surface is found
         Debug.Log($"{token.characterData.characterName} is not on a valid surface and will be eliminated.");
         return false;
     }
+
+
+
+
 }

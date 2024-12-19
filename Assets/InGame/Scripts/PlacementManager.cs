@@ -131,10 +131,14 @@ public class PlacementManager : MonoBehaviour
     {
         isValidPlacement = false;
 
+        // Determine placement validity based on character type and raycast results
         switch (characterType)
         {
             case CharacterType.Mermaid:
-                isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
+                // Valid only on Water, invalid on Land or Base
+                isValidPlacement = CheckPlacementWithRaycast("Water") &&
+                                   !CheckPlacementWithRaycast("Land") &&
+                                   !CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Knight:
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
@@ -143,7 +147,7 @@ public class PlacementManager : MonoBehaviour
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Dwarf:
-                isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.King:
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
@@ -152,7 +156,7 @@ public class PlacementManager : MonoBehaviour
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Thief:
-                isValidPlacement = CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Rogue:
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
@@ -168,21 +172,21 @@ public class PlacementManager : MonoBehaviour
                 break;
         }
 
-        // Update sprite based on placement validity
+        // Handle visuals based on placement validity
         if (isValidPlacement)
         {
             MainSpriteObj.SetActive(true);
             CannotPlaceInvalidObj.SetActive(false);
-            HandleBorder();
+            //            HandleBorder(); // Show appropriate border
         }
         else
         {
-            CannotPlaceInvalidObj.SetActive(true);
             MainSpriteObj.SetActive(false);
-            BlueBorder.SetActive(false);
-            YellowBorder.SetActive(false);
+            CannotPlaceInvalidObj.SetActive(true);
+
         }
     }
+
     private void HandleBorder()
     {
 

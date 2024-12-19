@@ -26,9 +26,7 @@ public class DraftManager : MonoBehaviour
     public SpriteRenderer[] AllCoatOfArmsLand1;
     public SpriteRenderer[] AllCoatOfArmsLand2;
 
-    [Header("Spawn Positions")]
-    public Transform player1SpawnPosition; // Spawn position for Player 1
-    public Transform player2SpawnPosition; // Spawn position for Player 2
+
 
     [Header("Game Data")]
     public GameData gameData; // Reference to the GameData ScriptableObject
@@ -49,72 +47,96 @@ public class DraftManager : MonoBehaviour
     [SerializeField] private Tilemap tilemap; // Reference to your Tilemap
 
     private bool isSelectionLocked = false;
-    Transform currentCamPostion;
+
 
     // Start Placement Phase
     public void StartPlacementPhase()
     {
         GameManager.Instance.ChangePlayerTurn(1);
-        MapScroll.Instance.SmoothTransitionToPosition(player1SpawnPosition.position, 0.5f);
-        currentCamPostion = player1SpawnPosition;
+        MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.spawnTokenPositionPlayer1.position, 0.5f);
+
         LowerTilemapOpacity(0.3f);
-        InstantiatePlayerTokens(player1Characters, player1SpawnPosition, 1);
-        InstantiatePlayerTokens(player2Characters, player2SpawnPosition, 2);
+        InstantiateAllPlayerTokens(player1Characters, 1);
+        InstantiateAllPlayerTokens(player2Characters, 2);
+        GameManager.Instance.PopulatePlayersToken();
         EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
     }
-
-    private void InstantiatePlayerTokens(List<CharacterData> characterList, Transform spawnPosition, Int32 playerNumber)
+    private void InstantiateAllPlayerTokens(List<CharacterData> characterList, int playerNumber)
     {
-        Vector3 spawnAreaCenter = spawnPosition.position;
-        float spawnRadius = 1f; // Reduced radius
-        float tokenSpacing = 0.5f; // Reduced spacing for tighter grouping
+        // Determine the spawn area for the player
+        Transform spawnAreaCenter = playerNumber == 1 ? GameManager.Instance.spawnTokenPositionPlayer1 : GameManager.Instance.spawnTokenPositionPlayer2;
 
-        List<Vector3> usedPositions = new List<Vector3>();
-        List<Token> TokensList = new List<Token>();
+        // Handle special spawn logic for Mermaid tokens
+        Transform mermaidSpawnArea = playerNumber == 1 ? GameManager.Instance.MermaidSpawnAreaPlayer1 : GameManager.Instance.MermaidSpawnAreaPlayer2;
 
-        foreach (var character in characterList)
+        // Parameters for spacing and positioning
+        float spawnRadius = 1f; // Radius within which tokens are spawned
+        float tokenSpacing = 0.5f; // Minimum distance between tokens
+
+        List<Vector3> usedPositions = new List<Vector3>(); // Tracks used positions to avoid overlap
+        List<Token> tokensList = new List<Token>(); // List to store tokens for this player
+
+        foreach (CharacterData character in characterList)
         {
-            Vector3 randomPosition;
-            int maxAttempts = 10; // Prevent infinite loops
-            int attempts = 0;
+            // Use special spawn area for Mermaid tokens
+            Transform spawnPosition = (character.characterType == CharacterType.Mermaid) ? mermaidSpawnArea : spawnAreaCenter;
 
-            do
+            // Generate a random spawn position within the radius
+            Vector3 spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnPosition.position, usedPositions, spawnRadius, tokenSpacing);
+
+            // Instantiate the token prefab
+            GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, spawnPosition);
+
+            // Configure the token
+            Token tokenComponent = tokenObject.GetComponent<Token>();
+            PlacementManager placementManager = tokenObject.GetComponent<PlacementManager>();
+
+            if (tokenComponent != null)
             {
-                // Generate random offsets within the spawn radius
-                float randomX = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
-                float randomY = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
+                tokenComponent.characterData = character;
+                tokenComponent.owner = playerNumber;
+                tokenComponent.IsUnlocked = true; // Unlock the token
+                tokensList.Add(tokenComponent);
+            }
 
-                randomPosition = spawnAreaCenter + new Vector3(randomX, randomY, -0.6f); // Keep Z consistent
-                attempts++;
-            } while (IsOverlapping(randomPosition, usedPositions, tokenSpacing) && attempts < maxAttempts);
+            if (placementManager != null)
+            {
+                placementManager.owner = playerNumber;
+                placementManager.isTokenPlaced = false; // Mark token as not placed initially
+                PlacementManager.Add(placementManager);
+            }
 
-            usedPositions.Add(randomPosition);
-
-            // Instantiate the token
-            GameObject token = Instantiate(character.TokenPrefab, randomPosition, Quaternion.identity, spawnPosition);
-
-            var placementManager = token.GetComponent<PlacementManager>();
-            Token tokens = token.GetComponent<Token>();
-
-            // Assign character data to the token
-            tokens.characterData = character;
-            tokens.owner = playerNumber;
-            placementManager.owner = playerNumber;
-
-            PlacementManager.Add(placementManager);
-            TokensList.Add(tokens);
-
+            Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}.");
         }
 
-        foreach (Token item in TokensList)
+        // Create and set PlayerInfo for this player
+        PlayerInfo playerInfo = new PlayerInfo(playerNumber, tokensList);
+        GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
+
+    }
+
+    /// <summary>
+    /// Generate a non-overlapping spawn position for a token.
+    /// </summary>
+    private Vector3 GetNonOverlappingSpawnPosition(Vector3 spawnAreaCenter, List<Vector3> usedPositions, float spawnRadius, float tokenSpacing)
+    {
+        Vector3 randomPosition;
+        int maxAttempts = 10; // Limit the number of attempts to prevent infinite loops
+        int attempts = 0;
+
+        do
         {
-            item.IsUnlocked = true;
-            Debug.Log(item.IsUnlocked + " " + item);
-        }
+            // Generate a random position within the radius
+            float randomX = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
+            float randomY = UnityEngine.Random.Range(-spawnRadius, spawnRadius);
 
-        // Create and set PlayerInfo
-        PlayerInfo info = new PlayerInfo(playerNumber, TokensList);
-        GameManager.Instance.SetPlayerInfo(playerNumber, info);
+            randomPosition = spawnAreaCenter + new Vector3(randomX, randomY, -0.6f); // Adjust Z position
+            attempts++;
+        } while (IsOverlapping(randomPosition, usedPositions, tokenSpacing) && attempts < maxAttempts);
+
+        // Add the position to the list of used positions
+        usedPositions.Add(randomPosition);
+        return randomPosition;
     }
 
 
@@ -201,16 +223,17 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
+        GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(false);
+        GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(false);
 
         LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
         DraftCanvas.SetActive(true);
         DisplayAllCardPanel.SetActive(true);
-        player1SpawnPosition.gameObject.SetActive(false);
-        player2SpawnPosition.gameObject.SetActive(false);
+
         EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
-        MapScroll.Instance.SmoothTransitionToPosition(player1SpawnPosition.position, 0.5f);
+
         StartCoroutine(Delay());
     }
 
@@ -220,12 +243,12 @@ public class DraftManager : MonoBehaviour
         Mapobj.SetActive(true);
         DraftCanvas.SetActive(false);
         DisplayAllCardPanel.SetActive(false);
-        player1SpawnPosition.gameObject.SetActive(true);
-        player2SpawnPosition.gameObject.SetActive(true);
+        GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(true);
+        GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(true);
 
         UIManager.Instance.OpenPlayLowerPanel();
         UIManager.Instance.OpenPlayUpperPanel();
-
+        MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.spawnTokenPositionPlayer1.position, 0.5f);
     }
     private UnityAction okButtonListener;
     private void HandleTokenPlaced(PlacementManager p)
@@ -243,6 +266,36 @@ public class DraftManager : MonoBehaviour
 
         // Add the listener
         UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
+    }
+
+
+    public void HandleSingleTokenPlaced(PlacementManager placementManager)
+    {
+        UIManager.Instance.OkButton.gameObject.SetActive(true);
+
+        // Remove previous listener if it exists
+        if (okButtonListener != null)
+        {
+            UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
+        }
+
+        // Assign a new listener reference
+        okButtonListener = () => OnSingleTokenPlaced(placementManager);
+
+        // Add the listener
+        UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
+
+    }
+
+    private void OnSingleTokenPlaced(PlacementManager p)
+    {
+        p.ConfirmPlacement();
+
+        UIManager.Instance.OkButton.gameObject.SetActive(false);
+
+        // Clean up: Remove the listener to prevent future issues
+        UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
+        okButtonListener = null;
     }
     public void SetCoatOfArmsToLand()
     {

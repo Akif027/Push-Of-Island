@@ -1,104 +1,72 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections;
 using System.Collections.Generic;
 
 public class HiringManager : MonoBehaviour
 {
     [SerializeField] private GameObject characterCardPrefab;
     [SerializeField] private Transform gridLayout;
-    [SerializeField] private GameManager gameManager;
-    [SerializeField] private GameObject hiringPanel;
-    [SerializeField] private GameObject infoPanel;
+
+
+
     [SerializeField] private Transform infoGridLayout;
     [SerializeField] private Transform playerIcon1;
     [SerializeField] private Transform playerIcon2;
-    [SerializeField] private Transform spawnTokenPositionPlayer1;
-    [SerializeField] private Transform spawnTokenPositionPlayer2;
+
     [SerializeField] private ScoreManager scoreManager;
     [SerializeField] private TMP_Text coinTextTMP;
 
-    private Coroutine infoPanelUpdater; // Coroutine to update next player information
 
     public void OpenHiringPanel()
     {
-        ShowPlayerCharacters(gameManager.GetCurrentPlayer());
+        ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer());
     }
 
-    public void CloseHiringPanel()
-    {
-        hiringPanel.SetActive(false); // Close the hiring panel
-    }
 
-    void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            OpenHiringPanel();
-        }
-
-        if (Input.GetKeyDown(KeyCode.H))
-        {
-            CloseHiringPanel();
-            Debug.Log("Hiring Panel Closed.");
-        }
-
-        if (Input.GetKeyDown(KeyCode.I))
-        {
-            OpenInfoPanel();
-            Debug.Log("Info Panel Opened.");
-        }
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            CloseInfoPanel();
-            Debug.Log("Info Panel Closed.");
-        }
-    }
 
     public void ShowPlayerCharacters(int playerNumber)
     {
-        hiringPanel.SetActive(true);
+        UIManager.Instance.OpenHiringPanel();
         foreach (Transform child in gridLayout)
         {
             Destroy(child.gameObject);
         }
 
-        List<CharacterData> playerCharacters = gameManager.GetAllTokensOfPlayer(playerNumber);
+        List<Token> playerCharacters = GameManager.Instance.GetPlayerTokens(playerNumber);
         if (playerCharacters == null || playerCharacters.Count == 0) return;
 
-        foreach (CharacterData character in playerCharacters)
+        foreach (Token character in playerCharacters)
         {
             GameObject card = Instantiate(characterCardPrefab, gridLayout);
-            InitializeCharacterCard(card, character, true);
+            InitializeCharacterCard(card, character);
         }
     }
 
-    private void InitializeCharacterCard(GameObject card, CharacterData character, bool enableButton)
+    private void InitializeCharacterCard(GameObject card, Token token)
     {
-        card.name = character.characterName;
+        card.name = token.characterData.characterName;
         Image cardImage = card.GetComponent<Image>();
-        if (cardImage != null) cardImage.sprite = character.characterCardSprite;
+        if (cardImage != null) cardImage.sprite = token.characterData.characterCardSprite;
 
         Button cardButton = card.GetComponent<Button>();
         if (cardButton != null)
         {
             cardButton.onClick.RemoveAllListeners();
-            if (enableButton)
+            if (!token.IsUnlocked)
             {
-                cardButton.onClick.AddListener(() => PurchaseCharacter(character));
+                cardButton.onClick.AddListener(() => PurchaseCharacter(token.characterData));
             }
             else
             {
-                Destroy(cardButton);
+                cardButton.interactable = false;
             }
         }
     }
 
     private void PurchaseCharacter(CharacterData character)
     {
-        int playerNumber = gameManager.GetCurrentPlayer();
+        int playerNumber = GameManager.Instance.GetCurrentPlayer();
         int playerCoins = scoreManager.GetCoins(playerNumber);
 
         if (playerCoins < character.CharacterCost)
@@ -108,19 +76,18 @@ public class HiringManager : MonoBehaviour
         }
 
         EventManager.TriggerCoinDeduct(playerNumber, (int)character.CharacterCost);
-        Transform spawnPosition = playerNumber == 1 ? spawnTokenPositionPlayer1 : spawnTokenPositionPlayer2;
-        gameManager.InstantiateSinglePlayerToken(character, spawnPosition, playerNumber);
-        gameManager.AddTokenToPlayer(playerNumber, character.characterType);
 
+        GameManager.Instance.InstantiateSinglePlayerToken(character, playerNumber);
+        // gameManager.AddTokenToPlayer(playerNumber, character.characterType);
+        UIManager.Instance.CloseHiringPanel();
         Debug.Log($"{character.characterName} purchased by Player {playerNumber}.");
     }
 
     public void OpenInfoPanel()
     {
-        int currentPlayer = gameManager.GetCurrentPlayer();
+        int currentPlayer = GameManager.Instance.GetCurrentPlayer();
         int nextPlayer = currentPlayer == 1 ? 2 : 1;
-
-        infoPanel.SetActive(true);
+        UIManager.Instance.OpenInfoPanel();
 
         foreach (Transform child in infoGridLayout)
         {
@@ -128,48 +95,14 @@ public class HiringManager : MonoBehaviour
         }
 
         UpdatePlayerIcons(currentPlayer, nextPlayer);
+        DisplayNextPlayerCharacters(nextPlayer);
         UpdateCoinText(nextPlayer);
-
-        if (infoPanelUpdater != null) // Stop existing coroutine if running
-        {
-            StopCoroutine(infoPanelUpdater);
-        }
-
-        // Start coroutine to refresh next player characters periodically
-        infoPanelUpdater = StartCoroutine(RefreshNextPlayerCharacters(nextPlayer));
-    }
-
-    public void CloseInfoPanel()
-    {
-        infoPanel.SetActive(false);
-
-        // Stop updating characters when the panel is closed
-        if (infoPanelUpdater != null)
-        {
-            StopCoroutine(infoPanelUpdater);
-            infoPanelUpdater = null;
-        }
-    }
-
-    private IEnumerator RefreshNextPlayerCharacters(int nextPlayer)
-    {
-        while (infoPanel.activeSelf)
-        {
-            foreach (Transform child in infoGridLayout)
-            {
-                Destroy(child.gameObject);
-            }
-
-            DisplayNextPlayerCharacters(nextPlayer);
-
-            yield return new WaitForSeconds(2.0f); // Refresh every 2 seconds
-        }
     }
 
     private void UpdatePlayerIcons(int currentPlayer, int nextPlayer)
     {
-        Sprite player1Icon = gameManager.GetPlayerIcon(1);
-        Sprite player2Icon = gameManager.GetPlayerIcon(2);
+        Sprite player1Icon = GameManager.Instance.GetPlayerIcon(1);
+        Sprite player2Icon = GameManager.Instance.GetPlayerIcon(2);
 
         Image icon1Image = playerIcon1.GetComponent<Image>();
         Image icon2Image = playerIcon2.GetComponent<Image>();
@@ -183,16 +116,35 @@ public class HiringManager : MonoBehaviour
 
     private void DisplayNextPlayerCharacters(int nextPlayer)
     {
-        List<CharacterData> nextPlayerCharacters = gameManager.GetAllTokensOfPlayer(nextPlayer);
+        List<Token> nextPlayerCharacters = GameManager.Instance.GetPlayerTokens(nextPlayer);
         if (nextPlayerCharacters == null || nextPlayerCharacters.Count == 0) return;
 
-        foreach (CharacterData character in nextPlayerCharacters)
+        foreach (Token character in nextPlayerCharacters)
         {
             GameObject card = Instantiate(characterCardPrefab, infoGridLayout);
-            InitializeCharacterCard(card, character, false);
+            InitializeOtherCharacterCards(card, character);
         }
     }
+    private void InitializeOtherCharacterCards(GameObject card, Token token)
+    {
+        card.name = token.characterData.characterName;
+        Image cardImage = card.GetComponent<Image>();
+        if (cardImage != null) cardImage.sprite = token.characterData.characterCardSprite;
 
+        Button cardButton = card.GetComponent<Button>();
+        if (cardButton != null)
+        {
+            cardButton.onClick.RemoveAllListeners();
+            if (token.IsUnlocked)
+            {
+                cardButton.interactable = true;
+            }
+            else
+            {
+                cardButton.interactable = false;
+            }
+        }
+    }
     private void UpdateCoinText(int nextPlayer)
     {
         if (coinTextTMP != null)
@@ -205,5 +157,14 @@ public class HiringManager : MonoBehaviour
         {
             Debug.LogError("Coin Text TMP reference is missing!");
         }
+    }
+
+    public void CloseInfoPanel()
+    {
+        UIManager.Instance.CloseHiringPanel();
+    }
+    public void CloseHiringPanel()
+    {
+        UIManager.Instance.CloseHiringPanel();
     }
 }

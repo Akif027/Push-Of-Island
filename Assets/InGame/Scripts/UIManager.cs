@@ -10,11 +10,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject playLowerPanel;
     [SerializeField] private GameObject playAttackLowerPanel;
     [SerializeField] private GameObject pausePanel;
-    //  [SerializeField] private GameObject hiringPanel;
+    [SerializeField] private GameObject hiringPanel;
     [SerializeField] private GameObject infoPanel;
     public Button OkButton;
 
-    [SerializeField] private TMP_Text TurnCount;
+
 
     private void Awake()
     {
@@ -63,8 +63,8 @@ public class UIManager : MonoBehaviour
     public void OpenPausePanel() => OpenPanel(pausePanel);
     public void ClosePausePanel() => ClosePanel(pausePanel);
 
-    // public void OpenHiringPanel() => OpenPanel(hiringPanel);
-    //  public void CloseHiringPanel() => ClosePanel(hiringPanel);
+    public void OpenHiringPanel() => OpenPanel(hiringPanel);
+    public void CloseHiringPanel() => ClosePanel(hiringPanel);
 
     public void OpenInfoPanel() => OpenPanel(infoPanel);
     public void CloseInfoPanel() => ClosePanel(infoPanel);
