@@ -92,8 +92,8 @@ MonoBehaviour:
     TokenPrefab: {fileID: 7403747386613742195, guid: cbe3229c88109844d8401de8a063fefa, type: 3}
     Mask:
       serializedVersion: 2
-      m_Bits: 400
-    ability: {fileID: 11400000, guid: 3284846943463c44b8044675d225752c, type: 2}
+      m_Bits: 16
+    ability: {fileID: 11400000, guid: 6512c198e49437b4487276ccb701edc2, type: 2}
   - characterName: Knight
     CharacterCost: 40
     characterType: 1

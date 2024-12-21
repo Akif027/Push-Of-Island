@@ -92,22 +92,43 @@ public class CharacterAbility : ScriptableObject
     /// </summary>
     public virtual bool ValidateFinalPosition(Token token)
     {
-        if (!canMoveOnWater)
-        {
+        RaycastHit2D hit = Physics2D.Raycast(token.transform.position, Vector3.back, -2, LayerMask.GetMask("Water", "Land", "Base"));
 
-            RaycastHit2D hit = Physics2D.Raycast(token.transform.position, Vector3.back, -1, LayerMask.GetMask("Water", "Land", "Base"));
-            if (hit.collider != null)
+        if (hit.collider != null)
+        {
+            // Mermaid-specific logic
+            if (token.characterData.characterType == CharacterType.Mermaid)
+            {
+                if (hit.collider.CompareTag("Water"))
+                {
+                    Debug.Log($"{token.characterData.characterName} is safely on water.");
+                    return true; // Valid: Mermaid is on water
+                }
+                if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
+                {
+                    Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {hit.collider.gameObject.name}");
+                    return false; // Invalid: Mermaid cannot stop on land or base
+                }
+            }
+            // General logic for other characters
+            else
             {
                 if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
-                    return true; // Safe: Land or base detected
-
+                {
+                    Debug.Log($"{token.characterData.characterName} is safely on land or base.");
+                    return true; // Valid for land-based characters
+                }
                 if (hit.collider.CompareTag("Water"))
-                    return false; // Over water
+                {
+                    Debug.LogError($"{token.characterData.characterName} cannot be on water. ");
+                    return false; // Invalid for non-water characters
+                }
             }
         }
 
-        // Default: Token is valid in its final position
-        return true;
+        Debug.LogError($"{token.characterData.characterName} is not on any valid terrain.");
+        return false; // Default invalid
     }
+
 
 }

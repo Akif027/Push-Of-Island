@@ -2959,7 +2959,7 @@ Transform:
   m_GameObject: {fileID: 438341627}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -1, z: 0}
+  m_LocalPosition: {x: -0.14, y: -1.97, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4073,7 +4073,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterCardPrefab: {fileID: 7158906300466658821, guid: 3de4a064b5d26254e9bf728a628f1d20, type: 3}
   gridLayout: {fileID: 2606483654390289216}
-  gameManager: {fileID: 792811141}
   infoGridLayout: {fileID: 3407331311615319543}
   playerIcon1: {fileID: 2158002021986530448}
   playerIcon2: {fileID: 698184841113277348}
@@ -11110,7 +11109,7 @@ Transform:
   m_GameObject: {fileID: 1992659404}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.65, y: 3.41, z: 0}
+  m_LocalPosition: {x: -0, y: 3.41, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

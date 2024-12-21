@@ -7,55 +7,81 @@ public class HiringManager : MonoBehaviour
 {
     [SerializeField] private GameObject characterCardPrefab;
     [SerializeField] private Transform gridLayout;
-
-
-
     [SerializeField] private Transform infoGridLayout;
     [SerializeField] private Transform playerIcon1;
     [SerializeField] private Transform playerIcon2;
-
     [SerializeField] private ScoreManager scoreManager;
     [SerializeField] private TMP_Text coinTextTMP;
 
-
+    /// <summary>
+    /// Opens the hiring panel and displays the current player's characters.
+    /// </summary>
     public void OpenHiringPanel()
     {
-        ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer());
+        ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer(), gridLayout);
+        UIManager.Instance.OpenHiringPanel();
     }
 
-
-
-    public void ShowPlayerCharacters(int playerNumber)
+    /// <summary>
+    /// Displays the characters of the specified player in the provided grid layout.
+    /// </summary>
+    private void ShowPlayerCharacters(int playerNumber, Transform layout)
     {
-        UIManager.Instance.OpenHiringPanel();
-        foreach (Transform child in gridLayout)
+        if (layout == null)
+        {
+            Debug.LogError("Grid layout is missing!");
+            return;
+        }
+
+        // Clear existing cards in the grid layout
+        foreach (Transform child in layout)
         {
             Destroy(child.gameObject);
         }
 
-        List<Token> playerCharacters = GameManager.Instance.GetPlayerTokens(playerNumber);
+        // Get player characters
+        Dictionary<CharacterData, bool> playerCharacters = GameManager.Instance.GetPlayerInfo(playerNumber).GetPlayerCards();
+
         if (playerCharacters == null || playerCharacters.Count == 0) return;
 
-        foreach (Token character in playerCharacters)
+        // Create character cards for the player
+        foreach (var entry in playerCharacters)
         {
-            GameObject card = Instantiate(characterCardPrefab, gridLayout);
-            InitializeCharacterCard(card, character);
+
+            CharacterData characterData = entry.Key;
+            bool isUnlocked = entry.Value;
+
+            GameObject card = Instantiate(characterCardPrefab, layout);
+            InitializeCharacterCard(card, characterData, isUnlocked);
         }
     }
 
-    private void InitializeCharacterCard(GameObject card, Token token)
+    /// <summary>
+    /// Initializes a character card UI element.
+    /// </summary>
+    private void InitializeCharacterCard(GameObject card, CharacterData characterData, bool isUnlocked)
     {
-        card.name = token.characterData.characterName;
-        Image cardImage = card.GetComponent<Image>();
-        if (cardImage != null) cardImage.sprite = token.characterData.characterCardSprite;
+        if (card == null || characterData == null)
+        {
+            Debug.LogError("Card or CharacterData is null!");
+            return;
+        }
 
+        card.name = characterData.characterName;
+
+        // Set card image
+        Image cardImage = card.GetComponent<Image>();
+        if (cardImage != null) cardImage.sprite = characterData.characterCardSprite;
+
+        // Configure button functionality
         Button cardButton = card.GetComponent<Button>();
         if (cardButton != null)
         {
             cardButton.onClick.RemoveAllListeners();
-            if (!token.IsUnlocked)
+
+            if (!isUnlocked)
             {
-                cardButton.onClick.AddListener(() => PurchaseCharacter(token.characterData));
+                cardButton.onClick.AddListener(() => PurchaseCharacter(characterData));
             }
             else
             {
@@ -64,6 +90,9 @@ public class HiringManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Handles purchasing a character for the current player.
+    /// </summary>
     private void PurchaseCharacter(CharacterData character)
     {
         int playerNumber = GameManager.Instance.GetCurrentPlayer();
@@ -75,30 +104,39 @@ public class HiringManager : MonoBehaviour
             return;
         }
 
+        // Deduct coins and assign character
         EventManager.TriggerCoinDeduct(playerNumber, (int)character.CharacterCost);
-
         GameManager.Instance.InstantiateSinglePlayerToken(character, playerNumber);
-        // gameManager.AddTokenToPlayer(playerNumber, character.characterType);
         UIManager.Instance.CloseHiringPanel();
         Debug.Log($"{character.characterName} purchased by Player {playerNumber}.");
     }
 
+    /// <summary>
+    /// Opens the information panel for the next player.
+    /// </summary>
     public void OpenInfoPanel()
     {
         int currentPlayer = GameManager.Instance.GetCurrentPlayer();
         int nextPlayer = currentPlayer == 1 ? 2 : 1;
+
         UIManager.Instance.OpenInfoPanel();
 
+        // Clear existing info cards
         foreach (Transform child in infoGridLayout)
         {
             Destroy(child.gameObject);
         }
 
+        // Update player icons and display characters for the next player
         UpdatePlayerIcons(currentPlayer, nextPlayer);
-        DisplayNextPlayerCharacters(nextPlayer);
+        ShowPlayerCharacters(nextPlayer, infoGridLayout);
         UpdateCoinText(nextPlayer);
+
     }
 
+    /// <summary>
+    /// Updates the player icons in the info panel.
+    /// </summary>
     private void UpdatePlayerIcons(int currentPlayer, int nextPlayer)
     {
         Sprite player1Icon = GameManager.Instance.GetPlayerIcon(1);
@@ -114,37 +152,9 @@ public class HiringManager : MonoBehaviour
         }
     }
 
-    private void DisplayNextPlayerCharacters(int nextPlayer)
-    {
-        List<Token> nextPlayerCharacters = GameManager.Instance.GetPlayerTokens(nextPlayer);
-        if (nextPlayerCharacters == null || nextPlayerCharacters.Count == 0) return;
-
-        foreach (Token character in nextPlayerCharacters)
-        {
-            GameObject card = Instantiate(characterCardPrefab, infoGridLayout);
-            InitializeOtherCharacterCards(card, character);
-        }
-    }
-    private void InitializeOtherCharacterCards(GameObject card, Token token)
-    {
-        card.name = token.characterData.characterName;
-        Image cardImage = card.GetComponent<Image>();
-        if (cardImage != null) cardImage.sprite = token.characterData.characterCardSprite;
-
-        Button cardButton = card.GetComponent<Button>();
-        if (cardButton != null)
-        {
-            cardButton.onClick.RemoveAllListeners();
-            if (token.IsUnlocked)
-            {
-                cardButton.interactable = true;
-            }
-            else
-            {
-                cardButton.interactable = false;
-            }
-        }
-    }
+    /// <summary>
+    /// Updates the coin text for the specified player.
+    /// </summary>
     private void UpdateCoinText(int nextPlayer)
     {
         if (coinTextTMP != null)
@@ -159,10 +169,17 @@ public class HiringManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Closes the information panel.
+    /// </summary>
     public void CloseInfoPanel()
     {
-        UIManager.Instance.CloseHiringPanel();
+        UIManager.Instance.CloseInfoPanel();
     }
+
+    /// <summary>
+    /// Closes the hiring panel.
+    /// </summary>
     public void CloseHiringPanel()
     {
         UIManager.Instance.CloseHiringPanel();

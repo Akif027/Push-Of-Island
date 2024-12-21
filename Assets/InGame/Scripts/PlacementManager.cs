@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class PlacementManager : MonoBehaviour
 {
@@ -8,7 +9,7 @@ public class PlacementManager : MonoBehaviour
     public GameObject CannotPlaceInvalidObj;
     public GameObject BlueBorder;
     public GameObject YellowBorder;
-    private bool isValidPlacement;
+    [SerializeField] private bool isValidPlacement;
     private SpriteRenderer spriteRenderer; // Renderer for the token sprite
     public Vector3 InitialPosition;
     private Vector3 offset;
@@ -30,7 +31,7 @@ public class PlacementManager : MonoBehaviour
         {
             Debug.LogError("No SpriteRenderer found on the first child of the token!");
         }
-        CheckPlacementRules();
+
         DragEnableOrDisable(true);
         InitialPosition = transform.position;
         mainCamera = Camera.main;
@@ -38,8 +39,19 @@ public class PlacementManager : MonoBehaviour
         characterType = token.characterData.characterType;
         HandleBorder();
 
+        // Log initial position
+        Debug.Log($"Initial Token Position: {transform.position}");
 
+        // Delay the placement check
+        StartCoroutine(DelayedCheckPlacementRules());
     }
+
+    private IEnumerator DelayedCheckPlacementRules()
+    {
+        yield return new WaitForEndOfFrame(); // Wait for one frame to ensure initialization
+        CheckPlacementRules();
+    }
+
     private void DragEnableOrDisable(bool isTrue)
     {
 
@@ -75,7 +87,7 @@ public class PlacementManager : MonoBehaviour
     private void HandleDrag()
     {
         // Do not allow dragging if Drag is disabled or the token does not belong to the current player
-        if (!Drag || !token.IsCurrentPlayerOwner()) return;
+        if (!Drag || !token.IsCurrentPlayerOwner() && isTokenPlaced) return;
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -127,7 +139,7 @@ public class PlacementManager : MonoBehaviour
 
 
     }
-    private void CheckPlacementRules()
+    public void CheckPlacementRules()
     {
         isValidPlacement = false;
 

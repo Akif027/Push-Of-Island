@@ -58,7 +58,7 @@ public class DraftManager : MonoBehaviour
         LowerTilemapOpacity(0.3f);
         InstantiateAllPlayerTokens(player1Characters, 1);
         InstantiateAllPlayerTokens(player2Characters, 2);
-        GameManager.Instance.PopulatePlayersToken();
+
         EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
     }
     private void InstantiateAllPlayerTokens(List<CharacterData> characterList, int playerNumber)

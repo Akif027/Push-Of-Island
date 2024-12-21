@@ -24,8 +24,7 @@ public class GameManager : MonoBehaviour
     public Transform MermaidSpawnAreaPlayer1;
     public Transform MermaidSpawnAreaPlayer2;
 
-    public List<Token> PlayeOneTokens = new List<Token>();
-    public List<Token> PlayeTwoTokens = new List<Token>();
+
     void Awake()
     {
         // Ensure only one instance of GameManager exists
@@ -50,8 +49,6 @@ public class GameManager : MonoBehaviour
     {
         EventManager.Unsubscribe("OnTurnEnd", HandleTurn);
 
-        PlayeOneTokens.Clear();
-        PlayeTwoTokens.Clear();
 
     }
     private void HandleTurn()
@@ -67,7 +64,7 @@ public class GameManager : MonoBehaviour
                 ? spawnTokenPositionPlayer1.position
                 : spawnTokenPositionPlayer2.position,
             0.5f);
-        UpdatePlayerTokenStatus();
+
 
     }
 
@@ -234,67 +231,13 @@ public class GameManager : MonoBehaviour
 
         return gameData.GetCharacterByIndex(index);
     }
-    public void PopulatePlayersToken()
-    {
-        PlayeOneTokens = GetAllCurrentTokensOfPlayer(1).ToList(); // Create a shallow copy
-        PlayeTwoTokens = GetAllCurrentTokensOfPlayer(2).ToList(); // Create a shallow copy
-        UpdatePlayerTokenStatus();
-    }
 
 
-    private void UpdatePlayerTokenStatus()
-    {
 
-        for (int i = 0; i < PlayeOneTokens.Count; i++)
-        {
-            if (GetAllCurrentTokensOfPlayer(1)[i].IsUnlocked && GetAllCurrentTokensOfPlayer(1)[i].characterData.characterType == PlayeOneTokens[i].characterData.characterType)
-            {
-
-                PlayeOneTokens[i].IsUnlocked = true;
-            }
-            else
-            {
-                PlayeOneTokens[i].IsUnlocked = false;
-
-            }
-
-        }
-        for (int i = 0; i < PlayeTwoTokens.Count; i++)
-        {
-            if (GetAllCurrentTokensOfPlayer(2)[i].IsUnlocked && GetAllCurrentTokensOfPlayer(2)[i].characterData.characterType == PlayeTwoTokens[i].characterData.characterType)
-            {
-
-                PlayeTwoTokens[i].IsUnlocked = true;
-            }
-            else
-            {
-                PlayeTwoTokens[i].IsUnlocked = false;
-
-            }
-
-        }
-
-    }
-    public List<Token> GetPlayerTokens(int playerNumber)
-    {
-        if (playerNumber == 1)
-        {
-            return PlayeOneTokens;
-        }
-        else if (playerNumber == 2)
-        {
-            return PlayeTwoTokens;
-        }
-        else
-        {
-            Debug.LogError($"Invalid player number: {playerNumber}. Must be 1 or 2.");
-            return new List<Token>(); // Return an empty list for invalid player numbers
-        }
-    }
     public void ChangePhase(GamePhase newPhase)
     {
-        currentPhase = newPhase;
 
+        currentPhase = newPhase;
 
     }
 
@@ -315,11 +258,13 @@ public class GameManager : MonoBehaviour
             spawnPosition = playerNumber == 1 ? MermaidSpawnAreaPlayer1 : MermaidSpawnAreaPlayer2;
         }
 
-        // Adjust the Z position of the spawn position
-        Vector3 adjustedSpawnPosition = new Vector3(spawnPosition.position.x, spawnPosition.position.y, -0.6f);
 
         // Instantiate the token at the adjusted spawn position
-        GameObject token = Instantiate(character.TokenPrefab, adjustedSpawnPosition, Quaternion.identity, spawnPosition);
+        GameObject token = Instantiate(character.TokenPrefab, spawnPosition.position, Quaternion.identity, spawnPosition);
+
+        // Force the Z-position after instantiation
+        Vector3 enforcedPosition = new Vector3(token.transform.position.x, token.transform.position.y, 0);
+        token.transform.position = enforcedPosition;
 
         var placementManager = token.GetComponent<PlacementManager>();
         var tokenComponent = token.GetComponent<Token>();
@@ -335,11 +280,11 @@ public class GameManager : MonoBehaviour
             placementManager.owner = playerNumber;
             placementManager.isTokenPlaced = true;
         }
-
+     ;
         if (tokenComponent != null)
         {
             tokenComponent.IsUnlocked = true;
-            Debug.Log($"Token instantiated for Player {playerNumber}: {character.characterName}");
+            Debug.LogError($"Token instantiated for Player {playerNumber}: {character.characterName}");
         }
 
         PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
@@ -352,6 +297,7 @@ public class GameManager : MonoBehaviour
         playerInfo.tokens.Add(tokenComponent);
 
         draftManager.HandleSingleTokenPlaced(placementManager);
+
 
     }
 
@@ -395,27 +341,7 @@ public class GameManager : MonoBehaviour
         playerInfo.tokens.Remove(tokenToRemove);
         Debug.Log($"Removed token of type {characterType} from Player {playerNumber}.");
     }
-    public List<CharacterData> GetAllCharacterDataOfPlayer(int playerNumber)
-    {
-        List<CharacterData> playerTokens = new List<CharacterData>();
 
-        // Get the PlayerInfo for the specified player
-        PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
-        if (playerInfo == null)
-        {
-            Debug.LogError($"PlayerInfo for player {playerNumber} not found!");
-            return playerTokens; // Return empty list if PlayerInfo doesn't exist
-        }
-
-        // Extract CharacterData from each token and add it to the list
-        playerTokens = playerInfo.tokens
-            .Where(token => token.characterData != null) // Exclude null characterData
-            .Select(token => token.characterData)
-            .ToList();
-
-        Debug.Log($"Player {playerNumber} has {playerTokens.Count} tokens.");
-        return playerTokens;
-    }
 
     public List<Token> GetAllCurrentTokensOfPlayer(int playerNumber)
     {
@@ -474,7 +400,7 @@ public class PlayerInfo
 {
     public Int32 PlayerNumber;
     public List<Token> tokens;
-
+    private Dictionary<CharacterData, bool> PlayerCards = new Dictionary<CharacterData, bool>();
     [SerializeField] private int _hasTurn;
 
     /// <summary>
@@ -498,7 +424,87 @@ public class PlayerInfo
         PlayerNumber = PlayerNumber_;
         tokens = _tokens ?? new List<Token>(); // Initialize tokens if null
         Debug.Log($"{tokens.Count} tokens initialized for Player {PlayerNumber_}");
+        AddPlayerCardsData();
     }
+
+    public Dictionary<CharacterData, bool> GetPlayerCards()
+    {
+        UpdatePlayerCards();
+        // Debug.LogError($"playerCharacters {PlayerCards.Count} : ");
+        return PlayerCards;
+    }
+    public void UpdatePlayerCards()
+    {
+        // Create a set of current CharacterData from the tokens list
+        var currentCharacters = tokens.Where(token => token != null && token.characterData != null)
+                                       .Select(token => token.characterData)
+                                       .ToHashSet();
+
+        // Check for removed characters and update their IsUnlocked status to false
+        foreach (var character in PlayerCards.Keys.ToList()) // Use ToList to safely modify during iteration
+        {
+            if (!currentCharacters.Contains(character))
+            {
+                PlayerCards[character] = false; // Set IsUnlocked to false for removed characters
+                Debug.Log($"Player {PlayerNumber}: Character {character.characterType} removed. IsUnlocked set to false.");
+            }
+        }
+
+        // Add or update entries for current tokens
+        foreach (var token in tokens)
+        {
+            if (token != null && token.characterData != null)
+            {
+                if (PlayerCards.ContainsKey(token.characterData))
+                {
+                    // Update IsUnlocked to true for existing characters
+                    PlayerCards[token.characterData] = true;
+                    Debug.Log($"Player {PlayerNumber}: Character {token.characterData.characterType} re-added. IsUnlocked set to true.");
+                }
+                else
+                {
+                    // Add new entries for new tokens
+                    PlayerCards[token.characterData] = token.IsUnlocked;
+                    Debug.Log($"Player {PlayerNumber}: New Character {token.characterData.characterType} added with IsUnlocked = {token.IsUnlocked}.");
+                }
+            }
+        }
+
+        Debug.Log($"Player {PlayerNumber}: PlayerCards updated. Total entries: {PlayerCards.Count}");
+    }
+
+    public void AddPlayerCardsData()
+    {
+        foreach (var token in tokens)
+        {
+            if (token != null && token.characterData != null)
+            {
+                // Add the characterData and its IsUnlocked status to the dictionary
+                if (!PlayerCards.ContainsKey(token.characterData))
+                {
+                    PlayerCards[token.characterData] = token.IsUnlocked;
+                    //  Debug.LogError($"Player {PlayerNumber}: Character {token.characterData.characterType} added with IsUnlocked = {token.IsUnlocked}");
+                }
+                else
+                {
+                    Debug.LogError($"Duplicate characterData detected: {token.characterData.characterType}. Skipping...");
+                }
+            }
+            else
+            {
+                Debug.LogError($"Player {PlayerNumber}: Invalid token or missing CharacterData.");
+            }
+        }
+
+        Debug.Log($"Player {PlayerNumber}: PlayerCards dictionary populated with {PlayerCards.Count} entries.");
+    }
+
+    // public List<CharacterData> GetAllCharacterDataOfPlayer(int playerNumber)
+    // {
+    //     List<CharacterData> playerTokens = new List<CharacterData>();
+
+
+    // }
 }
 
 public enum GamePhase

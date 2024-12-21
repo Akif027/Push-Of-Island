@@ -4,7 +4,7 @@ using UnityEngine;
 public class Token : MonoBehaviour
 {
     [SerializeField] private bool isUnlocked;
-
+    private Vector3 lastPosition;
     public bool IsUnlocked
     {
         get => isUnlocked;
@@ -58,7 +58,10 @@ public class Token : MonoBehaviour
 
     private void Update()
     {
-        CheckTokenPosition();
+
+
+        CheckTokenPosition(); // Call the method if movement is detected
+
         if (isThrown)
             HandleTokenMovement();
 
@@ -125,23 +128,18 @@ public class Token : MonoBehaviour
     }
     private void CheckTokenPosition()
     {
-        if (tokenRigidbody.linearVelocity.magnitude < 0.01f && GameManager.Instance.currentPhase == GamePhase.GamePlay) // Token has stopped moving
+        if (tokenRigidbody.linearVelocity.magnitude < 0.01f && GameManager.Instance.currentPhase == GamePhase.GamePlay)
         {
-
-            if (characterData?.ability != null)
+            if (characterData?.ability != null && characterData.characterType != CharacterType.Mermaid)
             {
-                // Validate the final position based on the token's ability
                 bool isValid = characterData.ability.ValidateFinalPosition(this);
                 if (!isValid)
                 {
                     EliminateToken(); // Eliminate if conditions are not met
-                    return; // Exit further processing
+                    return;
                 }
-
-
+                lastPosition = transform.position; // Update last position
             }
-
-
         }
     }
 
