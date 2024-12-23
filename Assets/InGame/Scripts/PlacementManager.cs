@@ -29,7 +29,7 @@ public class PlacementManager : MonoBehaviour
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
         if (spriteRenderer == null)
         {
-            Debug.LogError("No SpriteRenderer found on the first child of the token!");
+            Debug.LogError("No SpriteRenderer found on the first child of the token! ");
         }
 
         DragEnableOrDisable(true);
@@ -102,7 +102,7 @@ public class PlacementManager : MonoBehaviour
                 MapScroll.Instance.DisableScroll();
                 Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
-                Debug.Log($"Player {owner} is dragging token: {gameObject.name}");
+                Debug.Log($"Player {owner} is dragging token:  {gameObject.name}");
             }
         }
 
@@ -235,7 +235,7 @@ public class PlacementManager : MonoBehaviour
 
         // Set Rigidbody to Kinematic to prevent further movement
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
-
+        token.OnTokenPlaced();
         // Trigger an event for other systems (like turn progression)
         EventManager.TriggerEvent("OnTurnEnd");
     }

@@ -37,13 +37,15 @@ public class DraftManager : MonoBehaviour
     public List<CharacterData> player1Characters = new List<CharacterData>(); // List of Player 1's selected characters
     public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
     public List<CharacterData> RemainingCards = new List<CharacterData>(); // Remaining cards after elimination
-    public List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
-                                                                                   //  public List<CharacterData> AllCharacterCard = new List<CharacterData>(); // List of placement managers
+    private List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
+                                                                                    //  public List<CharacterData> AllCharacterCard = new List<CharacterData>(); // List of placement managers
 
     public GameManager gameManager;
     // public MapScroll mapScroll;
 
     public GameObject DisplayAllCardPanel;
+    public GameObject FirstPlayerSelectedCard;
+    public GameObject SecondPlayerSelectedCard;
     [SerializeField] private Tilemap tilemap; // Reference to your Tilemap
 
     private bool isSelectionLocked = false;
@@ -225,13 +227,14 @@ public class DraftManager : MonoBehaviour
     {
         GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(false);
         GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(false);
-
+        GameManager.Instance.MermaidSpawnAreaPlayer1.gameObject.SetActive(false);
+        GameManager.Instance.MermaidSpawnAreaPlayer2.gameObject.SetActive(false);
         LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
         DraftPanel.SetActive(false);
         DraftCanvas.SetActive(true);
         DisplayAllCardPanel.SetActive(true);
-
+        DisplaySelectedCards();
         EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
 
         StartCoroutine(Delay());
@@ -245,11 +248,50 @@ public class DraftManager : MonoBehaviour
         DisplayAllCardPanel.SetActive(false);
         GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(true);
         GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(true);
-
+        GameManager.Instance.MermaidSpawnAreaPlayer1.gameObject.SetActive(true);
+        GameManager.Instance.MermaidSpawnAreaPlayer2.gameObject.SetActive(true);
         UIManager.Instance.OpenPlayLowerPanel();
         UIManager.Instance.OpenPlayUpperPanel();
         MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.spawnTokenPositionPlayer1.position, 0.5f);
     }
+
+    private void DisplaySelectedCards()
+    {
+        if (gameData.CharacterCardPrefab == null)
+        {
+            Debug.LogError("CharacterCardPrefab is not assigned in GameData!");
+            return;
+        }
+
+        // Clear existing child objects from FirstPlayerSelectedCard
+        foreach (Transform child in FirstPlayerSelectedCard.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Clear existing child objects from SecondPlayerSelectedCard
+        foreach (Transform child in SecondPlayerSelectedCard.transform)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Instantiate new cards for Player 1
+        foreach (var character in player1Characters)
+        {
+            GameObject card = Instantiate(gameData.CharacterCardPrefab, FirstPlayerSelectedCard.transform);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            InitializeCharacterCard(card, character, false);
+        }
+
+        // Instantiate new cards for Player 2
+        foreach (var character in player2Characters)
+        {
+            GameObject card = Instantiate(gameData.CharacterCardPrefab, SecondPlayerSelectedCard.transform);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            InitializeCharacterCard(card, character, false);
+        }
+    }
+
     private UnityAction okButtonListener;
     private void HandleTokenPlaced(PlacementManager p)
     {
@@ -346,7 +388,7 @@ public class DraftManager : MonoBehaviour
         {
             GameObject card = Instantiate(gameData.CharacterCardPrefab, characterGrid);
 
-            InitializeCharacterCard(card, character);
+            InitializeCharacterCard(card, character, true);
             instantiatedCards.Add(card);
         }
     }
@@ -356,7 +398,7 @@ public class DraftManager : MonoBehaviour
         DraftMainIcon.sprite = GameManager.Instance.GetCurrentPlayerIcon();
     }
 
-    public void InitializeCharacterCard(GameObject card, CharacterData character)
+    public void InitializeCharacterCard(GameObject card, CharacterData character, bool CanaddListner)
     {
         // Set the card's name
         card.name = character.characterName;
@@ -371,7 +413,7 @@ public class DraftManager : MonoBehaviour
         {
             Debug.LogError($"No Image component found on: {card.name}");
         }
-
+        if (!CanaddListner) return;
         // Get the button component from the card
         Button cardButton = card.GetComponent<Button>();
         if (cardButton != null)

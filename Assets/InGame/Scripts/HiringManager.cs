@@ -11,7 +11,7 @@ public class HiringManager : MonoBehaviour
     [SerializeField] private Transform playerIcon1;
     [SerializeField] private Transform playerIcon2;
     [SerializeField] private ScoreManager scoreManager;
-    [SerializeField] private TMP_Text coinTextTMP;
+
 
     /// <summary>
     /// Opens the hiring panel and displays the current player's characters.
@@ -128,16 +128,16 @@ public class HiringManager : MonoBehaviour
         }
 
         // Update player icons and display characters for the next player
-        UpdatePlayerIcons(currentPlayer, nextPlayer);
+        UpdatePlayerIcons(currentPlayer);
         ShowPlayerCharacters(nextPlayer, infoGridLayout);
-        UpdateCoinText(nextPlayer);
+
 
     }
 
     /// <summary>
     /// Updates the player icons in the info panel.
     /// </summary>
-    private void UpdatePlayerIcons(int currentPlayer, int nextPlayer)
+    private void UpdatePlayerIcons(int currentPlayer)
     {
         Sprite player1Icon = GameManager.Instance.GetPlayerIcon(1);
         Sprite player2Icon = GameManager.Instance.GetPlayerIcon(2);
@@ -152,22 +152,7 @@ public class HiringManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Updates the coin text for the specified player.
-    /// </summary>
-    private void UpdateCoinText(int nextPlayer)
-    {
-        if (coinTextTMP != null)
-        {
-            int nextPlayerCoins = scoreManager.GetCoins(nextPlayer);
-            coinTextTMP.text = $"{nextPlayerCoins}";
-            Debug.Log($"Updated Coins: Next Player {nextPlayer} has {nextPlayerCoins} coins.");
-        }
-        else
-        {
-            Debug.LogError("Coin Text TMP reference is missing!");
-        }
-    }
+
 
     /// <summary>
     /// Closes the information panel.

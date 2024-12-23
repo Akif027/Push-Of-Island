@@ -4,79 +4,122 @@ using UnityEngine.UI;
 
 public class TextMapper : MonoBehaviour
 {
-
     [Header("Number Sprites")]
-    public Sprite[] numberSprites; // Array of sprites for 0-9.
+    [Tooltip("Array of sprites for 0-9.")]
+    public Sprite[] numberSprites; // Array for glory points and turn
+    public Sprite[] coinNumberSprites; // Array for coins
 
-    [Header("Players GloryPoints")]
-    public Transform Player1container; // Parent with child Images (Horizontal Layout Group)
-    public Transform Player2container; // Parent with child Images (Horizontal Layout Group)
-    [Header("Turn")]
-    public Transform TurnContainer; // Parent with child Images (Horizontal Layout Group)
-    public GameObject Player1CoatOfArm;
-    public GameObject Player2CoatOfArm;
+    [Header("Players Glory Points")]
+    public Transform player1Container; // Parent with child Images (Horizontal Layout Group)
+    public Transform player2Container; // Parent with child Images (Horizontal Layout Group)
 
-    void Start()
+    [Header("Turn Indicators")]
+    public Transform turnContainer; // Parent with child Images (Horizontal Layout Group)
+    public GameObject player1CoatOfArm;
+    public GameObject player2CoatOfArm;
+
+    [Header("Coins Display")]
+    public Transform coinContainer; // Parent with child Images (Horizontal Layout Group)
+    public Transform coinContainerOnHiringPanel; // Parent with child Images (Horizontal Layout Group)
+    public Transform InfoContainer; // Parent with child Images (Horizontal Layout Group)
+    public ScoreManager scoreManager;
+
+    private void Start()
     {
-        UpdateTurn(1, 0);
+        UpdateTurn(0);
         UpdateTurnIcon(1);
         AddPlayerGloryPoints(1, 0);
         AddPlayerGloryPoints(2, 0);
 
     }
-    public void AddPlayerGloryPoints(Int32 Playerno, int Amount)
+
+    public void AddPlayerCoinsPoints(int amount)
     {
-        UpdateNumberImages(Amount, Playerno == 1 ? Player1container : Player2container);
-
+        UpdateNumberImages(amount, coinContainer, coinNumberSprites);
+        UpdateNumberImages(amount, coinContainerOnHiringPanel, coinNumberSprites);
     }
-    public void UpdateTurnIcon(Int32 Playerno)
+
+    public void AddPlayerGloryPoints(int playerNo, int amount)
     {
-
-
-        if (Playerno == 1)
-        {
-            Player1CoatOfArm.SetActive(true);
-            Player2CoatOfArm.SetActive(false);
-        }
-        else
-        {
-            Player2CoatOfArm.SetActive(true);
-            Player1CoatOfArm.SetActive(false);
-        }
+        Transform targetContainer = playerNo == 1 ? player1Container : player2Container;
+        UpdateNumberImages(amount, targetContainer, numberSprites);
     }
-    public void UpdateTurn(Int32 Playerno, int Amount)
+
+    public void UpdateTurnIcon(Int32 playerNo)
     {
+        SetActiveState(player1CoatOfArm, playerNo == 1);
+        SetActiveState(player2CoatOfArm, playerNo == 2);
 
-        UpdateNumberImages(Amount, TurnContainer);
-
+        UpdateNumberImages(scoreManager.GetCoins(playerNo), coinContainer, coinNumberSprites);
+        UpdateNumberImages(scoreManager.GetCoins(playerNo), coinContainerOnHiringPanel, coinNumberSprites);
+        UpdateNumberImages(scoreManager.GetCoins(playerNo == 1 ? 2 : 1), InfoContainer, coinNumberSprites);
     }
+
+    public void UpdateTurn(int amount)
+    {
+        UpdateNumberImages(amount, turnContainer, numberSprites);
+    }
+
     /// <summary>
     /// Updates the images in the container to display the integer as individual digits.
     /// </summary>
     /// <param name="number">The integer to display.</param>
-    public void UpdateNumberImages(int number, Transform Cntainer)
+    /// <param name="container">The container with child Image components.</param>
+    /// <param name="sprites">The sprite array corresponding to the digits 0-9.</param>
+    private void UpdateNumberImages(int number, Transform container, Sprite[] sprites)
     {
-        // Convert the number to a string to process individual digits
-        string numberString = number.ToString();
-
-        // Ensure we have enough child Image components to replace
-        for (int i = 0; i < Cntainer.childCount; i++)
+        if (container == null)
         {
-            Transform child = Cntainer.GetChild(i);
+            Debug.LogError("Container is null! Ensure it is assigned in the Inspector.  ");
+            return;
+        }
+
+        if (sprites == null || sprites.Length != 10)
+        {
+            Debug.LogError("Sprite array is null or not correctly set up! Ensure it contains exactly 10 sprites (0-9).");
+            return;
+        }
+
+        string numberString = number.ToString();
+        for (int i = 0; i < container.childCount; i++)
+        {
+            Transform child = container.GetChild(i);
             Image childImage = child.GetComponent<Image>();
 
             if (i < numberString.Length)
             {
-                // Get the digit and map it to the corresponding sprite
                 int digit = numberString[i] - '0';
-                childImage.sprite = numberSprites[digit];
-                childImage.enabled = true; // Enable the image
+                if (digit >= 0 && digit < sprites.Length)
+                {
+                    childImage.sprite = sprites[digit];
+                    childImage.enabled = true;
+                }
+                else
+                {
+                    Debug.LogError($"Invalid digit {digit} for number {number}. Check the sprite array.");
+                }
             }
             else
             {
-                // If there are extra images, disable them
                 childImage.enabled = false;
             }
+        }
+    }
+
+    /// <summary>
+    /// Sets the active state of a GameObject.
+    /// </summary>
+    /// <param name="obj">The GameObject to modify.</param>
+    /// <param name="state">The desired active state.</param>
+    private void SetActiveState(GameObject obj, bool state)
+    {
+        if (obj != null)
+        {
+            obj.SetActive(state);
+        }
+        else
+        {
+            Debug.LogError("GameObject reference is null!");
         }
     }
 }

@@ -38,7 +38,7 @@ public class CharacterAbility : ScriptableObject
         if (bonusPointsOnPlaced && bonusCoins > 0)
         {
             EventManager.TriggerCoinAdd(token.owner, bonusCoins);
-            Debug.Log($"{token.name} awarded {bonusCoins} bonus coins on placement.");
+            Debug.LogError($"{token.name} awarded {bonusCoins} bonus coins on placement.");
         }
 
 
@@ -52,7 +52,7 @@ public class CharacterAbility : ScriptableObject
     {
         if (isVaultInteraction && coinsPerCaptureVault > 0)
         {
-            Debug.Log("Player " + token.owner + "has recived vault coins");
+            Debug.LogError("Player " + token.owner + "has recived vault coins");
             EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureVault);
 
         }
@@ -78,7 +78,7 @@ public class CharacterAbility : ScriptableObject
 
                         //EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureBase);
                         EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
-                        Debug.Log("Player " + token.owner + "has Captured the base");
+                        Debug.LogError("Player " + token.owner + "has Captured the base");
                     }
 
                 }
@@ -101,12 +101,12 @@ public class CharacterAbility : ScriptableObject
             {
                 if (hit.collider.CompareTag("Water"))
                 {
-                    Debug.Log($"{token.characterData.characterName} is safely on water.");
+                    // Debug.Log($"{token.characterData.characterName} is safely on water.");
                     return true; // Valid: Mermaid is on water
                 }
                 if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
                 {
-                    Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {hit.collider.gameObject.name}");
+                    // Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {hit.collider.gameObject.name}");
                     return false; // Invalid: Mermaid cannot stop on land or base
                 }
             }
@@ -115,12 +115,12 @@ public class CharacterAbility : ScriptableObject
             {
                 if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
                 {
-                    Debug.Log($"{token.characterData.characterName} is safely on land or base.");
+                    //   Debug.Log($"{token.characterData.characterName} is safely on land or base.");
                     return true; // Valid for land-based characters
                 }
                 if (hit.collider.CompareTag("Water"))
                 {
-                    Debug.LogError($"{token.characterData.characterName} cannot be on water. ");
+                    // Debug.LogError($"{token.characterData.characterName} cannot be on water. ");
                     return false; // Invalid for non-water characters
                 }
             }

@@ -147,7 +147,7 @@ public class Token : MonoBehaviour
     {
         if (collision.CompareTag("Vault"))
         {
-            Debug.LogError("Vault");
+
             characterData.ability?.OnVaultInteraction(this);
         }
 
