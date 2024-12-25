@@ -313,6 +313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   PlayB: {fileID: 925201060}
+  PlayBRus: {fileID: 415215245}
   Music: {fileID: 2054587495}
   Musicoff: {fileID: -3392954814548074267, guid: 0b144088e746dcf41a9402a0a7ef2fea, type: 3}
   MusicOn: {fileID: -2120372764, guid: 1bd5f19a87b377b419ef9537dca2002a, type: 3}
@@ -320,6 +321,7 @@ MonoBehaviour:
   SfxOn: {fileID: -1246939733, guid: 1bd5f19a87b377b419ef9537dca2002a, type: 3}
   SfxOff: {fileID: 9196499494350685537, guid: 3a9b32151d727f74b8a21de9ed56b11a, type: 3}
   RulesPanel: {fileID: 1335309717}
+  languageSelector: {fileID: 1445215563}
 --- !u!1 &150114695
 GameObject:
   m_ObjectHideFlags: 0

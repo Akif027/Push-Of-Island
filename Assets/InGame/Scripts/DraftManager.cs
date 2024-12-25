@@ -287,7 +287,7 @@ public class DraftManager : MonoBehaviour
         // Instantiate new cards for Player 1
         foreach (var character in player1Characters)
         {
-            GameObject card = Instantiate(gameData.CharacterCardPrefab, FirstPlayerSelectedCard.transform);
+            GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, FirstPlayerSelectedCard.transform);
             card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
             InitializeCharacterCard(card, character, false);
         }
@@ -295,7 +295,7 @@ public class DraftManager : MonoBehaviour
         // Instantiate new cards for Player 2
         foreach (var character in player2Characters)
         {
-            GameObject card = Instantiate(gameData.CharacterCardPrefab, SecondPlayerSelectedCard.transform);
+            GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, SecondPlayerSelectedCard.transform);
             card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
             InitializeCharacterCard(card, character, false);
         }
@@ -303,7 +303,7 @@ public class DraftManager : MonoBehaviour
         // Instantiate new cards for Player 1
         foreach (var character in player1Characters)
         {
-            GameObject card = Instantiate(gameData.CharacterCardPrefab, WinnerFirstPlayerSelectedCard.transform);
+            GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, WinnerFirstPlayerSelectedCard.transform);
             card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
             InitializeCharacterCard(card, character, false);
         }
@@ -311,7 +311,7 @@ public class DraftManager : MonoBehaviour
         // Instantiate new cards for Player 2
         foreach (var character in player2Characters)
         {
-            GameObject card = Instantiate(gameData.CharacterCardPrefab, WinnerSecondPlayerSelectedCard.transform);
+            GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, WinnerSecondPlayerSelectedCard.transform);
             card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
             InitializeCharacterCard(card, character, false);
         }
@@ -432,7 +432,7 @@ public class DraftManager : MonoBehaviour
         Image cardImage = card.GetComponent<Image>();
         if (cardImage != null)
         {
-            cardImage.sprite = character.characterCardSprite;
+            cardImage.sprite = CanaddListner == true ? character.characterCardSprite : character.characterCardNoDescriptionSprite;
         }
         else
         {
@@ -465,7 +465,7 @@ public class DraftManager : MonoBehaviour
 
         UIManager.Instance.CloseDraftPanel();
         UIManager.Instance.OpenSelectedCardPanel();
-        SelectedCardImage.sprite = card.GetComponent<Image>().sprite;
+        SelectedCardImage.sprite = character.characterCardNoDescriptionSprite;
 
         CancelButton.onClick.RemoveAllListeners();
         CancelButton.onClick.AddListener(() => OnCancelSelection());

@@ -14,6 +14,8 @@ public class LanguageSelector : MonoBehaviour
     public GameObject mainButton1;        // Main button 1 (active for Russian)
     public GameObject mainButton2;        // Main button 2 (active for English)
 
+    private bool isEnglishSelected = true;
+
     private void Start()
     {
         // Add listeners to the buttons
@@ -29,6 +31,7 @@ public class LanguageSelector : MonoBehaviour
         SoundManager.Instance?.PlayButtonTap();
         if (language == "English")
         {
+            isEnglishSelected = true;
             // Update button icons
             englishButton.GetComponent<Image>().sprite = englishSelectedIcon;
             russianButton.GetComponent<Image>().sprite = russianDeselectedIcon;
@@ -39,6 +42,7 @@ public class LanguageSelector : MonoBehaviour
         }
         else if (language == "Russian")
         {
+            isEnglishSelected = false;
             // Update button icons
             englishButton.GetComponent<Image>().sprite = englishDeselectedIcon;
             russianButton.GetComponent<Image>().sprite = russianSelectedIcon;
@@ -47,5 +51,11 @@ public class LanguageSelector : MonoBehaviour
             mainButton1.SetActive(true);
             mainButton2.SetActive(false);
         }
+    }
+
+    public bool LangChecker()
+    {
+
+        return isEnglishSelected;
     }
 }

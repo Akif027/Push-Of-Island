@@ -4,6 +4,7 @@ using UnityEngine.UI;
 public class MenuManager : MonoBehaviour
 {
     [SerializeField] Button PlayB;
+    [SerializeField] Button PlayBRus;
     [SerializeField] Button Music;
     [SerializeField] Sprite Musicoff;
     [SerializeField] Sprite MusicOn;
@@ -11,13 +12,14 @@ public class MenuManager : MonoBehaviour
     [SerializeField] Sprite SfxOn;
     [SerializeField] Sprite SfxOff;
     [SerializeField] GameObject RulesPanel;
-
+    [SerializeField] LanguageSelector languageSelector;
     private bool isMusicOn = true; // Tracks the music state
     private bool isSfxOn = true;   // Tracks the SFX state
 
     void Start()
     {
         PlayB.onClick.AddListener(() => LoadTheScene("GamePlay"));
+        PlayBRus.onClick.AddListener(() => LoadTheScene("GameplayRus"));
         Music.onClick.AddListener(SoundButtonHandler);
         Sfx.onClick.AddListener(MusicButtonHandler);
     }
