@@ -65,9 +65,12 @@ public class Token : MonoBehaviour
 
         if (isThrown)
             HandleTokenMovement();
-
-        if (characterData.characterType == CharacterType.Satyr && characterData.ability is SatyrAbility satyrAbility)
-            satyrAbility.HandleReflection(this, new Vector2(10f, 10f));
+        // Check if the character ability is active and if reflection is needed
+        if (characterData.characterType == CharacterType.Satyr && characterData.ability != null)
+        {
+            // Use the common HandleReflection method from CharacterAbility
+            characterData.ability.HandleReflection(this, new Vector2(10f, 10f));
+        }
     }
     public bool IsImmobile()
     {

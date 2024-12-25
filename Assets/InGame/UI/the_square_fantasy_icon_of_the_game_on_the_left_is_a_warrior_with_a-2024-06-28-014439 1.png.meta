@@ -1,10 +1,11 @@
 fileFormatVersion: 2
-guid: 06697ab2010b3cb49905dc80bd58c3a5
+guid: 2af945e3447e4bb4e87d64ca2c1c3365
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1134032105938053371
-    second: Loading_0
+      213: 8952539407785735976
+    second: the_square_fantasy_icon_of_the_game_on_the_left_is_a_warrior_with_a-2024-06-28-014439
+      1_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +114,14 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Loading_0
+      name: the_square_fantasy_icon_of_the_game_on_the_left_is_a_warrior_with_a-2024-06-28-014439
+        1_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1720
-        height: 3728
+        x: 140
+        y: 109
+        width: 721
+        height: 828
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +130,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 5079ca9decb1340f0800000000000000
-      internalID: -1134032105938053371
+      spriteID: 82731c6a82fcd3c70800000000000000
+      internalID: 8952539407785735976
       vertices: []
       indices: 
       edges: []

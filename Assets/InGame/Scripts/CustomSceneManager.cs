@@ -8,9 +8,14 @@ public static class CustomSceneManager
     }
 
     // Load a scene asynchronously by name
-    public static void LoadSceneAsync(string sceneName)
+    public static AsyncOperation LoadSceneAsync(string sceneName)
+
     {
-        SceneManager.LoadSceneAsync(sceneName);
+
+        // Your existing code to load the scene asynchronously
+
+        return UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(sceneName);
+
     }
 
     // Load a scene by index

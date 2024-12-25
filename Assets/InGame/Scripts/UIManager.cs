@@ -22,11 +22,12 @@ public class UIManager : MonoBehaviour
     public GameObject DisplayAllCardPanel;
     public Button OkButton;
     [SerializeField] private float fadeDuration = 0.5f; // Duration for fade animations
-
+    [SerializeField] LoadingManager loadingManager;
 
 
     private void Awake()
     {
+        loadingManager.gameObject.SetActive(false);
         if (Instance != null && Instance != this)
         {
             Destroy(gameObject);
@@ -145,9 +146,9 @@ public class UIManager : MonoBehaviour
     }
     public void MainMenu()
     {
-        CustomSceneManager.LoadScene("Menu");
-        SoundManager.Instance?.PlayButtonTap();
 
+        SoundManager.Instance?.PlayButtonTap();
+        loadingManager.gameObject.SetActive(true);
     }
     // Method to exit the application
     public void QuitApplication()
