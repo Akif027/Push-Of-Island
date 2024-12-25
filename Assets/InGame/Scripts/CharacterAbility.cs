@@ -37,11 +37,16 @@ public class CharacterAbility : ScriptableObject
         // Bonus coins when placed
         if (bonusPointsOnPlaced && bonusCoins > 0)
         {
-            EventManager.TriggerCoinAdd(token.owner, bonusCoins);
+            EventManager.TriggerCoinAdd(token.owner, bonusCoins); SoundManager.Instance.PlayCoinCollect();
             Debug.LogError($"{token.name} awarded {bonusCoins} bonus coins on placement.");
         }
 
-
+        // Handle immobility on placement for Golem
+        if (becomesImmobileOnPlacement && token.characterData.characterType == CharacterType.Golem)
+        {
+            token.SetImmobile(); // Call the Token's method to make it immobile
+            Debug.Log($"{token.characterData.characterName} becomes immobile on placement.");
+        }
 
     }
 
@@ -54,6 +59,7 @@ public class CharacterAbility : ScriptableObject
         {
             Debug.LogError("Player " + token.owner + "has recived vault coins");
             EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureVault);
+            SoundManager.Instance.PlayCoinCollect();
 
         }
     }
@@ -79,6 +85,7 @@ public class CharacterAbility : ScriptableObject
                         //EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureBase);
                         EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
                         Debug.LogError("Player " + token.owner + "has Captured the base");
+                        SoundManager.Instance?.PlayScore();
                     }
 
                 }
@@ -86,42 +93,84 @@ public class CharacterAbility : ScriptableObject
             }
         }
     }
+    public void HandleReflection(Token token, Vector2 boundarySize)
+    {
+        Rigidbody2D rb = token.GetRigidbody2D();
+        if (rb == null) return;
 
+        Vector2 position = rb.position;
+        Vector2 velocity = rb.linearVelocity;
+
+        bool reflected = false;
+
+        // Horizontal boundary check
+        if (Mathf.Abs(position.x) >= boundarySize.x / 2f)
+        {
+            velocity.x *= -1; // Reverse X velocity
+            position.x = Mathf.Clamp(position.x, -boundarySize.x / 2f, boundarySize.x / 2f); // Clamp position
+            reflected = true;
+        }
+
+        // Vertical boundary check
+        if (Mathf.Abs(position.y) >= boundarySize.y / 2f)
+        {
+            velocity.y *= -1; // Reverse Y velocity
+            position.y = Mathf.Clamp(position.y, -boundarySize.y / 2f, boundarySize.y / 2f); // Clamp position
+            reflected = true;
+        }
+
+        if (reflected)
+        {
+            rb.linearVelocity = velocity; // Apply reflected velocity
+            rb.position = position; // Update position
+            Debug.Log($"{token.name} (Satyr) reflected with velocity: {velocity}");
+            SoundManager.Instance?.PlayFlickTheChip();
+        }
+    }
     /// <summary>
     /// Validates the token's final position based on its ability.
     /// </summary>
     public virtual bool ValidateFinalPosition(Token token)
     {
-        RaycastHit2D hit = Physics2D.Raycast(token.transform.position, Vector3.back, -2, LayerMask.GetMask("Water", "Land", "Base"));
+        // Define the circle's radius
+        float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
+        LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base");
 
-        if (hit.collider != null)
+        // Use OverlapCircle to detect colliders within the specified radius
+        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(token.transform.position, radius, layerMask);
+
+        if (hitColliders.Length > 0)
         {
-            // Mermaid-specific logic
-            if (token.characterData.characterType == CharacterType.Mermaid)
+            foreach (Collider2D collider in hitColliders)
             {
-                if (hit.collider.CompareTag("Water"))
+                // Mermaid-specific logic
+                if (token.characterData.characterType == CharacterType.Mermaid)
                 {
-                    // Debug.Log($"{token.characterData.characterName} is safely on water.");
-                    return true; // Valid: Mermaid is on water
+                    if (collider.CompareTag("Water"))
+                    {
+                        Debug.Log($"{token.characterData.characterName} is safely on water.");
+                        return true; // Valid: Mermaid is on water
+                    }
+                    if (collider.CompareTag("Land") || collider.CompareTag("Base"))
+                    {
+                        Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {collider.gameObject.name}");
+                        return false; // Invalid: Mermaid cannot stop on land or base
+                    }
                 }
-                if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
+
+                // General logic for other characters
+                else
                 {
-                    // Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {hit.collider.gameObject.name}");
-                    return false; // Invalid: Mermaid cannot stop on land or base
-                }
-            }
-            // General logic for other characters
-            else
-            {
-                if (hit.collider.CompareTag("Land") || hit.collider.CompareTag("Base"))
-                {
-                    //   Debug.Log($"{token.characterData.characterName} is safely on land or base.");
-                    return true; // Valid for land-based characters
-                }
-                if (hit.collider.CompareTag("Water"))
-                {
-                    // Debug.LogError($"{token.characterData.characterName} cannot be on water. ");
-                    return false; // Invalid for non-water characters
+                    if (collider.CompareTag("Land") || collider.CompareTag("Base"))
+                    {
+                        Debug.Log($"{token.characterData.characterName} is safely on land or base.");
+                        return true; // Valid for land-based characters
+                    }
+                    if (collider.CompareTag("Water"))
+                    {
+                        Debug.LogError($"{token.characterData.characterName} cannot be on water.");
+                        return false; // Invalid for non-water characters
+                    }
                 }
             }
         }

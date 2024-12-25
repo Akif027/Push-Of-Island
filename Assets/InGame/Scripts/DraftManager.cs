@@ -10,8 +10,7 @@ public class DraftManager : MonoBehaviour
 {
     [Header("UI References")]
     public Transform characterGrid; // Grid container for character cards
-    public GameObject DraftPanel; // Main draft panel
-    public GameObject SelectedCardPanel; // Panel for selected card
+
     public Image SelectedCardImage; // Image for selected card
     public Button CancelButton; // Button to cancel selection
     public Button ConfirmButton; // Button to confirm a character (was EliminateButton)
@@ -36,14 +35,14 @@ public class DraftManager : MonoBehaviour
     private GameObject selectedCardObject = null; // Reference to the selected card GameObject
     public List<CharacterData> player1Characters = new List<CharacterData>(); // List of Player 1's selected characters
     public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
-    public List<CharacterData> RemainingCards = new List<CharacterData>(); // Remaining cards after elimination
+
     private List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
-                                                                                    //  public List<CharacterData> AllCharacterCard = new List<CharacterData>(); // List of placement managers
 
-    public GameManager gameManager;
-    // public MapScroll mapScroll;
+    public GameObject WinnerFirstPlayerSelectedCard;
+    public GameObject WinnerSecondPlayerSelectedCard;
 
-    public GameObject DisplayAllCardPanel;
+
+
     public GameObject FirstPlayerSelectedCard;
     public GameObject SecondPlayerSelectedCard;
     [SerializeField] private Tilemap tilemap; // Reference to your Tilemap
@@ -103,7 +102,7 @@ public class DraftManager : MonoBehaviour
 
             if (placementManager != null)
             {
-                placementManager.owner = playerNumber;
+
                 placementManager.isTokenPlaced = false; // Mark token as not placed initially
                 PlacementManager.Add(placementManager);
             }
@@ -200,16 +199,16 @@ public class DraftManager : MonoBehaviour
                 ElaminationTextImage.SetActive(true);
                 GameManager.Instance.ChangePlayerTurn(2);
                 InitializeDraftUI();
-                DraftPanel.SetActive(true);
-                SelectedCardPanel.SetActive(false);
+                UIManager.Instance.OpenDraftPanel();
+                UIManager.Instance.CloseSelectedCardPanel();
                 break;
 
             case GamePhase.Selection:
                 ChooseTextImage.SetActive(true);
                 ElaminationTextImage.SetActive(false);
                 GameManager.Instance.ChangePlayerTurn(1);
-                DraftPanel.SetActive(true);
-                SelectedCardPanel.SetActive(false);
+                UIManager.Instance.OpenDraftPanel();
+                UIManager.Instance.CloseSelectedCardPanel();
                 ChangeCurrentDraftMainICon(1);
                 break;
 
@@ -231,9 +230,9 @@ public class DraftManager : MonoBehaviour
         GameManager.Instance.MermaidSpawnAreaPlayer2.gameObject.SetActive(false);
         LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
-        DraftPanel.SetActive(false);
+        UIManager.Instance.CloseDraftPanel();
         DraftCanvas.SetActive(true);
-        DisplayAllCardPanel.SetActive(true);
+        UIManager.Instance.OpenDisplayAllCardPanel();
         DisplaySelectedCards();
         EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
 
@@ -245,7 +244,7 @@ public class DraftManager : MonoBehaviour
         yield return new WaitForSeconds(3);
         Mapobj.SetActive(true);
         DraftCanvas.SetActive(false);
-        DisplayAllCardPanel.SetActive(false);
+        UIManager.Instance.CloseDisplayAllCardPanel();
         GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(true);
         GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(true);
         GameManager.Instance.MermaidSpawnAreaPlayer1.gameObject.SetActive(true);
@@ -274,7 +273,17 @@ public class DraftManager : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        // Clear existing child objects from FirstPlayerSelectedCard
+        foreach (Transform child in WinnerFirstPlayerSelectedCard.transform)
+        {
+            Destroy(child.gameObject);
+        }
 
+        // Clear existing child objects from SecondPlayerSelectedCard
+        foreach (Transform child in WinnerSecondPlayerSelectedCard.transform)
+        {
+            Destroy(child.gameObject);
+        }
         // Instantiate new cards for Player 1
         foreach (var character in player1Characters)
         {
@@ -287,6 +296,22 @@ public class DraftManager : MonoBehaviour
         foreach (var character in player2Characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardPrefab, SecondPlayerSelectedCard.transform);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            InitializeCharacterCard(card, character, false);
+        }
+
+        // Instantiate new cards for Player 1
+        foreach (var character in player1Characters)
+        {
+            GameObject card = Instantiate(gameData.CharacterCardPrefab, WinnerFirstPlayerSelectedCard.transform);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            InitializeCharacterCard(card, character, false);
+        }
+
+        // Instantiate new cards for Player 2
+        foreach (var character in player2Characters)
+        {
+            GameObject card = Instantiate(gameData.CharacterCardPrefab, WinnerSecondPlayerSelectedCard.transform);
             card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
             InitializeCharacterCard(card, character, false);
         }
@@ -332,7 +357,7 @@ public class DraftManager : MonoBehaviour
     private void OnSingleTokenPlaced(PlacementManager p)
     {
         p.ConfirmPlacement();
-
+        SoundManager.Instance?.PlayDuringHiringChipPlaced();
         UIManager.Instance.OkButton.gameObject.SetActive(false);
 
         // Clean up: Remove the listener to prevent future issues
@@ -432,14 +457,14 @@ public class DraftManager : MonoBehaviour
     private void OnCharacterClicked(CharacterData character, GameObject card)
     {
         if (GameManager.Instance.currentPhase == GamePhase.Selection && isSelectionLocked) return;
-
+        SoundManager.Instance?.PlayCharacterChoose();
         selectedCharacter = character;
         selectedCardObject = card;
 
         Debug.Log($"Selected character: {character.characterName}");
 
-        DraftPanel.SetActive(false);
-        SelectedCardPanel.SetActive(true);
+        UIManager.Instance.CloseDraftPanel();
+        UIManager.Instance.OpenSelectedCardPanel();
         SelectedCardImage.sprite = card.GetComponent<Image>().sprite;
 
         CancelButton.onClick.RemoveAllListeners();
@@ -449,7 +474,7 @@ public class DraftManager : MonoBehaviour
         if (GameManager.Instance.currentPhase == GamePhase.Elimination)
         {
             ConfirmButton.onClick.AddListener(() => OnEliminateSelection());
-            RemainingCards.Add(character);
+
         }
         else if (GameManager.Instance.currentPhase == GamePhase.Selection)
         {
@@ -460,35 +485,48 @@ public class DraftManager : MonoBehaviour
 
     private void OnCancelSelection()
     {
+        SoundManager.Instance?.PlayButtonTap();
         isSelectionLocked = false;
         Debug.Log("Selection canceled.");
-        SelectedCardPanel.SetActive(false);
-        DraftPanel.SetActive(true);
+        UIManager.Instance.CloseSelectedCardPanel();
+        UIManager.Instance.OpenDraftPanel();
     }
 
     private void OnEliminateSelection()
     {
         if (selectedCardObject != null && GameManager.Instance.currentPhase == GamePhase.Elimination)
         {
-            Debug.Log($"Eliminated  character: {selectedCharacter.characterName}");
+            SoundManager.Instance?.PlayDiscardFirstCard();
+            Debug.Log($"Eliminated character: {selectedCharacter.characterName}");
 
             instantiatedCards.Remove(selectedCardObject);
-            Destroy(selectedCardObject);
+            UIManager.Instance.CloseSelectedCardPanel();
+            UIManager.Instance.OpenDraftPanel();
+            // Animate the card to scale to zero
+            DoTweenHelper.ScaleToZero(
+                selectedCardObject,
+                0.5f, // Duration of the animation
+                () =>
+                {
+                    Debug.Log($"{selectedCardObject.name} destroyed after scaling down.");
+                    Destroy(selectedCardObject); // Destroy the card after animation
+                    selectedCharacter = null;
+                    selectedCardObject = null;
 
-            selectedCharacter = null;
-            selectedCardObject = null;
-            GameManager.Instance.ChangePhase(GamePhase.Selection);
-            TransitionToPhase(GamePhase.Selection);
+                    GameManager.Instance.ChangePhase(GamePhase.Selection);
+                    TransitionToPhase(GamePhase.Selection);
 
-            SelectedCardPanel.SetActive(false);
-            DraftPanel.SetActive(true);
+
+                }
+            );
         }
     }
+
 
     private void OnConfirmCharacterSelection()
     {
         if (selectedCharacter == null || selectedCardObject == null) return;
-
+        SoundManager.Instance?.PlayButtonTap();
         if (GameManager.Instance.GetCurrentPlayer() == 1)
         {
             player1Characters.Add(selectedCharacter);
@@ -498,7 +536,7 @@ public class DraftManager : MonoBehaviour
             player2Characters.Add(selectedCharacter);
         }
 
-        GameObject duplicateCard = Instantiate(selectedCardObject, DraftPanel.transform);
+        GameObject duplicateCard = Instantiate(selectedCardObject, UIManager.Instance.DraftPanel.transform);
         duplicateCard.transform.position = selectedCardObject.transform.position;
         duplicateCard.transform.localScale = selectedCardObject.transform.localScale;
 
@@ -515,7 +553,7 @@ public class DraftManager : MonoBehaviour
                 isSelectionLocked = false;
                 if (instantiatedCards.Count == 1)
                 {
-                    AssignLastCard();
+                    RemoveLastCard();
                     return;
                 }
 
@@ -524,28 +562,34 @@ public class DraftManager : MonoBehaviour
             }
         );
 
-        SelectedCardPanel.SetActive(false);
-        DraftPanel.SetActive(true);
+        UIManager.Instance.CloseSelectedCardPanel();
+        UIManager.Instance.OpenDraftPanel();
         selectedCharacter = null;
         selectedCardObject = null;
     }
 
-    private void AssignLastCard()
+    private void RemoveLastCard()
     {
         if (instantiatedCards.Count != 1) return;
 
         GameObject lastCard = instantiatedCards[0];
         CharacterData lastCharacter = gameData.GetCharacterByName(lastCard.name);
 
-        RemainingCards.Add(lastCharacter);
-
         instantiatedCards.Remove(lastCard);
-        Destroy(lastCard);
 
-        gameManager.ChangePhase(GamePhase.Placement);
-        TransitionToPhase(GamePhase.Placement);
-
-        SelectedCardPanel.SetActive(false);
+        // Animate the card to scale to zero
+        DoTweenHelper.ScaleToZero(
+            lastCard,
+           0.5f, // Duration of the animation
+            () =>
+            {
+                Debug.Log($"{lastCard.name} destroyed after scaling down.");
+                Destroy(lastCard); // Destroy the card after animation
+                GameManager.Instance.ChangePhase(GamePhase.Placement);
+                TransitionToPhase(GamePhase.Placement);
+                UIManager.Instance.CloseSelectedCardPanel();
+            }
+        );
     }
 
 

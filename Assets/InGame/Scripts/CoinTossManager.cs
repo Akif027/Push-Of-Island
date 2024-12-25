@@ -43,7 +43,7 @@ public class CoinTossManager : MonoBehaviour
         activeCoin = Random.Range(0, 2) == 0 ? coin1 : coin2;
         losingCoin = activeCoin == coin1 ? coin2 : coin1;
         winner = activeCoin == coin1 ? 1 : 2;
-
+        SoundManager.Instance?.PlayCoinToss();
         // Get the sprite from the Image component of the winning coin
         winnerSprite = activeCoin.GetComponent<Image>().sprite;
         loserSprite = losingCoin.GetComponent<Image>().sprite;
@@ -65,6 +65,7 @@ public class CoinTossManager : MonoBehaviour
         DOVirtual.DelayedCall(tossDuration, () =>
         {
             HighlightWinner();
+            SoundManager.Instance?.PlayCoinTossStopped();
         });
     }
 

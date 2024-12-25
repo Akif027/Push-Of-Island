@@ -21,5 +21,5 @@ MonoBehaviour:
   coinsPerCaptureBase: 40
   bonusPointsOnPlaced: 0
   bonusCoins: 30
-  speedMultiplier: 2
-  weightMultiplier: 10
+  speedMultiplier: 1
+  weightMultiplier: 2

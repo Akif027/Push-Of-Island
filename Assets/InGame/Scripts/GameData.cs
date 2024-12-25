@@ -35,10 +35,11 @@ public class CharacterData
     public string characterName; // Name of the character
     public float CharacterCost = 10f;
 
+
     public CharacterType characterType; // Enum for character type
     public Sprite characterCardSprite; // Sprite representing the character
     public GameObject TokenPrefab;
-    public LayerMask Mask;
+
 
     public CharacterAbility ability; // Reference to the character's ability
 }

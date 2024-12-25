@@ -2,37 +2,43 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ForceSlider : MonoBehaviour
+public class ForceSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
 
-
     public float maxForce = 100f; // Maximum force value
-    public Slider slider;         // Reference to the slider
     public GameObject fillParent; // Parent object containing the Fill children
-    public Sprite[] fillSprites;  // Array of 12 sprites for each fill step
-    public Sprite emptySprite;    // Sprite for empty shells
+    public Sprite[] fillSprites;  // Array of sprites for each fill step
+    public Sprite emptySprite;    // Sprite for empty state
+    public RectTransform dragArea; // Area to calculate drag percentage
+    public RectTransform pointer; // Pointer that follows the fill force
 
     private Image[] fillImages;
+    private float currentFillPercent = 0f; // Current fill percentage (0 to 1)
+    private bool isDragging = false;
 
     void Start()
     {
         // Get all Image components under the parent
         fillImages = fillParent.GetComponentsInChildren<Image>();
 
-        // Add a listener to the slider to update on value change
-        slider.onValueChanged.AddListener(UpdateFill);
+        // Set all images to empty initially
+        foreach (var image in fillImages)
+        {
+            image.sprite = emptySprite;
+        }
+
+        Debug.Log("ForceArea initialized!");
     }
 
-    void UpdateFill(float value)
+    void UpdateFill()
     {
-        int intValue = Mathf.FloorToInt(value); // Get integer value of slider
-        int totalImages = fillSprites.Length;  // Number of images in the array
+        int totalImages = fillSprites.Length;
+        int filledSteps = Mathf.FloorToInt(currentFillPercent * totalImages); // Determine fill steps
 
         for (int i = 0; i < fillImages.Length; i++)
         {
-            if (i < intValue)
+            if (i < filledSteps)
             {
-                // Cycle through the 12 images
                 int spriteIndex = i % totalImages;
                 fillImages[i].sprite = fillSprites[spriteIndex];
             }
@@ -41,18 +47,65 @@ public class ForceSlider : MonoBehaviour
                 fillImages[i].sprite = emptySprite; // Empty state
             }
         }
+
+        UpdatePointerPosition();
+        Debug.Log($"Fill updated: {currentFillPercent * 100}%");
     }
 
-    public float getForce()
+    public float GetForce()
     {
+        return currentFillPercent * maxForce;
+    }
 
-        int totalShells = fillImages.Length; // Total number of shells
-        int filledShells = Mathf.FloorToInt(slider.value); // Number of filled shells based on slider value
+    public void OnPointerDown(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Left) return; // Ignore non-left clicks
 
-        // Calculate the force as a percentage of filled shells
-        float force = (filledShells / (float)totalShells) * maxForce;
+        isDragging = true;
+        Debug.Log("Pointer down!");
+        UpdateDrag(eventData);
+    }
 
-        return force;
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (isDragging)
+        {
+            UpdateDrag(eventData);
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        isDragging = false;
+        Debug.Log("Pointer up!");
+    }
+
+    private void UpdateDrag(PointerEventData eventData)
+    {
+        // Convert the pointer position to a local position within the drag area
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            dragArea,
+            eventData.position,
+            eventData.pressEventCamera,
+            out Vector2 localPoint
+        );
+
+        // Calculate the drag percentage based on the local X position
+        float normalizedX = Mathf.Clamp01((localPoint.x - dragArea.rect.xMin) / dragArea.rect.width);
+        currentFillPercent = normalizedX;
+
+        Debug.Log($"Dragging: {currentFillPercent * 100}%");
+        UpdateFill();
+    }
+
+    private void UpdatePointerPosition()
+    {
+        if (pointer == null) return;
+
+        // Calculate the pointer's position based on the fill percentage
+        float pointerX = Mathf.Lerp(0, dragArea.rect.width, currentFillPercent);
+        pointer.anchoredPosition = new Vector2(pointerX, pointer.anchoredPosition.y);
+
+        Debug.Log($"Pointer moved to X: {pointerX}");
     }
 }
-

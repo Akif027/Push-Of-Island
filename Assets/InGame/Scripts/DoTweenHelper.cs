@@ -1,6 +1,7 @@
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
+using System;
 
 public static class DoTweenHelper
 {
@@ -70,7 +71,7 @@ public static class DoTweenHelper
     public static void AnimateText(GameObject textPrefab, Canvas parentCanvas, Vector3 spawnPosition, string message, float animationDuration, float scaleFactor)
     {
         // Instantiate the text prefab under the parent canvas
-        GameObject textInstance = Object.Instantiate(textPrefab, parentCanvas.transform);
+        GameObject textInstance = UnityEngine.Object.Instantiate(textPrefab, parentCanvas.transform);
 
         // Set the position within the canvas
         RectTransform textRect = textInstance.GetComponent<RectTransform>();
@@ -103,7 +104,7 @@ public static class DoTweenHelper
         // Destroy the text instance after the animation completes
         textSequence.OnComplete(() =>
         {
-            Object.Destroy(textInstance);
+            UnityEngine.Object.Destroy(textInstance);
         });
     }
 
@@ -133,11 +134,47 @@ public static class DoTweenHelper
         // Destroy the object after the animation completes
         sequence.OnComplete(() =>
         {
-            Object.Destroy(obj);
+            UnityEngine.Object.Destroy(obj);
             onComplete?.Invoke(); // Invoke the callback if provided
         });
     }
 
+    public static void ScaleToZero(GameObject target, float duration, Action onComplete = null)
+    {
+        if (target == null) return;
+
+        Debug.Log($"Scaling {target.name} to zero over {duration} seconds.");
+
+        target.transform.DOScale(Vector3.zero, duration)
+            .SetEase(Ease.InBack) // Use a smooth easing for better animation
+            .OnComplete(() =>
+            {
+                Debug.Log($"{target.name} scaled to zero. Invoking onComplete callback.");
+                onComplete?.Invoke();
+            });
+    }
+
+
+    public static void FadePanel(CanvasGroup panel, bool fadeIn, float duration, System.Action onComplete = null)
+    {
+        if (panel == null) return;
+
+        // Set the target alpha
+        float targetAlpha = fadeIn ? 1f : 0f;
+
+        // Enable the panel if fading in
+        if (fadeIn) panel.gameObject.SetActive(true);
+
+        // Animate the alpha value
+        panel.DOFade(targetAlpha, duration).SetEase(Ease.InOutQuad).OnComplete(() =>
+        {
+            // Disable the panel after fading out
+            if (!fadeIn) panel.gameObject.SetActive(false);
+
+            // Invoke the callback if provided
+            onComplete?.Invoke();
+        });
+    }
     /// <summary>
     /// Fades the alpha of a UI TextMeshPro.
     /// </summary>

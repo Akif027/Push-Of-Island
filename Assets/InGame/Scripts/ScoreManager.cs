@@ -5,13 +5,11 @@ using System.Collections.Generic;
 public class ScoreManager : MonoBehaviour
 {
     private Dictionary<int, int> playerCoins = new Dictionary<int, int>();
-
+    private Dictionary<int, int> playerGloryCoins = new Dictionary<int, int>(); // New dictionary for glory coins
 
     public TextMapper textMapper;
 
     public string coinTextFormat = "{0}"; // Customizable format string
-
-
 
     private void OnEnable()
     {
@@ -32,13 +30,11 @@ public class ScoreManager : MonoBehaviour
     private void Start()
     {
         InitializePlayers();
-
-
     }
 
     private void InitializePlayers()
     {
-        // Initialize coins for both players
+        // Initialize coins and glory coins for both players
         for (int playerNumber = 1; playerNumber <= 2; playerNumber++) // Adjust for more players
         {
             if (!playerCoins.ContainsKey(playerNumber))
@@ -47,8 +43,11 @@ public class ScoreManager : MonoBehaviour
                 textMapper.AddPlayerCoinsPoints(playerCoins[playerNumber]);
             }
 
-            // Update the UI for all players
-
+            if (!playerGloryCoins.ContainsKey(playerNumber))
+            {
+                playerGloryCoins[playerNumber] = 0; // Starting glory coins
+                textMapper.AddPlayerGloryPoints(playerNumber, playerGloryCoins[playerNumber]);
+            }
         }
     }
 
@@ -58,41 +57,55 @@ public class ScoreManager : MonoBehaviour
         playerCoins[playerNumber] += coinAmount;
         textMapper.AddPlayerCoinsPoints(playerCoins[playerNumber]);
         Debug.Log($"Player {playerNumber} added {coinAmount} coins. Total: {playerCoins[playerNumber]}.");
-        // UpdateCoinUI(playerNumber);
     }
 
     public void OnCoinDeduct(int playerNumber, int coinAmount)
     {
         SetupPlayer(playerNumber);
         playerCoins[playerNumber] = Mathf.Max(0, playerCoins[playerNumber] - coinAmount);
+        textMapper.AddPlayerCoinsPoints(playerCoins[playerNumber]);
         Debug.Log($"Player {playerNumber} deducted {coinAmount} coins. Total: {playerCoins[playerNumber]}.");
-
     }
-    void OnGloryPointAdded(int playerNumber, int gloryPoints)
+
+    public void OnGloryPointAdded(int playerNumber, int gloryPoints)
     {
-
-        textMapper.AddPlayerGloryPoints(playerNumber, gloryPoints);
-
+        SetupGloryPlayer(playerNumber);
+        playerGloryCoins[playerNumber] += gloryPoints;
+        textMapper.AddPlayerGloryPoints(playerNumber, playerGloryCoins[playerNumber]);
+        Debug.Log($"Player {playerNumber} added {gloryPoints} glory coins. Total: {playerGloryCoins[playerNumber]}.");
     }
 
-    void OnGloryPointDeducted(int playerNumber, int gloryPoints)
+    public void OnGloryPointDeducted(int playerNumber, int gloryPoints)
     {
-        SetupPlayer(playerNumber);
-        playerCoins[playerNumber] = Mathf.Max(0, playerCoins[playerNumber] - gloryPoints);
-
-
+        SetupGloryPlayer(playerNumber);
+        playerGloryCoins[playerNumber] = Mathf.Max(0, playerGloryCoins[playerNumber] - gloryPoints);
+        textMapper.AddPlayerGloryPoints(playerNumber, playerGloryCoins[playerNumber]);
+        Debug.Log($"Player {playerNumber} deducted {gloryPoints} glory coins. Total: {playerGloryCoins[playerNumber]}.");
     }
+
     public int GetCoins(int playerNumber)
     {
         return playerCoins.TryGetValue(playerNumber, out int coins) ? coins : 0;
     }
 
+    public int GetGloryCoins(int playerNumber)
+    {
+        return playerGloryCoins.TryGetValue(playerNumber, out int gloryCoins) ? gloryCoins : 0;
+    }
 
     private void SetupPlayer(int playerNumber)
     {
         if (!playerCoins.ContainsKey(playerNumber))
         {
             playerCoins[playerNumber] = 0;
+        }
+    }
+
+    private void SetupGloryPlayer(int playerNumber)
+    {
+        if (!playerGloryCoins.ContainsKey(playerNumber))
+        {
+            playerGloryCoins[playerNumber] = 0;
         }
     }
 }

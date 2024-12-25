@@ -51,11 +51,11 @@ public class TokenManager : MonoBehaviour
             selectedToken.StopDragging();
         }
     }
+
     private bool IsPointerOverUIElement()
     {
         return UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject();
     }
-
 
     private void SelectTokenAtMousePosition(Vector3 mousePosition)
     {
@@ -66,6 +66,13 @@ public class TokenManager : MonoBehaviour
             Token token = hit.collider.GetComponent<Token>();
             if (token != null)
             {
+                // Ensure the Golem is active before selection
+                if (token.characterData.characterType == CharacterType.Golem && token.IsImmobile())
+                {
+                    Debug.LogWarning("Cannot select Golem. It is immobile and must be activated first.");
+                    return; // Block selection if the Golem is immobile
+                }
+
                 SetSelectedToken(token);
                 token.StartDragging(mousePosition);
             }
@@ -75,17 +82,18 @@ public class TokenManager : MonoBehaviour
             DeselectToken();
         }
     }
+
     private void DeselectToken()
     {
-
         if (selectedToken != null)
         {
             MapScroll.Instance.EnableScroll();
             selectedToken.OnTokenDeselected();
             selectedToken = null; // Clear the selected token reference
-            Debug.Log("Token deselected. ");
+            Debug.Log("Token deselected.");
         }
     }
+
     public void SetSelectedToken(Token token)
     {
         if (selectedToken != null && selectedToken != token)
@@ -101,7 +109,7 @@ public class TokenManager : MonoBehaviour
     {
         if (selectedToken != null)
         {
-            selectedToken.SetForce(forceSlider.getForce());
+            selectedToken.SetForce(forceSlider.GetForce());
             selectedToken.Launch();
             Debug.Log($"Launched Token: {selectedToken.name}");
         }

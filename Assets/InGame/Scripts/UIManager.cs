@@ -1,3 +1,4 @@
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,7 +13,15 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject pausePanel;
     [SerializeField] private GameObject hiringPanel;
     [SerializeField] private GameObject infoPanel;
+    [SerializeField] private GameObject WinningPanel;
+    [SerializeField] private GameObject PlayerOneWinnerimg;
+    [SerializeField] private GameObject PlayerTwoWinnerimg;
+    public GameObject DraftPanel; // Main draft panel
+    public GameObject SelectedCardPanel; // Panel for selected card
+
+    public GameObject DisplayAllCardPanel;
     public Button OkButton;
+    [SerializeField] private float fadeDuration = 0.5f; // Duration for fade animations
 
 
 
@@ -30,11 +39,21 @@ public class UIManager : MonoBehaviour
     {
         if (panel != null)
         {
-            panel.SetActive(true);
+            CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                panel.SetActive(true); // Enable the GameObject first
+                canvasGroup.alpha = 0; // Ensure alpha starts from 0 for fade-in
+                DoTweenHelper.FadePanel(canvasGroup, true, fadeDuration);
+            }
+            else
+            {
+                panel.SetActive(true); // Fallback if CanvasGroup is not attached
+            }
         }
         else
         {
-            Debug.LogWarning("The panel you tried to open is not assigned.");
+            Debug.LogWarning("The panel you tried to open is not assigned. ");
         }
     }
 
@@ -42,7 +61,18 @@ public class UIManager : MonoBehaviour
     {
         if (panel != null)
         {
-            panel.SetActive(false);
+            CanvasGroup canvasGroup = panel.GetComponent<CanvasGroup>();
+            if (canvasGroup != null)
+            {
+                DoTweenHelper.FadePanel(canvasGroup, false, fadeDuration, () =>
+                {
+                    panel.SetActive(false); // Disable the GameObject after fade-out
+                });
+            }
+            else
+            {
+                panel.SetActive(false); // Fallback if CanvasGroup is not attached
+            }
         }
         else
         {
@@ -54,28 +84,76 @@ public class UIManager : MonoBehaviour
     public void OpenPlayUpperPanel() => OpenPanel(playUpperPanel);
     public void ClosePlayUpperPanel() => ClosePanel(playUpperPanel);
 
-    public void OpenPlayLowerPanel() => OpenPanel(playLowerPanel);
-    public void ClosePlayLowerPanel() => ClosePanel(playLowerPanel);
+    public void OpenPlayLowerPanel()
+    {
+        SoundManager.Instance?.PlayPanelChanging();
+        OpenPanel(playLowerPanel);
 
-    public void OpenPlayAttackLowerPanel() => OpenPanel(playAttackLowerPanel);
+    }
+    public void ClosePlayLowerPanel() => ClosePanel(playLowerPanel);
+    public void playTapSound()
+    {
+
+        SoundManager.Instance?.PlayButtonTap();
+    }
+    public void OpenPlayAttackLowerPanel()
+    {
+
+        SoundManager.Instance?.PlayPanelChanging();
+        OpenPanel(playAttackLowerPanel);
+    }
     public void ClosePlayAttackLowerPanel() => ClosePanel(playAttackLowerPanel);
 
-    public void OpenPausePanel() => OpenPanel(pausePanel);
-    public void ClosePausePanel() => ClosePanel(pausePanel);
+    public void OpenPausePanel() { SoundManager.Instance?.PlayButtonTap(); OpenPanel(pausePanel); }
+    public void ClosePausePanel() { SoundManager.Instance?.PlayButtonTap(); ClosePanel(pausePanel); }
 
-    public void OpenHiringPanel() => OpenPanel(hiringPanel);
-    public void CloseHiringPanel() => ClosePanel(hiringPanel);
+    public void OpenHiringPanel() { SoundManager.Instance?.PlayButtonTap(); OpenPanel(hiringPanel); }
+    public void CloseHiringPanel() { SoundManager.Instance?.PlayButtonTap(); ClosePanel(hiringPanel); }
 
-    public void OpenInfoPanel() => OpenPanel(infoPanel);
-    public void CloseInfoPanel() => ClosePanel(infoPanel);
+    public void OpenInfoPanel() { SoundManager.Instance?.PlayButtonTap(); OpenPanel(infoPanel); }
+    public void CloseInfoPanel() { SoundManager.Instance?.PlayButtonTap(); ClosePanel(infoPanel); }
+    public void OpenDraftPanel() { DraftPanel.SetActive(true); }
+    public void CloseDraftPanel() { DraftPanel.SetActive(false); }
+    public void OpenSelectedCardPanel() { SelectedCardPanel.SetActive(true); }
+    public void CloseSelectedCardPanel() { SelectedCardPanel.SetActive(false); }
+    public void OpenDisplayAllCardPanel() { OpenPanel(DisplayAllCardPanel); }
+    public void CloseDisplayAllCardPanel() { ClosePanel(DisplayAllCardPanel); }
+    public void EnablePlayLoyOut()
+    {
+        // SoundManager.Instance?.PlayPanelChanging();
+        OpenPlayUpperPanel();
+        OpenPlayLowerPanel();
+        ClosePlayAttackLowerPanel();
+        CloseHiringPanel();
+        CloseInfoPanel();
+    }
+    public void OnWinningPanel(Int32 Playerno)
+    {
+        SoundManager.Instance?.PlayEndScreenOpen();
+        WinningPanel.SetActive(true);
+        PlayerOneWinnerimg.SetActive(Playerno == 1 ? true : false);
+        PlayerTwoWinnerimg.SetActive(Playerno == 2 ? true : false);
+
+    }
+    public void DisablePlayLoyOut()
+    {
+        // SoundManager.Instance?.PlayEndScreenOpen();
+        ClosePlayUpperPanel();
+        ClosePlayLowerPanel();
 
 
+    }
+    public void MainMenu()
+    {
+        CustomSceneManager.LoadScene("Menu");
+        SoundManager.Instance?.PlayButtonTap();
 
+    }
     // Method to exit the application
     public void QuitApplication()
     {
         // Log to indicate the application is quitting (useful for debugging in the Editor)
-        Debug.Log("Exiting application...");
+        Debug.Log("Exiting application.. .");
 
         // Quit the application
         Application.Quit();

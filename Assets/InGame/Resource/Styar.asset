@@ -9,17 +9,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8bae3c24dd459204caa6939918ffe586, type: 3}
-  m_Name: Satyr Ability
+  m_Script: {fileID: 11500000, guid: b366cfc19164ba94297367ae7d17c84a, type: 3}
+  m_Name: Styar
   m_EditorClassIdentifier: 
-  abilityName: BounceOff
+  abilityName: 
   description: 
   canMoveOnWater: 0
   becomesImmobileOnPlacement: 0
   isVaultInteraction: 1
   coinsPerCaptureVault: 5
-  coinsPerCaptureBase: 10
+  coinsPerCaptureBase: 5
   bonusPointsOnPlaced: 0
   bonusCoins: 30
-  speedMultiplier: 4
-  weightMultiplier: 6
+  speedMultiplier: 1
+  weightMultiplier: 2

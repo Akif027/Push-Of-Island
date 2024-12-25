@@ -23,7 +23,10 @@ public class TextMapper : MonoBehaviour
     public Transform coinContainerOnHiringPanel; // Parent with child Images (Horizontal Layout Group)
     public Transform InfoContainer; // Parent with child Images (Horizontal Layout Group)
     public ScoreManager scoreManager;
-
+    public Transform WinnercoinContainerPlayerOne; // Parent with child Images (Horizontal Layout Group)
+    public Transform WinnerGloryContainerPlayerOne; // Parent with child Images (Horizontal Layout Group)
+    public Transform WinnercoinContainerPlayerTwo; // Parent with child Images (Horizontal Layout Group)
+    public Transform WinnerGloryContainerPlayerTwo; // Parent with child Images (Horizontal Layout Group)
     private void Start()
     {
         UpdateTurn(0);
@@ -43,6 +46,8 @@ public class TextMapper : MonoBehaviour
     {
         Transform targetContainer = playerNo == 1 ? player1Container : player2Container;
         UpdateNumberImages(amount, targetContainer, numberSprites);
+        Transform targetWinnerContainer = playerNo == 1 ? WinnerGloryContainerPlayerOne : WinnerGloryContainerPlayerTwo;
+        UpdateNumberImages(amount, targetWinnerContainer, numberSprites);
     }
 
     public void UpdateTurnIcon(Int32 playerNo)
@@ -53,6 +58,8 @@ public class TextMapper : MonoBehaviour
         UpdateNumberImages(scoreManager.GetCoins(playerNo), coinContainer, coinNumberSprites);
         UpdateNumberImages(scoreManager.GetCoins(playerNo), coinContainerOnHiringPanel, coinNumberSprites);
         UpdateNumberImages(scoreManager.GetCoins(playerNo == 1 ? 2 : 1), InfoContainer, coinNumberSprites);
+        UpdateNumberImages(scoreManager.GetCoins(1), WinnercoinContainerPlayerOne, coinNumberSprites);
+        UpdateNumberImages(scoreManager.GetCoins(2), WinnercoinContainerPlayerTwo, coinNumberSprites);
     }
 
     public void UpdateTurn(int amount)

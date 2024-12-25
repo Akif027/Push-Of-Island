@@ -4,7 +4,7 @@ using System.Collections;
 public class PlacementManager : MonoBehaviour
 {
     CharacterType characterType;
-    public int owner; // Player number who owns this token (e.g., 1 or 2)
+
     public GameObject MainSpriteObj;
     public GameObject CannotPlaceInvalidObj;
     public GameObject BlueBorder;
@@ -87,7 +87,7 @@ public class PlacementManager : MonoBehaviour
     private void HandleDrag()
     {
         // Do not allow dragging if Drag is disabled or the token does not belong to the current player
-        if (!Drag || !token.IsCurrentPlayerOwner() && isTokenPlaced) return;
+        if (!Drag || isTokenPlaced) return;
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -95,14 +95,14 @@ public class PlacementManager : MonoBehaviour
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
             // Allow drag only if the token itself is clicked
-            if (hit.collider != null && hit.collider.gameObject == gameObject)
+            if (hit.collider != null && hit.collider.gameObject == gameObject && token.IsCurrentPlayerOwner())
             {
                 isBeingDragged = true;
 
                 MapScroll.Instance.DisableScroll();
                 Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
-                Debug.Log($"Player {owner} is dragging token:  {gameObject.name}");
+
             }
         }
 
@@ -193,6 +193,7 @@ public class PlacementManager : MonoBehaviour
         }
         else
         {
+            SoundManager.Instance?.PlayNotPossiblePlacement();
             MainSpriteObj.SetActive(false);
             CannotPlaceInvalidObj.SetActive(true);
 
@@ -202,7 +203,7 @@ public class PlacementManager : MonoBehaviour
     private void HandleBorder()
     {
 
-        if (owner == 1)
+        if (token.owner == 1)
         {
             BlueBorder.SetActive(true);
             YellowBorder.SetActive(false);

@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 
 public class HiringManager : MonoBehaviour
@@ -12,20 +11,40 @@ public class HiringManager : MonoBehaviour
     [SerializeField] private Transform playerIcon2;
     [SerializeField] private ScoreManager scoreManager;
 
-
     /// <summary>
     /// Opens the hiring panel and displays the current player's characters.
     /// </summary>
     public void OpenHiringPanel()
     {
-        ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer(), gridLayout);
+        ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer(), gridLayout, false);
         UIManager.Instance.OpenHiringPanel();
+    }
+
+    /// <summary>
+    /// Opens the information panel for the next player.
+    /// </summary>
+    public void OpenInfoPanel()
+    {
+        int currentPlayer = GameManager.Instance.GetCurrentPlayer();
+        int nextPlayer = currentPlayer == 1 ? 2 : 1;
+
+        UIManager.Instance.OpenInfoPanel();
+
+        // Clear existing info cards
+        foreach (Transform child in infoGridLayout)
+        {
+            Destroy(child.gameObject);
+        }
+
+        // Update player icons and display characters for the next player
+        UpdatePlayerIcons(currentPlayer);
+        ShowPlayerCharacters(nextPlayer, infoGridLayout, true); // Info panel has no buttons
     }
 
     /// <summary>
     /// Displays the characters of the specified player in the provided grid layout.
     /// </summary>
-    private void ShowPlayerCharacters(int playerNumber, Transform layout)
+    private void ShowPlayerCharacters(int playerNumber, Transform layout, bool isForInfoPanel)
     {
         if (layout == null)
         {
@@ -47,19 +66,18 @@ public class HiringManager : MonoBehaviour
         // Create character cards for the player
         foreach (var entry in playerCharacters)
         {
-
             CharacterData characterData = entry.Key;
             bool isUnlocked = entry.Value;
 
             GameObject card = Instantiate(characterCardPrefab, layout);
-            InitializeCharacterCard(card, characterData, isUnlocked);
+            InitializeCharacterCard(card, characterData, isUnlocked, isForInfoPanel);
         }
     }
 
     /// <summary>
     /// Initializes a character card UI element.
     /// </summary>
-    private void InitializeCharacterCard(GameObject card, CharacterData characterData, bool isUnlocked)
+    private void InitializeCharacterCard(GameObject card, CharacterData characterData, bool isUnlocked, bool isForInfoPanel)
     {
         if (card == null || characterData == null)
         {
@@ -73,19 +91,31 @@ public class HiringManager : MonoBehaviour
         Image cardImage = card.GetComponent<Image>();
         if (cardImage != null) cardImage.sprite = characterData.characterCardSprite;
 
-        // Configure button functionality
-        Button cardButton = card.GetComponent<Button>();
-        if (cardButton != null)
+        if (isForInfoPanel)
         {
-            cardButton.onClick.RemoveAllListeners();
-
-            if (!isUnlocked)
+            // Remove any button components for info panel
+            Button cardButton = card.GetComponent<Button>();
+            if (cardButton != null)
             {
-                cardButton.onClick.AddListener(() => PurchaseCharacter(characterData));
+                Destroy(cardButton); // Remove button functionality
             }
-            else
+        }
+        else
+        {
+            // Configure button functionality for hiring panel
+            Button cardButton = card.GetComponent<Button>();
+            if (cardButton != null)
             {
-                cardButton.interactable = false;
+                cardButton.onClick.RemoveAllListeners();
+
+                if (!isUnlocked)
+                {
+                    cardButton.onClick.AddListener(() => PurchaseCharacter(characterData));
+                }
+                else
+                {
+                    cardButton.interactable = false;
+                }
             }
         }
     }
@@ -112,29 +142,6 @@ public class HiringManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Opens the information panel for the next player.
-    /// </summary>
-    public void OpenInfoPanel()
-    {
-        int currentPlayer = GameManager.Instance.GetCurrentPlayer();
-        int nextPlayer = currentPlayer == 1 ? 2 : 1;
-
-        UIManager.Instance.OpenInfoPanel();
-
-        // Clear existing info cards
-        foreach (Transform child in infoGridLayout)
-        {
-            Destroy(child.gameObject);
-        }
-
-        // Update player icons and display characters for the next player
-        UpdatePlayerIcons(currentPlayer);
-        ShowPlayerCharacters(nextPlayer, infoGridLayout);
-
-
-    }
-
-    /// <summary>
     /// Updates the player icons in the info panel.
     /// </summary>
     private void UpdatePlayerIcons(int currentPlayer)
@@ -151,8 +158,6 @@ public class HiringManager : MonoBehaviour
             icon2Image.sprite = currentPlayer == 2 ? player1Icon : player2Icon;
         }
     }
-
-
 
     /// <summary>
     /// Closes the information panel.

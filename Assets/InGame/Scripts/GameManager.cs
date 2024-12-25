@@ -24,6 +24,8 @@ public class GameManager : MonoBehaviour
     public Transform MermaidSpawnAreaPlayer1;
     public Transform MermaidSpawnAreaPlayer2;
 
+    public ScoreManager scoreManager;
+    int winner;
 
     void Awake()
     {
@@ -53,11 +55,17 @@ public class GameManager : MonoBehaviour
     }
     private void HandleTurn()
     {
+        SoundManager.Instance?.PlayTurnChange();
         incrementCurrentPlayerTurn();
-        CheckAndRewardThiefVaultInteraction(); // Check for thief-vault interaction
+        CheckAndRewardThiefVaultInteraction();
+
+        if (IsTurnLimitReachedOrTokensEmpty())
+        {
+            TriggerGameOver();
+            return;
+        }
 
         ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
-        Debug.LogError(currentPlayer);
 
         MapScroll.Instance.SmoothTransitionToPosition(
             currentPlayer == 1
@@ -65,8 +73,17 @@ public class GameManager : MonoBehaviour
                 : spawnTokenPositionPlayer2.position,
             0.5f);
 
-
+        if (currentPhase == GamePhase.GamePlay) UIManager.Instance.EnablePlayLoyOut();
+        MapScroll.Instance.EnableScroll();
     }
+
+    private void TriggerGameOver()
+    {
+        ChangePhase(GamePhase.Gameover);
+        winner = GetWinnerPlayerNumber();
+        Debug.Log($"Game Over! Winner is Player {winner}");
+    }
+
 
 
     private void InitializeCoinToss()
@@ -95,7 +112,7 @@ public class GameManager : MonoBehaviour
     {
         if (!playerIcons.ContainsKey(playerNumber))
         {
-            Debug.LogError($"Invalid player number: {playerNumber}. Must be a valid key in playerIcons");
+            Debug.LogError($"Invalid player number: {playerNumber}. Must be a valid key in playerIcons ");
             return;
         }
 
@@ -115,6 +132,7 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void CheckAndRewardThiefVaultInteraction()
     {
+
         foreach (PlayerInfo playerInfo in playerInfos)
         {
             foreach (Token token in playerInfo.tokens)
@@ -122,10 +140,11 @@ public class GameManager : MonoBehaviour
                 if (token == null || token.characterData == null) continue;
 
                 // Check if the token is a thief and is interacting with a vault
-                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingVault(token))
+                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingVault(token) && token.IsCurrentPlayerOwner())
                 {
                     EventManager.TriggerCoinAdd(token.owner, 5); // Award 5 coins
-                    Debug.Log($"Player {token.owner} awarded 5 coins for a thief interacting with the vault.");
+                    SoundManager.Instance?.PlayCoinCollect();
+                    Debug.LogError($"Player {token.owner} awarded 5 coins for a thief interacting with the vault.");
                 }
             }
         }
@@ -238,9 +257,21 @@ public class GameManager : MonoBehaviour
     {
 
         currentPhase = newPhase;
+        switch (newPhase)
+        {
+
+            case GamePhase.Gameover:
+                gameFinised();
+                break;
+        }
 
     }
+    private void gameFinised()
+    {
+        Debug.LogError("winner is Player " + winner);
+        UIManager.Instance.OnWinningPanel(winner);
 
+    }
     public GamePhase getCurrentPhase()
     {
         return currentPhase;
@@ -277,7 +308,7 @@ public class GameManager : MonoBehaviour
 
         if (placementManager != null)
         {
-            placementManager.owner = playerNumber;
+
             placementManager.isTokenPlaced = true;
         }
      ;
@@ -339,6 +370,11 @@ public class GameManager : MonoBehaviour
         }
 
         playerInfo.tokens.Remove(tokenToRemove);
+        // Immediately check for game over
+        if (IsTurnLimitReachedOrTokensEmpty())
+        {
+            TriggerGameOver();
+        }
         Debug.Log($"Removed token of type {characterType} from Player {playerNumber}.");
     }
 
@@ -365,6 +401,38 @@ public class GameManager : MonoBehaviour
 
         return playerInfo.HasTurn;
     }
+
+    public int GetWinnerPlayerNumber()
+    {
+        // Check if any player has zero tokens (loser)
+        PlayerInfo losingPlayer = playerInfos.FirstOrDefault(player => player.tokens.Count == 0);
+        if (losingPlayer != null)
+        {
+            // The other player wins
+            return playerInfos.First(player => player.PlayerNumber != losingPlayer.PlayerNumber).PlayerNumber;
+        }
+
+        // Check if both players have reached 20 turns
+        bool bothPlayersAtMaxTurns = playerInfos.All(player => player.HasTurn >= 20);
+        if (bothPlayersAtMaxTurns)
+        {
+            // Compare glory points to determine the winner
+
+            int player1Glory = scoreManager.GetGloryCoins(1);
+            int player2Glory = scoreManager.GetGloryCoins(2);
+
+            if (player1Glory > player2Glory) return 1; // Player 1 wins
+            if (player2Glory > player1Glory) return 2; // Player 2 wins
+
+            // In case of a tie in glory points, handle the tie (optional logic)
+            Debug.LogError("It's a tie in glory points!");
+            return -1; // Indicate a tie (or decide another tie-breaking logic)
+        }
+
+        // If neither condition is met, the game continues
+        return -1; // Indicate no winner yet
+    }
+
     public bool IsTurnLimitReachedOrTokensEmpty()
     {
         // Get the PlayerInfo for the current player
@@ -513,5 +581,6 @@ public enum GamePhase
     Elimination,
     Selection,
     Placement,
-    GamePlay
+    GamePlay,
+    Gameover
 }

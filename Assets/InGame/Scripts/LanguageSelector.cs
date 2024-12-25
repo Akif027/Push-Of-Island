@@ -26,6 +26,7 @@ public class LanguageSelector : MonoBehaviour
 
     public void ChangeLanguage(string language)
     {
+        SoundManager.Instance?.PlayButtonTap();
         if (language == "English")
         {
             // Update button icons

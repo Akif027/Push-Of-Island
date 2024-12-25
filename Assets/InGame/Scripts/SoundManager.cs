@@ -1,15 +1,14 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
-    public static SoundManager Instance { get; private set; } // Singleton instance
+    public static SoundManager Instance { get; private set; }
 
-    public AudioSource musicSource; // AudioSource for background music
+    [Header("Audio Sources")]
     public AudioSource sfxSource; // AudioSource for sound effects
+    public AudioSource musicSource; // AudioSource for background music
 
-    // Sound Effect Clips
+    [Header("Sound Effect Clips")]
     public AudioClip BgPushIsland;
     public AudioClip CoinToss;
     public AudioClip CoinCollect;
@@ -19,23 +18,24 @@ public class SoundManager : MonoBehaviour
     public AudioClip DiscardFirstCard;
     public AudioClip TurnChange;
     public AudioClip TokenLeaving;
-    public AudioClip PanelChanging;
+    public AudioClip DownPanelChanging;
     public AudioClip EndScreenOpen;
     public AudioClip ButtonTap;
     public AudioClip NotPossiblePlacement;
+    public AudioClip WhenYouTryToTapOpponentChip;
+    public AudioClip HiringChip;
+    public AudioClip FlickTheChip;
+    public AudioClip CoinIsStopped;
 
-    private const string MUSIC_PREF = "MusicSetting"; // Key for saving music setting
-    private const string SFX_PREF = "SFXSetting"; // Key for saving SFX setting
+    private bool isMusicEnabled = true; // Tracks if music is enabled
+    private bool isSfxEnabled = true;   // Tracks if SFX is enabled
 
     private void Awake()
     {
         if (Instance == null)
         {
             Instance = this;
-            DontDestroyOnLoad(gameObject);
-
-            // Load saved preferences
-            LoadSoundSettings();
+            DontDestroyOnLoad(gameObject); // Persist across scenes
         }
         else
         {
@@ -43,23 +43,74 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    #region Music Controls
+    public void EnableMusic()
     {
-        PlayBackgroundMusic();
+        isMusicEnabled = true;
+        if (musicSource != null && !musicSource.isPlaying)
+        {
+            musicSource.Play(); // Resume music playback
+        }
+        Debug.Log("Music enabled.");
     }
 
-    // Play background music
-    public void PlayBackgroundMusic()
+    public void DisableMusic()
     {
-        if (IsMusicOn() && BgPushIsland != null && musicSource != null)
+        isMusicEnabled = false;
+        if (musicSource != null && musicSource.isPlaying)
         {
-            musicSource.clip = BgPushIsland;
-            musicSource.loop = true;
+            musicSource.Pause(); // Pause music playback
+        }
+        Debug.Log("Music disabled.");
+    }
+
+    public void PlayMusic(AudioClip musicClip)
+    {
+        if (musicClip == null || !isMusicEnabled) return;
+
+        if (musicSource != null)
+        {
+            musicSource.clip = musicClip;
             musicSource.Play();
         }
     }
 
-    // Play individual sound effects
+    public void StopMusic()
+    {
+        if (musicSource != null)
+        {
+            musicSource.Stop();
+        }
+    }
+    #endregion
+
+    #region SFX Controls
+    public void EnableSfx()
+    {
+        isSfxEnabled = true;
+        Debug.Log("SFX enabled.");
+    }
+
+    public void DisableSfx()
+    {
+        isSfxEnabled = false;
+        Debug.Log("SFX disabled.");
+    }
+
+    public void PlaySFX(AudioClip clip)
+    {
+        if (isSfxEnabled && clip != null && sfxSource != null)
+        {
+            sfxSource.PlayOneShot(clip);
+        }
+    }
+
+    public void PlayButtonTap()
+    {
+        PlaySFX(ButtonTap);
+    }
+
+    // Individual SFX methods
     public void PlayCoinToss() { PlaySFX(CoinToss); }
     public void PlayCoinCollect() { PlaySFX(CoinCollect); }
     public void PlayScore() { PlaySFX(Score); }
@@ -68,46 +119,12 @@ public class SoundManager : MonoBehaviour
     public void PlayDiscardFirstCard() { PlaySFX(DiscardFirstCard); }
     public void PlayTurnChange() { PlaySFX(TurnChange); }
     public void PlayTokenLeaving() { PlaySFX(TokenLeaving); }
-    public void PlayPanelChanging() { PlaySFX(PanelChanging); }
+    public void PlayPanelChanging() { PlaySFX(DownPanelChanging); }
     public void PlayEndScreenOpen() { PlaySFX(EndScreenOpen); }
-    public void PlayButtonTap() { PlaySFX(ButtonTap); }
     public void PlayNotPossiblePlacement() { PlaySFX(NotPossiblePlacement); }
-
-    private void PlaySFX(AudioClip clip)
-    {
-        if (clip != null && sfxSource != null && IsSFXOn())
-        {
-            sfxSource.PlayOneShot(clip);
-        }
-    }
-
-    // Methods to toggle music and sound
-    public void SetMusic(bool isOn)
-    {
-        PlayerPrefs.SetInt(MUSIC_PREF, isOn ? 1 : 0);
-        musicSource.mute = !isOn;
-    }
-
-    public void SetSFX(bool isOn)
-    {
-        PlayerPrefs.SetInt(SFX_PREF, isOn ? 1 : 0);
-        sfxSource.mute = !isOn;
-    }
-
-    public bool IsMusicOn()
-    {
-        return PlayerPrefs.GetInt(MUSIC_PREF, 1) == 1; // Default to music on
-    }
-
-    public bool IsSFXOn()
-    {
-        return PlayerPrefs.GetInt(SFX_PREF, 1) == 1; // Default to SFX on
-    }
-
-    private void LoadSoundSettings()
-    {
-        // Load settings when game starts
-        musicSource.mute = !IsMusicOn();
-        sfxSource.mute = !IsSFXOn();
-    }
+    public void PlayWhenTapOnOpponentChip() { PlaySFX(WhenYouTryToTapOpponentChip); }
+    public void PlayDuringHiringChipPlaced() { PlaySFX(HiringChip); }
+    public void PlayFlickTheChip() { PlaySFX(FlickTheChip); }
+    public void PlayCoinTossStopped() { PlaySFX(CoinIsStopped); }
+    #endregion
 }

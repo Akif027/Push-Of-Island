@@ -75,7 +75,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 20
   m_Sprite: {fileID: -8205476040909196508, guid: 0fa80ba10a965cf43b9d5987603d6ad6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
@@ -432,7 +432,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 353119bbe0e5bdb4197e53ed9eb8536a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  owner: 0
   MainSpriteObj: {fileID: 8631015255936333686}
   CannotPlaceInvalidObj: {fileID: 1473796125226541134}
   BlueBorder: {fileID: 3897657333716920913}
@@ -501,9 +500,6 @@ MonoBehaviour:
     characterType: 0
     characterCardSprite: {fileID: 0}
     TokenPrefab: {fileID: 0}
-    Mask:
-      serializedVersion: 2
-      m_Bits: 0
     ability: {fileID: 0}
   arrow: {fileID: 4054642359236290986}
   linearDrag: 2

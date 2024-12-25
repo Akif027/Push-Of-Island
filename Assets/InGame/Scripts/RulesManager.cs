@@ -33,6 +33,7 @@ public class RulesManager : MonoBehaviour
    /// <param name="contentToShow">The content to display</param>
    private void ShowContent(GameObject contentToShow)
    {
+      SoundManager.Instance?.PlayButtonTap();
       // Hide all content panels
       rulesContent.SetActive(false);
       charactersContent.SetActive(false);
