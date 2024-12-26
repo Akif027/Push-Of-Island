@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b366cfc19164ba94297367ae7d17c84a, type: 3}
-  m_Name: Styar
+  m_Name: Satyr
   m_EditorClassIdentifier: 
   abilityName: 
   description: 
@@ -21,5 +21,5 @@ MonoBehaviour:
   coinsPerCaptureBase: 5
   bonusPointsOnPlaced: 0
   bonusCoins: 30
-  speedMultiplier: 1
-  weightMultiplier: 2
+  speedMultiplier: 1.5
+  weightMultiplier: 1.7

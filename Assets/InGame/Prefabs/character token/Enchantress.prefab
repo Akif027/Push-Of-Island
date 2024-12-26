@@ -799,6 +799,7 @@ MonoBehaviour:
     CharacterCost: 10
     characterType: 0
     characterCardSprite: {fileID: 0}
+    characterCardNoDescriptionSprite: {fileID: 0}
     TokenPrefab: {fileID: 0}
     ability: {fileID: 0}
   arrow: {fileID: 4054642359236290986}

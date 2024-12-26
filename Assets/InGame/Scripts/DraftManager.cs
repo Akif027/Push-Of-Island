@@ -288,7 +288,7 @@ public class DraftManager : MonoBehaviour
         foreach (var character in player1Characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, FirstPlayerSelectedCard.transform);
-            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 500);
             InitializeCharacterCard(card, character, false);
         }
 
@@ -296,7 +296,7 @@ public class DraftManager : MonoBehaviour
         foreach (var character in player2Characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, SecondPlayerSelectedCard.transform);
-            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 500);
             InitializeCharacterCard(card, character, false);
         }
 
@@ -304,7 +304,7 @@ public class DraftManager : MonoBehaviour
         foreach (var character in player1Characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, WinnerFirstPlayerSelectedCard.transform);
-            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 500);
             InitializeCharacterCard(card, character, false);
         }
 
@@ -312,7 +312,7 @@ public class DraftManager : MonoBehaviour
         foreach (var character in player2Characters)
         {
             GameObject card = Instantiate(gameData.CharacterCardNoDescriptionPrefab, WinnerSecondPlayerSelectedCard.transform);
-            card.GetComponent<RectTransform>().sizeDelta = new Vector2(300, 500);
+            card.GetComponent<RectTransform>().sizeDelta = new Vector2(340, 500);
             InitializeCharacterCard(card, character, false);
         }
     }

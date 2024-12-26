@@ -5,13 +5,13 @@ using System.Collections;
 public class MapScroll : MonoBehaviour
 {
     [Header("Cinemachine References")]
-    public CinemachineCamera cinemachineCamera; // Reference to the Cinemachine camera
-    public CinemachineConfiner2D confiner2D;    // Reference to the Cinemachine Confiner 2D component      // Reference to the Cinemachine Confiner 2D component
-    public Collider2D boundingShape;                 // Collider used as the bounding shape for the confiner
+    public CinemachineCamera cinemachineCamera; // Updated reference to CinemachineCamera
+    public CinemachineConfiner2D confiner2D;    // Reference to the Cinemachine Confiner 2D component
+    public Collider2D boundingShape;           // Collider used as the bounding shape for the confiner
 
     [Header("Scroll Settings")]
     public float scrollSpeed = 0.5f; // Speed of the scroll
-    public float FollowSpeed = 2f; // Speed of the scroll
+    public float FollowSpeed = 2f; // Speed of the follow
 
     [Header("Zoom Settings")]
     public float minZoom = 5f; // Minimum orthographic size for the camera
@@ -51,7 +51,7 @@ public class MapScroll : MonoBehaviour
 
         if (confiner2D == null)
         {
-            Debug.LogError("Cinemachine Confiner 2D is not assigned!");
+            Debug.LogError("Cinemachine Confiner 2D is not assigned! ");
             return;
         }
 
@@ -73,8 +73,6 @@ public class MapScroll : MonoBehaviour
             HandleZoom();
         }
     }
-
-
 
     private Coroutine transitionCoroutine;
 
@@ -108,7 +106,6 @@ public class MapScroll : MonoBehaviour
         camTransform.position = targetPosition; // Ensure the final position is exactly the target
     }
 
-
     private void HandleDrag()
     {
         if (Input.GetMouseButtonDown(0))
@@ -138,28 +135,19 @@ public class MapScroll : MonoBehaviour
 
         camTransform.position = new Vector3(newPosition.x, newPosition.y, camTransform.position.z);
     }
-    /// <summary>
-    /// Makes the camera follow the specified GameObject.
-    /// </summary>
-    /// <param name="target">The GameObject to follow.</param>
+
     public void StartFollowing(GameObject target)
     {
         followTarget = target;
         isFollowing = true;
     }
 
-    /// <summary>
-    /// Stops the camera from following the GameObject.
-    /// </summary>
     public void StopFollowing()
     {
         followTarget = null;
         isFollowing = false;
     }
 
-    /// <summary>
-    /// Updates the camera position to follow the target GameObject.
-    /// </summary>
     private void FollowTarget()
     {
         if (followTarget == null) return;
@@ -170,6 +158,7 @@ public class MapScroll : MonoBehaviour
         Transform camTransform = cinemachineCamera.transform;
         camTransform.position = Vector3.Lerp(camTransform.position, targetPosition, FollowSpeed * Time.deltaTime);
     }
+
     private void HandleZoom()
     {
         if (Input.touchCount == 2)
@@ -185,19 +174,24 @@ public class MapScroll : MonoBehaviour
 
             float difference = prevMagnitude - currentMagnitude;
 
-            mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize + difference * zoomSpeed, minZoom, maxZoom);
+            // Adjust the orthographic size of the Cinemachine camera
+            float newOrthographicSize = Mathf.Clamp(
+                cinemachineCamera.Lens.OrthographicSize - difference * zoomSpeed,
+                minZoom,
+                maxZoom
+            );
+
+            cinemachineCamera.Lens.OrthographicSize = newOrthographicSize;
         }
     }
 
     public void EnableScroll()
     {
         isScrollEnabled = true;
-
     }
 
     public void DisableScroll()
     {
         isScrollEnabled = false;
-
     }
 }
