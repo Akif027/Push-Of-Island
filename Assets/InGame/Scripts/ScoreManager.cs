@@ -53,10 +53,12 @@ public class ScoreManager : MonoBehaviour
 
     public void OnCoinAdd(int playerNumber, int coinAmount)
     {
+
         SetupPlayer(playerNumber);
         playerCoins[playerNumber] += coinAmount;
         textMapper.AddPlayerCoinsPoints(playerCoins[playerNumber]);
         Debug.Log($"Player {playerNumber} added {coinAmount} coins. Total: {playerCoins[playerNumber]}.");
+        GameManager.Instance.UpdateTurnIfo();
     }
 
     public void OnCoinDeduct(int playerNumber, int coinAmount)

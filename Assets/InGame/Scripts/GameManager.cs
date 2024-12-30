@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
+
 
 public class GameManager : MonoBehaviour
 {
@@ -119,12 +120,17 @@ public class GameManager : MonoBehaviour
 
         currentPlayer = playerNumber;
 
+        UpdateTurnIfo();
+        Debug.Log($"Player turn changed to: Player {currentPlayer}");
+    }
+
+    public void UpdateTurnIfo()
+    {
         if (currentPhase == GamePhase.GamePlay || playerInfos.Count != 0)
         {
             textMapper.UpdateTurnIcon(currentPlayer);
             textMapper.UpdateTurn(GetPlayerHasTurnCount());
         }
-        Debug.Log($"Player turn changed to: Player {currentPlayer}");
     }
     /// <summary>
     /// Checks if a thief token is still triggering the vault.

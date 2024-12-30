@@ -161,14 +161,14 @@ public class Token : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Vault")) // Only trigger if the token has stopped
-        {
-            Debug.Log($"{characterData.characterName} has triggered the vault");
-            characterData.ability?.OnVaultInteraction(this);
-        }
-    }
+    // private void OnTriggerEnter2D(Collider2D collision)
+    // {
+    //     if (collision.CompareTag("Vault")) // Only trigger if the token has stopped
+    //     {
+    //         Debug.Log($"{characterData.characterName} has triggered the vault");
+    //         characterData.ability?.OnVaultInteraction(this);
+    //     }
+    // }
 
 
 
@@ -298,11 +298,13 @@ public class Token : MonoBehaviour
 
     private void StopMovement()
     {
+        characterData.ability?.OnVaultInteraction(this);
         MapScroll.Instance.StopFollowing();
 
         tokenRigidbody.linearVelocity = Vector2.zero;
         tokenRigidbody.angularVelocity = 0f;
         transform.rotation = Quaternion.identity;
+
     }
 
     public bool IsCurrentPlayerOwner()
@@ -314,4 +316,5 @@ public class Token : MonoBehaviour
         }
         return true;
     }
+
 }

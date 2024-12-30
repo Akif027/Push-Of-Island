@@ -1852,7 +1852,7 @@ Transform:
   m_GameObject: {fileID: 179392973}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.25000125, y: -2.704956, z: -20}
+  m_LocalPosition: {x: 0.25000268, y: -2.704956, z: -20}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3773,7 +3773,7 @@ GameObject:
   - component: {fileID: 382610967}
   m_Layer: 7
   m_Name: Left
-  m_TagString: Base
+  m_TagString: Land
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -9735,7 +9735,7 @@ GameObject:
   - component: {fileID: 1076934953}
   m_Layer: 7
   m_Name: Right
-  m_TagString: Base
+  m_TagString: Land
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -10625,7 +10625,7 @@ GameObject:
   - component: {fileID: 1155452028}
   - component: {fileID: 1155452030}
   - component: {fileID: 1155452029}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: treasureleft
   m_TagString: Vault
   m_Icon: {fileID: 0}
@@ -12233,7 +12233,7 @@ GameObject:
   - component: {fileID: 1335133200}
   - component: {fileID: 1335133202}
   - component: {fileID: 1335133201}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: treasureright
   m_TagString: Vault
   m_Icon: {fileID: 0}
@@ -12536,9 +12536,9 @@ GameObject:
   - component: {fileID: 1364559186}
   - component: {fileID: 1364559188}
   - component: {fileID: 1364559187}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: treasuremid
-  m_TagString: Vault
+  m_TagString: VaultMid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -12638,7 +12638,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 1
-  m_Sprite: {fileID: -4637026413343636824, guid: bba47cd88fee912488d8cbb0d8992b0f, type: 3}
+  m_Sprite: {fileID: 5453408320482324801, guid: 49e9969d96ca1dc4387797a307f2b981, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -16481,7 +16481,7 @@ GameObject:
   - component: {fileID: 1764582980}
   m_Layer: 7
   m_Name: Main
-  m_TagString: Base
+  m_TagString: Land
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

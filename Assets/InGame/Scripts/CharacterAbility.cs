@@ -57,9 +57,27 @@ public class CharacterAbility : ScriptableObject
     {
         if (isVaultInteraction && coinsPerCaptureVault > 0)
         {
-            Debug.LogError("Player " + token.owner + "has recived vault coins");
-            EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureVault);
-            SoundManager.Instance.PlayCoinCollect();
+
+            float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
+            LayerMask layerMask = LayerMask.GetMask("Vault", "VaultMid");
+
+            // Use OverlapCircle to detect colliders within the specified radius
+            Collider2D hitCollider = Physics2D.OverlapCircle(token.transform.position, radius, layerMask);
+
+            if (hitCollider != null)
+            {
+                if (hitCollider.CompareTag("Vault"))
+                {
+                    EventManager.TriggerCoinAdd(token.owner, 20);
+                    SoundManager.Instance.PlayCoinCollect();
+                }
+                else if (hitCollider.CompareTag("VaultMid"))
+                {
+                    EventManager.TriggerCoinAdd(token.owner, 10);
+                    SoundManager.Instance.PlayCoinCollect();
+                }
+            }
+
 
         }
     }
@@ -134,7 +152,7 @@ public class CharacterAbility : ScriptableObject
     {
         // Define the circle's radius
         float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
-        LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base");
+        LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base", "Vault", "VaultMid");
 
         // Use OverlapCircle to detect colliders within the specified radius
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(token.transform.position, radius, layerMask);
@@ -143,6 +161,7 @@ public class CharacterAbility : ScriptableObject
         {
             foreach (Collider2D collider in hitColliders)
             {
+
                 // Mermaid-specific logic
                 if (token.characterData.characterType == CharacterType.Mermaid)
                 {
@@ -156,7 +175,9 @@ public class CharacterAbility : ScriptableObject
                         Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {collider.gameObject.name}");
                         return false; // Invalid: Mermaid cannot stop on land or base
                     }
+
                 }
+
 
                 // General logic for other characters
                 else

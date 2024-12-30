@@ -10,6 +10,7 @@ TagManager:
   - Token
   - ignorelayer
   - Vault
+  - VaultMid
   layers:
   - Default
   - TransparentFX
@@ -20,8 +21,8 @@ TagManager:
   - Token
   - Land
   - Base
-  - 
-  - 
+  - VaultMid
+  - Vault
   - 
   - 
   - 
