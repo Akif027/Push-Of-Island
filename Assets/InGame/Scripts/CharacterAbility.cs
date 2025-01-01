@@ -165,12 +165,12 @@ public class CharacterAbility : ScriptableObject
                 // Mermaid-specific logic
                 if (token.characterData.characterType == CharacterType.Mermaid)
                 {
-                    if (collider.CompareTag("Water"))
+                    if (collider.CompareTag("Water") || collider.CompareTag("Base"))
                     {
                         Debug.Log($"{token.characterData.characterName} is safely on water.");
                         return true; // Valid: Mermaid is on water
                     }
-                    if (collider.CompareTag("Land") || collider.CompareTag("Base"))
+                    if (collider.CompareTag("Land"))
                     {
                         Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {collider.gameObject.name}");
                         return false; // Invalid: Mermaid cannot stop on land or base

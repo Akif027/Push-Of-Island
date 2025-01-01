@@ -147,10 +147,11 @@ public class PlacementManager : MonoBehaviour
         switch (characterType)
         {
             case CharacterType.Mermaid:
-                // Valid only on Water, invalid on Land or Base
-                isValidPlacement = CheckPlacementWithRaycast("Water") &&
-                                   !CheckPlacementWithRaycast("Land") &&
-                                   !CheckPlacementWithRaycast("Base");
+                // Mermaid can be placed on Water or Base, but not on Land
+                isValidPlacement = (CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base")) &&
+                                   !CheckPlacementWithRaycast("Land");
+
+
                 break;
             case CharacterType.Knight:
                 isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
