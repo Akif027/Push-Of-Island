@@ -6932,7 +6932,7 @@ MonoBehaviour:
   gameData: {fileID: 11400000, guid: 0e7a01797a175f747a3bf7bc48781631, type: 2}
   draftManager: {fileID: 792811142}
   currentPlayer: 1
-  currentPhase: 0
+  currentPhase: 4
   playerInfos: []
   textMapper: {fileID: 623542094}
   spawnTokenPositionPlayer1: {fileID: 438341628}

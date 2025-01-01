@@ -99,6 +99,14 @@ public class HiringManager : MonoBehaviour
             {
                 Destroy(cardButton); // Remove button functionality
             }
+            if (!isUnlocked)
+            {
+                cardImage.color = new Color(0.5f, 0.5f, 0.5f, 1f); // Greyed-out color
+            }
+            else
+            {
+                cardImage.color = Color.white; // Normal color
+            }
         }
         else
         {

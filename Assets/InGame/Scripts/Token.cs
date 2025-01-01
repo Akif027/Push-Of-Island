@@ -1,3 +1,5 @@
+using System.Collections;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(PlacementManager))]
@@ -121,6 +123,7 @@ public class Token : MonoBehaviour
         tokenRigidbody.bodyType = RigidbodyType2D.Dynamic; // Enable movement
         Debug.Log($"{characterData.characterName} has been reactivated and can now move.");
     }
+
     private void HandleTokenMovement()
     {
         if (tokenRigidbody.linearVelocity.magnitude < 0.01f) // Token has stopped moving
@@ -146,17 +149,26 @@ public class Token : MonoBehaviour
 
     private void CheckTokenPosition()
     {
-        if (tokenRigidbody.linearVelocity.magnitude < 0.01f && GameManager.Instance.currentPhase == GamePhase.GamePlay)
+        if (GameManager.Instance.currentPhase == GamePhase.GamePlay)
         {
-            if (characterData?.ability != null && characterData.characterType != CharacterType.Mermaid)
+            if (characterData.characterType != CharacterType.Satyr && characterData.ability != null)
             {
-                bool isValid = characterData.ability.ValidateFinalPosition(this);
-                if (!isValid)
+                // Use the common HandleReflection method from CharacterAbility
+                characterData.ability.OutOfBound(this, new Vector2(10f, 10f));
+            }
+            // Check if the token is immobile and needs validation
+            if (tokenRigidbody.linearVelocity.magnitude < 0.01f)
+            {
+                if (characterData?.ability != null && characterData.characterType != CharacterType.Mermaid)
                 {
-                    EliminateToken(); // Eliminate if conditions are not met
-                    return;
+                    bool isValid = characterData.ability.ValidateFinalPosition(this);
+                    if (!isValid)
+                    {
+                        EliminateToken();
+                        return;
+                    }
+                    lastPosition = transform.position; // Update last position
                 }
-                lastPosition = transform.position; // Update last position
             }
         }
     }
@@ -164,10 +176,12 @@ public class Token : MonoBehaviour
 
 
 
-    private void EliminateToken()
+
+    public void EliminateToken()
     {
         SoundManager.Instance?.PlayTokenLeaving();
         GameManager.Instance.RemoveTokenFromPlayer(owner, characterData.characterType);
+        EventManager.TriggerEvent("OnTurnEnd");
         isUnlocked = false;
         Destroy(gameObject);
     }

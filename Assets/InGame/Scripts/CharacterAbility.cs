@@ -55,6 +55,7 @@ public class CharacterAbility : ScriptableObject
     /// </summary>
     public virtual void OnVaultInteraction(Token token)
     {
+        if (GameManager.Instance.currentPhase != GamePhase.GamePlay) return;
         if (isVaultInteraction && coinsPerCaptureVault > 0)
         {
 
@@ -86,6 +87,7 @@ public class CharacterAbility : ScriptableObject
     /// </summary>
     public virtual void OnBaseCapture(Token token)
     {
+        if (GameManager.Instance.currentPhase != GamePhase.GamePlay) return;
         if (coinsPerCaptureBase > 0)
         {
             RaycastHit2D hit = Physics2D.Raycast(token.transform.position, Vector3.back, -1, LayerMask.GetMask("Water", "Land", "Base"));
@@ -109,6 +111,21 @@ public class CharacterAbility : ScriptableObject
                 }
 
             }
+        }
+    }
+
+    public void OutOfBound(Token token, Vector2 boundarySize)
+    {
+        Rigidbody2D rb = token.GetRigidbody2D();
+        if (rb == null) return;
+
+        Vector2 position = rb.position;
+
+        // Check if the token is out of the horizontal bounds
+        if (Mathf.Abs(position.x) > boundarySize.x / 2f || Mathf.Abs(position.y) > boundarySize.y / 2f)
+        {
+            Debug.Log($"{token.name} is out of bounds and will be eliminated.");
+            token.EliminateToken();
         }
     }
     public void HandleReflection(Token token, Vector2 boundarySize)
