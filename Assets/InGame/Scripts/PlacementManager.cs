@@ -217,11 +217,21 @@ public class PlacementManager : MonoBehaviour
     }
     private bool CheckPlacementWithRaycast(string tag)
     {
+
         RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.back, rayLength, raycastMask);
         if (hit.collider != null)
         {
-            Debug.Log($"Raycast hit {hit.collider.gameObject.name} with tag {hit.collider.tag}");
-            return hit.collider.CompareTag(tag);
+            Base playerBase = hit.collider.gameObject.GetComponent<Base>();
+            if (playerBase != null)
+            {
+                if (playerBase.ownerID != token.owner && playerBase.ownerID != 0 && playerBase.ownerID == -1)
+                {
+                    return false;
+                }
+                Debug.Log($"Raycast hit {hit.collider.gameObject.name} with tag {hit.collider.tag}");
+                return hit.collider.CompareTag(tag);
+            }
+
         }
         return false;
     }
@@ -243,7 +253,7 @@ public class PlacementManager : MonoBehaviour
     private void ResetPosition()
     {
         Debug.Log("Invalid placement. Resetting token position.");
-        transform.position = InitialPosition;
+
         EventManager.TriggerEvent<bool>("TokenPlaced", false);
     }
 

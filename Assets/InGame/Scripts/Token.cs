@@ -161,14 +161,6 @@ public class Token : MonoBehaviour
         }
     }
 
-    // private void OnTriggerEnter2D(Collider2D collision)
-    // {
-    //     if (collision.CompareTag("Vault")) // Only trigger if the token has stopped
-    //     {
-    //         Debug.Log($"{characterData.characterName} has triggered the vault");
-    //         characterData.ability?.OnVaultInteraction(this);
-    //     }
-    // }
 
 
 
@@ -204,35 +196,7 @@ public class Token : MonoBehaviour
         StopMovement();
         Debug.Log($"{name} is selected.");
     }
-    void OnDrawGizmos()
-    {
-        // Use the same radius as in OverlapCircle
-        float radius = GetComponent<CircleCollider2D>().radius;
-        int segments = 30; // Number of segments to approximate the circle
 
-        // Set the Gizmo color
-        Gizmos.color = Color.yellow;
-
-        // Draw a 2D circle
-        Vector3 position = transform.position; // Center of the circle
-        float angle = 0f;
-
-        for (int i = 0; i <= segments; i++)
-        {
-            // Calculate points on the circle
-            float x = position.x + Mathf.Cos(angle) * radius;
-            float y = position.y + Mathf.Sin(angle) * radius;
-
-            // Calculate the next point
-            float nextX = position.x + Mathf.Cos(angle + (2 * Mathf.PI / segments)) * radius;
-            float nextY = position.y + Mathf.Sin(angle + (2 * Mathf.PI / segments)) * radius;
-
-            // Draw a line between the points
-            Gizmos.DrawLine(new Vector3(x, y, 0), new Vector3(nextX, nextY, 0));
-
-            angle += (2 * Mathf.PI / segments);
-        }
-    }
 
     public void OnTokenDeselected()
     {
