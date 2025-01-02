@@ -139,9 +139,11 @@ public class PlacementManager : MonoBehaviour
 
 
     }
+
     public void CheckPlacementRules()
     {
         isValidPlacement = false;
+
 
         // Determine placement validity based on character type and raycast results
         switch (characterType)
@@ -190,11 +192,13 @@ public class PlacementManager : MonoBehaviour
         {
             MainSpriteObj.SetActive(true);
             CannotPlaceInvalidObj.SetActive(false);
-            //            HandleBorder(); // Show appropriate border
+
         }
         else
         {
-            SoundManager.Instance?.PlayNotPossiblePlacement();
+
+
+
             MainSpriteObj.SetActive(false);
             CannotPlaceInvalidObj.SetActive(true);
 
@@ -254,7 +258,7 @@ public class PlacementManager : MonoBehaviour
     private void ResetPosition()
     {
         Debug.Log("Invalid placement. Resetting token position.");
-
+        SoundManager.Instance?.PlayNotPossiblePlacement();
         EventManager.TriggerEvent<bool>("TokenPlaced", false);
     }
 

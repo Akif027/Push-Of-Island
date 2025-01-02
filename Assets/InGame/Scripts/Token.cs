@@ -203,10 +203,11 @@ public class Token : MonoBehaviour
             SoundManager.Instance?.PlayWhenTapOnOpponentChip();
             return;
         }
-        UIManager.Instance.ClosePlayLowerPanel();
-        UIManager.Instance.OpenPlayAttackLowerPanel();
+
 
         arrow.gameObject.SetActive(true);
+        UIManager.Instance.ClosePlayLowerPanel();
+        UIManager.Instance.OpenPlayAttackLowerPanel();
         StopMovement();
         Debug.Log($"{name} is selected.");
     }
@@ -217,9 +218,13 @@ public class Token : MonoBehaviour
         Debug.LogError("OnDeselected");
         isDragging = false;
 
+
+        arrow.gameObject.SetActive(false);
+
         UIManager.Instance.OpenPlayLowerPanel();
         UIManager.Instance.ClosePlayAttackLowerPanel();
-        arrow.gameObject.SetActive(false);
+
+
     }
 
     public void StartDragging(Vector3 mouseWorldPosition)

@@ -82,6 +82,7 @@ public class CharacterAbility : ScriptableObject
 
         }
     }
+    bool Basealreadycaptured = false;
     /// <summary>
     /// Called when the token interacts with a vault or base.
     /// </summary>
@@ -90,29 +91,35 @@ public class CharacterAbility : ScriptableObject
         if (GameManager.Instance.currentPhase != GamePhase.GamePlay) return;
         if (coinsPerCaptureBase > 0)
         {
-            RaycastHit2D hit = Physics2D.Raycast(token.transform.position, Vector3.back, -1, LayerMask.GetMask("Water", "Land", "Base"));
-            if (hit.collider != null)
+
+            float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust based on your token's size
+            LayerMask layerMask = LayerMask.GetMask("BaseIcon");
+
+            // Use OverlapCircle to detect colliders within the specified radius
+            Collider2D hitCollider = Physics2D.OverlapCircle(token.transform.position, radius, layerMask);
+
+            if (hitCollider != null && hitCollider.CompareTag("BaseIcon"))
             {
-                if (hit.collider.CompareTag("Base"))
+                Base baseS = hitCollider.GetComponentInParent<Base>();
+
+                if (baseS == null) return;
+
+                if (baseS.ownerID != token.owner && !Basealreadycaptured) // Only capture opponent bases
                 {
-                    Base baseS = hit.collider.gameObject.GetComponent<Base>();
-
-                    if (baseS == null) return;
-
-                    if (baseS.ownerID != token.owner) // Only capture opponent bases
-                    {
-
-                        //EventManager.TriggerCoinAdd(token.owner, coinsPerCaptureBase);
-                        EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
-                        Debug.LogError("Player " + token.owner + "has Captured the base");
-                        SoundManager.Instance?.PlayScore();
-                    }
-
+                    EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
+                    Basealreadycaptured = true;
+                    Debug.LogError($"Player {token.owner} has captured the base.");
+                    SoundManager.Instance?.PlayScore();
                 }
-
+            }
+            else
+            {
+                Basealreadycaptured = false;
             }
         }
+
     }
+
 
     public void OutOfBound(Token token, Vector2 boundarySize)
     {
@@ -158,7 +165,7 @@ public class CharacterAbility : ScriptableObject
         {
             rb.linearVelocity = velocity; // Apply reflected velocity
             rb.position = position; // Update position
-            Debug.Log($"{token.name} (Satyr) reflected with velocity: {velocity}");
+            Debug.Log($"{token.name} (Satyr) reflected with velocity: {velocity} ");
             SoundManager.Instance?.PlayFlickTheChip();
         }
     }

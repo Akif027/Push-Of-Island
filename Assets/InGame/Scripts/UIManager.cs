@@ -1,5 +1,6 @@
 using System;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -87,11 +88,23 @@ public class UIManager : MonoBehaviour
 
     public void OpenPlayLowerPanel()
     {
-        SoundManager.Instance?.PlayPanelChanging();
-        OpenPanel(playLowerPanel);
+        if (!playLowerPanel.activeSelf)
+        {
+            SoundManager.Instance?.PlayPanelChanging();
+            OpenPanel(playLowerPanel);
+        }
+    }
+    public void ClosePlayLowerPanel()
+    {
+
+        if (playLowerPanel.activeSelf)
+        {
+            ClosePanel(playLowerPanel);
+
+        }
+
 
     }
-    public void ClosePlayLowerPanel() => ClosePanel(playLowerPanel);
     public void playTapSound()
     {
 
