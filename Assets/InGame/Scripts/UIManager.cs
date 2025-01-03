@@ -166,16 +166,9 @@ public class UIManager : MonoBehaviour
     // Method to exit the application
     public void QuitApplication()
     {
-        // Log to indicate the application is quitting (useful for debugging in the Editor)
-        Debug.Log("Exiting application.. .");
 
-        // Quit the application
-        Application.Quit();
-
-        // Optionally, stop playing in the editor if you're testing in Unity Editor
-#if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
-#endif
+        SoundManager.Instance?.PlayButtonTap();
+        loadingManager.gameObject.SetActive(true);
     }
 
 }

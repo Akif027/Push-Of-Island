@@ -77,13 +77,13 @@ public class TextMapper : MonoBehaviour
     {
         if (container == null)
         {
-            Debug.LogError("Container is null! Ensure it is assigned in the Inspector.  ");
+            Debug.LogError("Container is null! Ensure it is assigned in the Inspector.");
             return;
         }
 
         if (sprites == null || sprites.Length != 10)
         {
-            Debug.LogError("Sprite array is null or not correctly set up! Ensure it contains exactly 10 sprites (0-9).");
+            Debug.LogError("Sprite array is null or not correctly set up! Ensure it contains exactly 10 sprites (0-9). ");
             return;
         }
 

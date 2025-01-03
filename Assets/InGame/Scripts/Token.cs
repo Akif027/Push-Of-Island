@@ -190,8 +190,8 @@ public class Token : MonoBehaviour
     {
         if (!IsCurrentPlayerOwner()) return;
 
-        float safeMass = Mathf.Max(tokenRigidbody.mass, 0.1f); // Avoid division by zero
-        throwForce = sliderForce * characterData.ability.speedMultiplier / safeMass;
+
+        throwForce = sliderForce * characterData.ability.speedMultiplier;
 
         //  Debug.Log($"{name} set throw force to: {throwForce} (Slider: {sliderForce}, Speed: {characterData.Speed}, Weight: {safeMass})");
     }
@@ -265,7 +265,7 @@ public class Token : MonoBehaviour
         tokenRigidbody.linearVelocity = Vector2.zero; // Reset velocity
         tokenRigidbody.AddForce(movementDirection * throwForce, ForceMode2D.Impulse);
 
-        Debug.Log($"{name} launched with force: {throwForce} in direction {movementDirection}");
+        Debug.Log($"{name} launched with force: {throwForce} in direction  {movementDirection}");
     }
 
     private void ResetToken()

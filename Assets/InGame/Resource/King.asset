@@ -22,4 +22,4 @@ MonoBehaviour:
   bonusPointsOnPlaced: 1
   bonusCoins: 30
   speedMultiplier: 2
-  weightMultiplier: 2
+  weightMultiplier: 2.5

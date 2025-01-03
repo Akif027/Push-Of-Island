@@ -258,6 +258,7 @@ public class PlacementManager : MonoBehaviour
     private void ResetPosition()
     {
         Debug.Log("Invalid placement. Resetting token position.");
+        Handheld.Vibrate();
         SoundManager.Instance?.PlayNotPossiblePlacement();
         EventManager.TriggerEvent<bool>("TokenPlaced", false);
     }
