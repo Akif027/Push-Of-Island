@@ -121,7 +121,7 @@ public class Token : MonoBehaviour
     {
         isImmobile = false;
         tokenRigidbody.bodyType = RigidbodyType2D.Dynamic; // Enable movement
-        Debug.Log($"{characterData.characterName} has been reactivated and can now move.");
+        Debug.Log($"{characterData.characterName} has been reactivated and can now move. ");
     }
 
     private void HandleTokenMovement()
@@ -129,20 +129,9 @@ public class Token : MonoBehaviour
         if (tokenRigidbody.linearVelocity.magnitude < 0.01f) // Token has stopped moving
         {
 
-            EventManager.TriggerEvent("OnTurnEnd");
-            if (characterData?.ability != null)
-            {
-                // Validate the final position based on the token's ability
-                bool isValid = characterData.ability.ValidateFinalPosition(this);
-                if (!isValid)
-                {
-                    EliminateToken(); // Eliminate if conditions are not met
-                    return; // Exit further processing
-                }
-
-                characterData.ability.OnBaseCapture(this);
-            }
-
+            characterData.ability.OnBaseCapture(this);
+            characterData.ability?.OnVaultInteraction(this);
+            ChangeTurn();
             ResetToken(); // Reset token for the next turn
         }
     }
@@ -159,12 +148,14 @@ public class Token : MonoBehaviour
             // Check if the token is immobile and needs validation
             if (tokenRigidbody.linearVelocity.magnitude < 0.01f)
             {
-                if (characterData?.ability != null && characterData.characterType != CharacterType.Mermaid)
+                if (characterData?.ability != null)
                 {
                     bool isValid = characterData.ability.ValidateFinalPosition(this);
                     if (!isValid)
                     {
+
                         EliminateToken();
+
                         return;
                     }
                     lastPosition = transform.position; // Update last position
@@ -173,7 +164,11 @@ public class Token : MonoBehaviour
         }
     }
 
+    public void ChangeTurn()
+    {
 
+        EventManager.TriggerEvent("OnTurnEnd");
+    }
 
 
 
@@ -181,7 +176,7 @@ public class Token : MonoBehaviour
     {
         SoundManager.Instance?.PlayTokenLeaving();
         GameManager.Instance.RemoveTokenFromPlayer(owner, characterData.characterType);
-        EventManager.TriggerEvent("OnTurnEnd");
+
         isUnlocked = false;
         Destroy(gameObject);
     }
@@ -195,7 +190,7 @@ public class Token : MonoBehaviour
 
         //  Debug.Log($"{name} set throw force to: {throwForce} (Slider: {sliderForce}, Speed: {characterData.Speed}, Weight: {safeMass})");
     }
-
+    bool isSelected = false;
     public void OnTokenSelected()
     {
         if (!IsCurrentPlayerOwner())
@@ -206,8 +201,12 @@ public class Token : MonoBehaviour
 
 
         arrow.gameObject.SetActive(true);
-        UIManager.Instance.ClosePlayLowerPanel();
-        UIManager.Instance.OpenPlayAttackLowerPanel();
+        if (!isSelected)
+        {
+            UIManager.Instance.ClosePlayLowerPanel();
+            UIManager.Instance.OpenPlayAttackLowerPanel();
+            isSelected = true;
+        }
         StopMovement();
         Debug.Log($"{name} is selected.");
     }
@@ -217,7 +216,7 @@ public class Token : MonoBehaviour
     {
         Debug.LogError("OnDeselected");
         isDragging = false;
-
+        isSelected = false;
 
         arrow.gameObject.SetActive(false);
 
@@ -281,7 +280,7 @@ public class Token : MonoBehaviour
 
     private void StopMovement()
     {
-        characterData.ability?.OnVaultInteraction(this);
+
         MapScroll.Instance.StopFollowing();
 
         tokenRigidbody.linearVelocity = Vector2.zero;

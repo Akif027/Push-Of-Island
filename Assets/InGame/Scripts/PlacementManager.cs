@@ -22,6 +22,8 @@ public class PlacementManager : MonoBehaviour
     public LayerMask raycastMask; // LayerMask to exclude the object's own collider
     public bool isTokenPlaced = false;
     bool Drag = false;
+
+
     Token token;
     void Start()
     {
@@ -156,31 +158,31 @@ public class PlacementManager : MonoBehaviour
 
                 break;
             case CharacterType.Knight:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Golem:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Dwarf:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.King:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Gryphon:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Thief:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Rogue:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Enchantress:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             case CharacterType.Satyr:
-                isValidPlacement = CheckPlacementWithRaycast("Land") || CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
             default:
                 isValidPlacement = CheckPlacementWithRaycast("Base");
@@ -207,36 +209,46 @@ public class PlacementManager : MonoBehaviour
 
     private void HandleBorder()
     {
-
-        if (token.owner == 1)
-        {
-            BlueBorder.SetActive(true);
-            YellowBorder.SetActive(false);
-        }
-        else
+        Color playerColor = GameManager.Instance.GetPlayerColor(token.owner);
+        GameManager.Instance.PrintAllSetColors();
+        if (playerColor == Color.yellow)
         {
             YellowBorder.SetActive(true);
             BlueBorder.SetActive(false);
         }
+        else
+        {
+            YellowBorder.SetActive(false);
+            BlueBorder.SetActive(true);
+        }
 
     }
+
     private bool CheckPlacementWithRaycast(string tag)
     {
 
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector3.back, rayLength, raycastMask);
-        if (hit.collider != null)
+        float radius = GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
+
+        // Perform an OverlapCircle check
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, radius, raycastMask);
+
+        foreach (Collider2D collider in colliders)
         {
-            Base playerBase = hit.collider.gameObject.GetComponent<Base>();
+            Base playerBase = collider.GetComponent<Base>();
             if (playerBase != null)
             {
+                // Validate ownership if necessary
                 if (playerBase.ownerID != token.owner && playerBase.ownerID != 0 && playerBase.ownerID == -1)
                 {
                     return false;
                 }
-                Debug.Log($"Raycast hit {hit.collider.gameObject.name} with tag {hit.collider.tag}");
-                return hit.collider.CompareTag(tag);
+                Debug.Log($"OverlapCircle hit {collider.gameObject.name} with tag {collider.tag}");
+                // Check if the collider's tag matches the specified tag
+                if (collider.CompareTag(tag))
+                {
+                    return true;
+                }
             }
-
         }
         return false;
     }

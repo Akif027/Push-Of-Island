@@ -9,8 +9,6 @@ public class CoinTossManager : MonoBehaviour
     public GameObject coin2;
     public float tossDuration = 2f; // Duration of the flip animation
     public float rotationSpeed = 2f; // Speed of the coin rotation
-    public string coin1Player = "Player 1";
-    public string coin2Player = "Player 2";
     public GameObject coinPanel;
 
     [Header("Text Prefab Settings")]

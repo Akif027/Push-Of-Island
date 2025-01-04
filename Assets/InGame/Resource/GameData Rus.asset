@@ -59,7 +59,7 @@ MonoBehaviour:
     CharacterCost: 10
     characterType: 8
     characterCardSprite: {fileID: -2705299135061223143, guid: 230aa16f7c6bd1748a72c46c3379809d, type: 3}
-    characterCardNoDescriptionSprite: {fileID: -6316771870842243627, guid: 0d8c8e7f03310c340980f0505f062867, type: 3}
+    characterCardNoDescriptionSprite: {fileID: -7355484124290462336, guid: 3a9ae844607846b4db0c9601dae6be61, type: 3}
     TokenPrefab: {fileID: 7403747386613742195, guid: 4d90ef3a3ac02b341bac6ae22ee26c52, type: 3}
     ability: {fileID: 11400000, guid: dea3b75dd6f9b6046b9535346717784f, type: 2}
   - characterName: Enchantress

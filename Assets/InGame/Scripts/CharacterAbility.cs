@@ -72,7 +72,7 @@ public class CharacterAbility : ScriptableObject
                     EventManager.TriggerCoinAdd(token.owner, 20);
                     SoundManager.Instance.PlayCoinCollect();
                 }
-                else if (hitCollider.CompareTag("VaultMid"))
+                else if (hitCollider.CompareTag("VaultMid "))
                 {
                     EventManager.TriggerCoinAdd(token.owner, 10);
                     SoundManager.Instance.PlayCoinCollect();
@@ -133,6 +133,7 @@ public class CharacterAbility : ScriptableObject
         {
             Debug.Log($"{token.name} is out of bounds and will be eliminated.");
             token.EliminateToken();
+            token.ChangeTurn();
         }
     }
     public void HandleReflection(Token token, Vector2 boundarySize)

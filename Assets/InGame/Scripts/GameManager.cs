@@ -17,11 +17,15 @@ public class GameManager : MonoBehaviour
 
     [Header("Player Info")]
     public Dictionary<int, Sprite> playerIcons = new Dictionary<int, Sprite>(); // Maps player numbers to their icons
+    public Dictionary<int, Color> SetColors = new Dictionary<int, Color>(); // Maps player numbers to their icons
     public List<PlayerInfo> playerInfos = new List<PlayerInfo>();
     public TextMapper textMapper;
     public Transform spawnTokenPositionPlayer1;
     public Transform spawnTokenPositionPlayer2;
-
+    public Transform spawnTokenPositionIsland2Player1;
+    public Transform spawnTokenPositionIsland3Player1;
+    public Transform spawnTokenPositionIsland2Player2;
+    public Transform spawnTokenPositionIsland3Player2;
     public Transform MermaidSpawnAreaPlayer1;
     public Transform MermaidSpawnAreaPlayer2;
 
@@ -56,15 +60,16 @@ public class GameManager : MonoBehaviour
     }
     private void HandleTurn()
     {
-        SoundManager.Instance?.PlayTurnChange();
-        incrementCurrentPlayerTurn();
-        CheckAndRewardThiefVaultInteraction();
 
         if (IsTurnLimitReachedOrTokensEmpty())
         {
             TriggerGameOver();
             return;
         }
+        SoundManager.Instance?.PlayTurnChange();
+        incrementCurrentPlayerTurn();
+        CheckAndRewardThiefVaultInteraction();
+
 
         ChangePlayerTurn(currentPlayer == 1 ? 2 : 1);
 
@@ -179,10 +184,32 @@ public class GameManager : MonoBehaviour
         if (playerIcons.ContainsKey(playerNumber))
         {
             playerIcons[playerNumber] = icon;
+
+            // Assign color based on the icon's name
+            SetColors[playerNumber] = icon.name == "Yellow" ? Color.yellow : Color.blue;
         }
         else
         {
             playerIcons.Add(playerNumber, icon);
+
+            // Ensure the color is added for the new player as well
+            SetColors[playerNumber] = icon.name == "Yellow" ? Color.yellow : Color.blue;
+        }
+    }
+    public Color GetPlayerColor(int playerNumber)
+    {
+        if (SetColors.TryGetValue(playerNumber, out var Col))
+        {
+            return Col;
+        }
+
+        throw new Exception($"Player {playerNumber} not found!");
+    }
+    public void PrintAllSetColors()
+    {
+        foreach (var entry in SetColors)
+        {
+            Debug.Log($"Player {entry.Key}: Color {entry.Value}");
         }
     }
 
@@ -286,12 +313,20 @@ public class GameManager : MonoBehaviour
     public void InstantiateSinglePlayerToken(CharacterData character, int playerNumber)
     {
         Transform spawnPosition;
+
         if (character.characterType != CharacterType.Mermaid)
         {
-            spawnPosition = playerNumber == 1 ? spawnTokenPositionPlayer1 : spawnTokenPositionPlayer2;
+            // Define an array of spawn positions based on the player number
+            Transform[] spawnPositions = playerNumber == 1
+                ? new[] { spawnTokenPositionPlayer1, spawnTokenPositionIsland2Player1, spawnTokenPositionIsland3Player1 }
+                : new[] { spawnTokenPositionPlayer2, spawnTokenPositionIsland2Player2, spawnTokenPositionIsland3Player2 };
+
+            // Randomly pick one from the available positions
+            spawnPosition = spawnPositions[UnityEngine.Random.Range(0, spawnPositions.Length)];
         }
         else
         {
+            // Use specific spawn areas for mermaids
             spawnPosition = playerNumber == 1 ? MermaidSpawnAreaPlayer1 : MermaidSpawnAreaPlayer2;
         }
 
@@ -335,7 +370,7 @@ public class GameManager : MonoBehaviour
 
         draftManager.HandleSingleTokenPlaced(placementManager);
 
-
+        MapScroll.Instance.SmoothTransitionToPosition(token.transform.position, 0.5f);
     }
 
 

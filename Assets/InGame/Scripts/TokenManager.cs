@@ -7,7 +7,7 @@ public class TokenManager : MonoBehaviour
     [SerializeField]
     private LayerMask tokenLayerMask; // LayerMask for token detection
     [SerializeField] ForceSlider forceSlider;
-    private Token selectedToken;
+    [SerializeField] Token selectedToken;
 
     private void Awake()
     {

@@ -70,7 +70,7 @@ public class MapScroll : MonoBehaviour
         if (isScrollEnabled)
         {
             HandleDrag();
-            HandleZoom();
+            // HandleZoom();
         }
     }
 
@@ -159,31 +159,31 @@ public class MapScroll : MonoBehaviour
         camTransform.position = Vector3.Lerp(camTransform.position, targetPosition, FollowSpeed * Time.deltaTime);
     }
 
-    private void HandleZoom()
-    {
-        if (Input.touchCount == 2)
-        {
-            Touch touch0 = Input.GetTouch(0);
-            Touch touch1 = Input.GetTouch(1);
+    // private void HandleZoom()
+    // {
+    //     if (Input.touchCount == 2)
+    //     {
+    //         Touch touch0 = Input.GetTouch(0);
+    //         Touch touch1 = Input.GetTouch(1);
 
-            Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
-            Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
+    //         Vector2 touch0PrevPos = touch0.position - touch0.deltaPosition;
+    //         Vector2 touch1PrevPos = touch1.position - touch1.deltaPosition;
 
-            float prevMagnitude = (touch0PrevPos - touch1PrevPos).magnitude;
-            float currentMagnitude = (touch0.position - touch1.position).magnitude;
+    //         float prevMagnitude = (touch0PrevPos - touch1PrevPos).magnitude;
+    //         float currentMagnitude = (touch0.position - touch1.position).magnitude;
 
-            float difference = prevMagnitude - currentMagnitude;
+    //         float difference = prevMagnitude - currentMagnitude;
 
-            // Adjust the orthographic size of the Cinemachine camera
-            float newOrthographicSize = Mathf.Clamp(
-                cinemachineCamera.Lens.OrthographicSize - difference * zoomSpeed,
-                minZoom,
-                maxZoom
-            );
+    //         // Adjust the orthographic size of the Cinemachine camera
+    //         float newOrthographicSize = Mathf.Clamp(
+    //             cinemachineCamera.Lens.OrthographicSize - difference * zoomSpeed,
+    //             minZoom,
+    //             maxZoom
+    //         );
 
-            cinemachineCamera.Lens.OrthographicSize = newOrthographicSize;
-        }
-    }
+    //         cinemachineCamera.Lens.OrthographicSize = newOrthographicSize;
+    //     }
+    // }
 
     public void EnableScroll()
     {

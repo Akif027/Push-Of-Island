@@ -17,6 +17,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private GameObject WinningPanel;
     [SerializeField] private GameObject PlayerOneWinnerimg;
     [SerializeField] private GameObject PlayerTwoWinnerimg;
+
+
+
     public GameObject DraftPanel; // Main draft panel
     public GameObject SelectedCardPanel; // Panel for selected card
 

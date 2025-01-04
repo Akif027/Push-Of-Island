@@ -24,8 +24,18 @@ public class DraftManager : MonoBehaviour
 
     public SpriteRenderer[] AllCoatOfArmsLand1;
     public SpriteRenderer[] AllCoatOfArmsLand2;
+    [SerializeField] private GameObject SelectedDraftIconPlayer1;
+    [SerializeField] private GameObject SelectedDraftIconPlayer2;
+    [SerializeField] private GameObject SelectedWinnerIconPlayer1;
+    [SerializeField] private GameObject SelectedWinnerIconPlayer2;
+    [SerializeField] private GameObject InfoIconPlayer1;
+    [SerializeField] private GameObject InfoIconPlayer2;
 
+    [SerializeField] private GameObject UpperPanelforCoinIconPlayer1;
+    [SerializeField] private GameObject UpperPanelforCoinIconPlayer2;
 
+    [SerializeField] private GameObject UpperPanelforTurnIconPlayer1;
+    [SerializeField] private GameObject UpperPanelforTurnIconPlayer2;
 
     [Header("Game Data")]
     public GameData gameData; // Reference to the GameData ScriptableObject
@@ -115,7 +125,20 @@ public class DraftManager : MonoBehaviour
         GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
 
     }
+    public void SetSelectedIcons()
+    {
+        SelectedDraftIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedDraftIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        SelectedWinnerIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedWinnerIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        InfoIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        InfoIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        UpperPanelforCoinIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        UpperPanelforCoinIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        UpperPanelforTurnIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        UpperPanelforTurnIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
 
+    }
     /// <summary>
     /// Generate a non-overlapping spawn position for a token.
     /// </summary>
@@ -366,7 +389,7 @@ public class DraftManager : MonoBehaviour
     }
     public void SetCoatOfArmsToLand()
     {
-
+        SetSelectedIcons();
         foreach (var item in AllCoatOfArmsLand1)
         {
             item.sprite = GameManager.Instance.GetPlayerIcon(1);
