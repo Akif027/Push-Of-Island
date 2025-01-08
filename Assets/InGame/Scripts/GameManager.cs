@@ -151,11 +151,12 @@ public class GameManager : MonoBehaviour
                 if (token == null || token.characterData == null) continue;
 
                 // Check if the token is a thief and is interacting with a vault
-                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingVault(token) && token.IsCurrentPlayerOwner())
+                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingBase(token) && token.IsCurrentPlayerOwner())
                 {
-                    EventManager.TriggerCoinAdd(token.owner, 5); // Award 5 coins
-                    SoundManager.Instance?.PlayCoinCollect();
-                    Debug.LogError($"Player {token.owner} awarded 5 coins for a thief interacting with the vault.");
+                    EventManager.TriggerGloryPointAdd(token.owner, 5);
+                    Debug.LogError($"Player {token.owner} has captured the base.");
+                    SoundManager.Instance?.PlayScore();
+
                 }
             }
         }
@@ -166,12 +167,16 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="token">The token to check.</param>
     /// <returns>True if the token is touching a vault; otherwise, false.</returns>
-    private bool IsTokenTouchingVault(Token token)
+    private bool IsTokenTouchingBase(Token token)
     {
-        Collider2D[] colliders = Physics2D.OverlapCircleAll(token.transform.position, 0.1f);
+        float radius = token.GetComponent<CircleCollider2D>().radius;
+        Collider2D[] colliders = Physics2D.OverlapCircleAll(token.transform.position, radius);
+
         foreach (Collider2D collider in colliders)
         {
-            if (collider.CompareTag("Vault"))
+            Base baseS = collider.GetComponentInParent<Base>();
+
+            if (collider.CompareTag("BaseIcon") && baseS.ownerID != token.owner)
             {
                 return true; // Token is interacting with a vault
             }
@@ -523,7 +528,7 @@ public class PlayerInfo
     public List<Token> tokens = new List<Token>();
     private Dictionary<CharacterData, bool> PlayerCards = new Dictionary<CharacterData, bool>();
     [SerializeField] private int _hasTurn;
-
+    private HashSet<CharacterData> currentCharacters; // Store unique CharacterData
     /// <summary>
     /// Gets or sets the HasTurn value with a maximum cap of 20.
     /// </summary>
@@ -539,13 +544,30 @@ public class PlayerInfo
             }
         }
     }
+    public void PrintPlayerCards()
+    {
+        if (PlayerCards.Count == 0)
+        {
+            Debug.Log($"Player {PlayerNumber}: No PlayerCards available.");
+            return;
+        }
 
+        Debug.LogError($"Player {PlayerNumber}: PlayerCards - Total Entries: {PlayerCards.Count}");
+        foreach (var entry in PlayerCards)
+        {
+            var character = entry.Key;
+            var isUnlocked = entry.Value;
+
+            Debug.Log($"Character: {character.characterType}, Ability: {character.ability}, IsUnlocked: {isUnlocked}");
+        }
+    }
     public PlayerInfo(Int32 PlayerNumber_, Token _tokens)
     {
         PlayerNumber = PlayerNumber_;
         tokens.Add(_tokens);// Initialize tokens if null
         Debug.Log($"{tokens.Count} tokens initialized for Player {PlayerNumber_}");
         AddPlayerCardsData();
+
     }
 
     public Dictionary<CharacterData, bool> GetPlayerCards()
@@ -556,14 +578,15 @@ public class PlayerInfo
     }
     public void UpdatePlayerCards()
     {
-        // Create a set of current CharacterData from the tokens list
-        var currentCharacters = tokens.Where(token => token != null && token.characterData != null)
-                                       .Select(token => token.characterData)
-                                       .ToHashSet();
+        // Initialize and populate currentCharacters in the constructor
+        currentCharacters = tokens.Where(token => token != null && token.characterData != null)
+                                  .Select(token => token.characterData)
+                                  .ToHashSet();
 
         // Check for removed characters and update their IsUnlocked status to false
         foreach (var character in PlayerCards.Keys.ToList()) // Use ToList to safely modify during iteration
         {
+
             if (!currentCharacters.Contains(character))
             {
                 PlayerCards[character] = false; // Set IsUnlocked to false for removed characters

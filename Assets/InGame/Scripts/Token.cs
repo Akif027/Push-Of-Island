@@ -108,21 +108,26 @@ public class Token : MonoBehaviour
     }
 
 
+
+
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (characterData.characterType == CharacterType.Golem && isImmobile && collision.gameObject.CompareTag("Token"))
         {
-            Reactivate();
+
+            UnlockMovement();
+
         }
         SoundManager.Instance?.PlayCollision();
     }
-
-    private void Reactivate()
+    private void UnlockMovement()
     {
+        // Unlock the Golem's movement but keep it immobile until explicitly moved
         isImmobile = false;
-        tokenRigidbody.bodyType = RigidbodyType2D.Dynamic; // Enable movement
-        Debug.Log($"{characterData.characterName} has been reactivated and can now move. ");
+        tokenRigidbody.bodyType = RigidbodyType2D.Kinematic; // Keep it kinematic to prevent movement by other tokens
+        Debug.Log($"{characterData.characterName} has been unlocked for movement but remains immobile.");
     }
+
 
     private void HandleTokenMovement()
     {
@@ -190,7 +195,7 @@ public class Token : MonoBehaviour
 
         //  Debug.Log($"{name} set throw force to: {throwForce} (Slider: {sliderForce}, Speed: {characterData.Speed}, Weight: {safeMass})");
     }
-    bool isSelected = false;
+
     public void OnTokenSelected()
     {
         if (!IsCurrentPlayerOwner())
@@ -198,17 +203,13 @@ public class Token : MonoBehaviour
             SoundManager.Instance?.PlayWhenTapOnOpponentChip();
             return;
         }
-
+        if (!isImmobile) tokenRigidbody.bodyType = RigidbodyType2D.Dynamic;
 
         arrow.gameObject.SetActive(true);
-        if (!isSelected)
-        {
-            UIManager.Instance.ClosePlayLowerPanel();
-            UIManager.Instance.OpenPlayAttackLowerPanel();
-            isSelected = true;
-        }
+
+
         StopMovement();
-        Debug.Log($"{name} is selected.");
+        Debug.Log($"{name} is selected. ");
     }
 
 
@@ -216,12 +217,10 @@ public class Token : MonoBehaviour
     {
         Debug.LogError("OnDeselected");
         isDragging = false;
-        isSelected = false;
 
         arrow.gameObject.SetActive(false);
 
-        UIManager.Instance.OpenPlayLowerPanel();
-        UIManager.Instance.ClosePlayAttackLowerPanel();
+
 
 
     }
@@ -266,21 +265,15 @@ public class Token : MonoBehaviour
 
         Debug.Log($"{name} launched with force: {throwForce} in direction  {movementDirection}");
     }
-    public void ElaminateMermaid()
-    {
-        if (characterData.characterType != CharacterType.Mermaid)
-        {
-            EliminateToken();
-        }
-    }
+
     private void ResetToken()
     {
 
         isThrown = false;
         StopMovement();
         arrow.gameObject.SetActive(false);
-        UIManager.Instance.OpenPlayLowerPanel();
-        UIManager.Instance.ClosePlayAttackLowerPanel();
+        // UIManager.Instance.OpenPlayLowerPanel();
+        // UIManager.Instance.ClosePlayAttackLowerPanel();
     }
 
 

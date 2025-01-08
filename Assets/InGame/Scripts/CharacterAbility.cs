@@ -88,12 +88,12 @@ public class CharacterAbility : ScriptableObject
     /// </summary>
     public virtual void OnBaseCapture(Token token)
     {
-        if (GameManager.Instance.currentPhase != GamePhase.GamePlay) return;
+        if (GameManager.Instance.currentPhase != GamePhase.GamePlay && token.characterData.characterType == CharacterType.Thief) return;
         if (coinsPerCaptureBase > 0)
         {
 
             float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust based on your token's size
-            LayerMask layerMask = LayerMask.GetMask("BaseIcon");
+            LayerMask layerMask = LayerMask.GetMask("BaseIcon", "Base");
 
             // Use OverlapCircle to detect colliders within the specified radius
             Collider2D hitCollider = Physics2D.OverlapCircle(token.transform.position, radius, layerMask);
@@ -112,10 +112,16 @@ public class CharacterAbility : ScriptableObject
                     SoundManager.Instance?.PlayScore();
                 }
             }
+            // else if (hitCollider != null && hitCollider.CompareTag("Base") && token.characterData.characterType == CharacterType.Mermaid)
+            // {
+
+            //     token.EliminateToken();
+            //     Basealreadycaptured = false;
+            // }
             else
             {
                 Basealreadycaptured = false;
-                token.ElaminateMermaid();
+
             }
         }
 
@@ -213,7 +219,7 @@ public class CharacterAbility : ScriptableObject
                 // General logic for other characters
                 else
                 {
-                    if (collider.CompareTag("Land") || collider.CompareTag("Base"))
+                    if (collider.CompareTag("Land") || collider.CompareTag("Base") || collider.CompareTag("Base") && collider.CompareTag("Water") || collider.CompareTag("Land") && collider.CompareTag("Water"))
                     {
                         Debug.Log($"{token.characterData.characterName} is safely on land or base.");
                         return true; // Valid for land-based characters

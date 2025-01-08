@@ -71,7 +71,7 @@ public class PlacementManager : MonoBehaviour
     void Update()
     {
         HandleDrag();
-        if (GameManager.Instance.getCurrentPhase() == GamePhase.GamePlay && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic)
+        if (GameManager.Instance.getCurrentPhase() == GamePhase.GamePlay && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic && token.characterData.characterType != CharacterType.Golem)
         {
             SetToDynamic();
 

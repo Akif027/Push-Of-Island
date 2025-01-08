@@ -63,13 +63,14 @@ public class TokenManager : MonoBehaviour
 
         if (hit.collider != null) // Token is hit
         {
-            Token token = hit.collider.GetComponent<Token>();
+            // Use GetComponentInParent to find the Token component on the parent or child
+            Token token = hit.collider.GetComponentInParent<Token>();
             if (token != null)
             {
                 // Ensure the Golem is active before selection
                 if (token.characterData.characterType == CharacterType.Golem && token.IsImmobile())
                 {
-                    Debug.LogWarning("Cannot select Golem. It is immobile and must be activated first.");
+                    Debug.LogWarning("Cannot select Golem. It is immobile and must be activated first.   ");
                     return; // Block selection if the Golem is immobile
                 }
 
@@ -90,6 +91,8 @@ public class TokenManager : MonoBehaviour
             MapScroll.Instance.EnableScroll();
             selectedToken.OnTokenDeselected();
             selectedToken = null; // Clear the selected token reference
+            UIManager.Instance.OpenPlayLowerPanel();
+            UIManager.Instance.ClosePlayAttackLowerPanel();
             Debug.Log("Token deselected.");
         }
     }
@@ -102,6 +105,9 @@ public class TokenManager : MonoBehaviour
         }
         MapScroll.Instance.DisableScroll();
         selectedToken = token;
+
+        UIManager.Instance.ClosePlayLowerPanel();
+        UIManager.Instance.OpenPlayAttackLowerPanel();
         selectedToken.OnTokenSelected();
     }
 
