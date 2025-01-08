@@ -72,7 +72,7 @@ public class CharacterAbility : ScriptableObject
                     EventManager.TriggerCoinAdd(token.owner, 20);
                     SoundManager.Instance.PlayCoinCollect();
                 }
-                else if (hitCollider.CompareTag("VaultMid "))
+                else if (hitCollider.CompareTag("VaultMid"))
                 {
                     EventManager.TriggerCoinAdd(token.owner, 10);
                     SoundManager.Instance.PlayCoinCollect();
@@ -115,6 +115,7 @@ public class CharacterAbility : ScriptableObject
             else
             {
                 Basealreadycaptured = false;
+                token.ElaminateMermaid();
             }
         }
 
@@ -190,9 +191,9 @@ public class CharacterAbility : ScriptableObject
                 // Mermaid-specific logic
                 if (token.characterData.characterType == CharacterType.Mermaid)
                 {
-                    if (collider.CompareTag("Water") || collider.CompareTag("Base"))
+                    if (collider.CompareTag("Water") || collider.CompareTag("BaseIcon") || collider.CompareTag("Vault") || collider.CompareTag("VaultMid"))
                     {
-                        Debug.Log($"{token.characterData.characterName} is safely on water.");
+                        Debug.Log($"{token.characterData.characterName} is safely on water  . ");
                         return true;
                     }
                     if (collider.CompareTag("Land") && collider.CompareTag("Water"))

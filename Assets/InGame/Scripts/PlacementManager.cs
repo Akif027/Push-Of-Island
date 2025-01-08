@@ -238,7 +238,7 @@ public class PlacementManager : MonoBehaviour
             if (playerBase != null)
             {
                 // Validate ownership if necessary
-                if (playerBase.ownerID != token.owner && playerBase.ownerID != 0 && playerBase.ownerID == -1)
+                if (playerBase.ownerID != token.owner && playerBase.ownerID != 0 /*|| playerBase.ownerID == -1*/)
                 {
                     return false;
                 }

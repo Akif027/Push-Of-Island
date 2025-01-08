@@ -83,6 +83,7 @@ public class DraftManager : MonoBehaviour
     }
     private void SetAlltokentoInactive(bool isTrue)
     {
+        if (PlacementManager == null) return;
         foreach (var item in PlacementManager)
         {
             item.gameObject.SetActive(isTrue);

@@ -266,7 +266,13 @@ public class Token : MonoBehaviour
 
         Debug.Log($"{name} launched with force: {throwForce} in direction  {movementDirection}");
     }
-
+    public void ElaminateMermaid()
+    {
+        if (characterData.characterType != CharacterType.Mermaid)
+        {
+            EliminateToken();
+        }
+    }
     private void ResetToken()
     {
 
