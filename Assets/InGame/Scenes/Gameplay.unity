@@ -6778,6 +6778,7 @@ MonoBehaviour:
   gameData: {fileID: 11400000, guid: 0e7a01797a175f747a3bf7bc48781631, type: 2}
   player1Characters: []
   player2Characters: []
+  PlacementManager: []
   WinnerFirstPlayerSelectedCard: {fileID: 1896815386}
   WinnerSecondPlayerSelectedCard: {fileID: 1237827724}
   FirstPlayerSelectedCard: {fileID: 1204502113}
@@ -9228,7 +9229,7 @@ Transform:
   m_GameObject: {fileID: 1048964547}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.41, y: -1.14, z: 0}
+  m_LocalPosition: {x: -0.622, y: -1.232, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -18188,7 +18189,7 @@ Transform:
   m_GameObject: {fileID: 1992659404}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.34, y: 4.34, z: 0}
+  m_LocalPosition: {x: -0.34, y: 4.672, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

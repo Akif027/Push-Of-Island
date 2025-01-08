@@ -91,6 +91,7 @@ public class DraftManager : MonoBehaviour
 
     private void InstantiatePlayerTokens(CharacterData character, int playerNumber)
     {
+
         // Determine the spawn area for the player
         Transform spawnAreaCenter = playerNumber == 1 ? GameManager.Instance.spawnTokenPositionPlayer1 : GameManager.Instance.spawnTokenPositionPlayer2;
 
@@ -103,15 +104,21 @@ public class DraftManager : MonoBehaviour
 
         List<Vector3> usedPositions = new List<Vector3>(); // Tracks used positions to avoid overlap
 
+        Vector3 spawnPositionFinal;
 
-        // Use special spawn area for Mermaid tokens
-        Transform spawnPosition = (character.characterType == CharacterType.Mermaid) ? mermaidSpawnArea : spawnAreaCenter;
-
-        // Generate a random spawn position within the radius
-        Vector3 spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnPosition.position, usedPositions, spawnRadius, tokenSpacing);
+        if (character.characterType == CharacterType.Mermaid)
+        {
+            // Fixed position for Mermaid tokens
+            spawnPositionFinal = new Vector3(mermaidSpawnArea.position.x, mermaidSpawnArea.position.y, mermaidSpawnArea.position.z - 0.6f);
+        }
+        else
+        {
+            // Generate a random spawn position for other characters
+            spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnAreaCenter.position, usedPositions, spawnRadius, tokenSpacing);
+        }
 
         // Instantiate the token prefab
-        GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, spawnPosition);
+        GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, character.characterType == CharacterType.Mermaid ? mermaidSpawnArea : spawnAreaCenter);
 
         // Configure the token
         Token tokenComponent = tokenObject.GetComponent<Token>();
@@ -136,7 +143,7 @@ public class DraftManager : MonoBehaviour
             PlacementManager.Add(placementManager);
         }
 
-        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}.");
+        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}  .");
 
 
     }
