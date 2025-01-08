@@ -237,7 +237,18 @@ public class GameManager : MonoBehaviour
 
         if (existingPlayerInfo != null)
         {
-            existingPlayerInfo.tokens = playerInfo.tokens ?? new List<Token>();
+            // Ensure tokens from the new PlayerInfo are added to the existing list
+            if (playerInfo.tokens != null)
+            {
+                foreach (var token in playerInfo.tokens)
+                {
+                    if (!existingPlayerInfo.tokens.Contains(token))
+                    {
+                        existingPlayerInfo.tokens.Add(token);
+                    }
+                }
+            }
+
             Debug.Log($"Updated PlayerInfo for Player {playerNumber}.");
         }
         else
@@ -246,6 +257,7 @@ public class GameManager : MonoBehaviour
             Debug.Log($"Added PlayerInfo for Player {playerNumber}.");
         }
     }
+
 
     /// <summary>
     /// Get PlayerInfo by player number.
@@ -362,7 +374,7 @@ public class GameManager : MonoBehaviour
         PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
         if (playerInfo == null)
         {
-            playerInfo = new PlayerInfo(playerNumber, new List<Token>());
+            playerInfo = new PlayerInfo(playerNumber, tokenComponent);
             SetPlayerInfo(playerNumber, playerInfo);
         }
 
@@ -508,7 +520,7 @@ public class GameManager : MonoBehaviour
 public class PlayerInfo
 {
     public Int32 PlayerNumber;
-    public List<Token> tokens;
+    public List<Token> tokens = new List<Token>();
     private Dictionary<CharacterData, bool> PlayerCards = new Dictionary<CharacterData, bool>();
     [SerializeField] private int _hasTurn;
 
@@ -528,10 +540,10 @@ public class PlayerInfo
         }
     }
 
-    public PlayerInfo(Int32 PlayerNumber_, List<Token> _tokens = null)
+    public PlayerInfo(Int32 PlayerNumber_, Token _tokens)
     {
         PlayerNumber = PlayerNumber_;
-        tokens = _tokens ?? new List<Token>(); // Initialize tokens if null
+        tokens.Add(_tokens);// Initialize tokens if null
         Debug.Log($"{tokens.Count} tokens initialized for Player {PlayerNumber_}");
         AddPlayerCardsData();
     }

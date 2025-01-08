@@ -264,8 +264,7 @@ public class PlacementManager : MonoBehaviour
         // Set Rigidbody to Kinematic to prevent further movement
         GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
         token.OnTokenPlaced();
-        // Trigger an event for other systems (like turn progression)
-        EventManager.TriggerEvent("OnTurnEnd");
+
     }
     private void ResetPosition()
     {

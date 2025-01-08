@@ -46,7 +46,7 @@ public class DraftManager : MonoBehaviour
     public List<CharacterData> player1Characters = new List<CharacterData>(); // List of Player 1's selected characters
     public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
 
-    private List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
+    public List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
 
     public GameObject WinnerFirstPlayerSelectedCard;
     public GameObject WinnerSecondPlayerSelectedCard;
@@ -63,16 +63,33 @@ public class DraftManager : MonoBehaviour
     // Start Placement Phase
     public void StartPlacementPhase()
     {
-        GameManager.Instance.ChangePlayerTurn(1);
-        MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.spawnTokenPositionPlayer1.position, 0.5f);
+        SetAlltokentoInactive(true);
+
+        MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.currentPlayer == 1 ? GameManager.Instance.spawnTokenPositionPlayer1.position : GameManager.Instance.spawnTokenPositionPlayer2.position, 0.5f);
 
         LowerTilemapOpacity(0.3f);
-        InstantiateAllPlayerTokens(player1Characters, 1);
-        InstantiateAllPlayerTokens(player2Characters, 2);
+        InstantiatePlayerTokens(selectedCharacter, GameManager.Instance.GetCurrentPlayer());
+        selectedCharacter = null;
+        selectedCardObject = null;
 
         EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
     }
-    private void InstantiateAllPlayerTokens(List<CharacterData> characterList, int playerNumber)
+    private void TransitionToPlacementPhase()
+    {
+        SetCoatOfArmsToLand();
+        DraftCanvas.SetActive(false);
+        Mapobj.SetActive(true);
+        StartPlacementPhase();
+    }
+    private void SetAlltokentoInactive(bool isTrue)
+    {
+        foreach (var item in PlacementManager)
+        {
+            item.gameObject.SetActive(isTrue);
+        }
+    }
+
+    private void InstantiatePlayerTokens(CharacterData character, int playerNumber)
     {
         // Determine the spawn area for the player
         Transform spawnAreaCenter = playerNumber == 1 ? GameManager.Instance.spawnTokenPositionPlayer1 : GameManager.Instance.spawnTokenPositionPlayer2;
@@ -85,44 +102,42 @@ public class DraftManager : MonoBehaviour
         float tokenSpacing = 0.5f; // Minimum distance between tokens
 
         List<Vector3> usedPositions = new List<Vector3>(); // Tracks used positions to avoid overlap
-        List<Token> tokensList = new List<Token>(); // List to store tokens for this player
 
-        foreach (CharacterData character in characterList)
+
+        // Use special spawn area for Mermaid tokens
+        Transform spawnPosition = (character.characterType == CharacterType.Mermaid) ? mermaidSpawnArea : spawnAreaCenter;
+
+        // Generate a random spawn position within the radius
+        Vector3 spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnPosition.position, usedPositions, spawnRadius, tokenSpacing);
+
+        // Instantiate the token prefab
+        GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, spawnPosition);
+
+        // Configure the token
+        Token tokenComponent = tokenObject.GetComponent<Token>();
+        PlacementManager placementManager = tokenObject.GetComponent<PlacementManager>();
+
+        if (tokenComponent != null)
         {
-            // Use special spawn area for Mermaid tokens
-            Transform spawnPosition = (character.characterType == CharacterType.Mermaid) ? mermaidSpawnArea : spawnAreaCenter;
+            tokenComponent.characterData = character;
+            tokenComponent.owner = playerNumber;
+            tokenComponent.IsUnlocked = true; // Unlock the token
 
-            // Generate a random spawn position within the radius
-            Vector3 spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnPosition.position, usedPositions, spawnRadius, tokenSpacing);
 
-            // Instantiate the token prefab
-            GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, spawnPosition);
-
-            // Configure the token
-            Token tokenComponent = tokenObject.GetComponent<Token>();
-            PlacementManager placementManager = tokenObject.GetComponent<PlacementManager>();
-
-            if (tokenComponent != null)
-            {
-                tokenComponent.characterData = character;
-                tokenComponent.owner = playerNumber;
-                tokenComponent.IsUnlocked = true; // Unlock the token
-                tokensList.Add(tokenComponent);
-            }
-
-            if (placementManager != null)
-            {
-
-                placementManager.isTokenPlaced = false; // Mark token as not placed initially
-                PlacementManager.Add(placementManager);
-            }
-
-            Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}.");
+            // Create and set PlayerInfo for this player
+            PlayerInfo playerInfo = new PlayerInfo(playerNumber, tokenComponent);
+            GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
         }
 
-        // Create and set PlayerInfo for this player
-        PlayerInfo playerInfo = new PlayerInfo(playerNumber, tokensList);
-        GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
+        if (placementManager != null)
+        {
+
+            placementManager.isTokenPlaced = false; // Mark token as not placed initially
+            PlacementManager.Add(placementManager);
+        }
+
+        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}.");
+
 
     }
     public void SetSelectedIcons()
@@ -171,7 +186,7 @@ public class DraftManager : MonoBehaviour
         {
             if (!t.isTokenPlaced)
             {
-
+                Debug.LogError(t);
                 return false;
             }
         }
@@ -205,13 +220,6 @@ public class DraftManager : MonoBehaviour
         return false;
     }
 
-    private void TransitionToPlacementPhase()
-    {
-        SetCoatOfArmsToLand();
-        DraftCanvas.SetActive(false);
-        Mapobj.SetActive(true);
-        StartPlacementPhase();
-    }
 
     public void TransitionToPhase(GamePhase newPhase)
     {
@@ -247,10 +255,7 @@ public class DraftManager : MonoBehaviour
 
     private void TransitionToGameplayPhase()
     {
-        GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(false);
-        GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(false);
-        GameManager.Instance.MermaidSpawnAreaPlayer1.gameObject.SetActive(false);
-        GameManager.Instance.MermaidSpawnAreaPlayer2.gameObject.SetActive(false);
+        SetAlltokentoInactive(false);
         LowerTilemapOpacity(1f);
         Mapobj.SetActive(false);
         UIManager.Instance.CloseDraftPanel();
@@ -268,13 +273,11 @@ public class DraftManager : MonoBehaviour
         Mapobj.SetActive(true);
         DraftCanvas.SetActive(false);
         UIManager.Instance.CloseDisplayAllCardPanel();
-        GameManager.Instance.spawnTokenPositionPlayer1.gameObject.SetActive(true);
-        GameManager.Instance.spawnTokenPositionPlayer2.gameObject.SetActive(true);
-        GameManager.Instance.MermaidSpawnAreaPlayer1.gameObject.SetActive(true);
-        GameManager.Instance.MermaidSpawnAreaPlayer2.gameObject.SetActive(true);
+        SetAlltokentoInactive(true);
         UIManager.Instance.OpenPlayLowerPanel();
         UIManager.Instance.OpenPlayUpperPanel();
         MapScroll.Instance.SmoothTransitionToPosition(GameManager.Instance.spawnTokenPositionPlayer1.position, 0.5f);
+
     }
 
     private void DisplaySelectedCards()
@@ -401,16 +404,25 @@ public class DraftManager : MonoBehaviour
 
 
     }
+    void TransitionToSelectionPhase()
+    {
+        UIManager.Instance.OkButton.gameObject.SetActive(false);
+        SetAlltokentoInactive(false);
+        GameManager.Instance.ChangePhase(GamePhase.Selection);
+        Mapobj.SetActive(false);
+        DraftCanvas.SetActive(true);
+        UIManager.Instance.CloseSelectedCardPanel();
+        UIManager.Instance.OpenDraftPanel();
+        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
+        ChangeCurrentDraftMainICon(GameManager.Instance.currentPlayer);
+        RemoveLastCard();
+    }
+
     private void OnTokenPlaced(PlacementManager p)
     {
         p.ConfirmPlacement();
+        TransitionToSelectionPhase();
 
-        if (AllTokenPlacedCheck())
-        {
-            Debug.Log("All tokens placed.");
-            GameManager.Instance.ChangePhase(GamePhase.GamePlay);
-            TransitionToPhase(GamePhase.GamePlay);
-        }
         UIManager.Instance.OkButton.gameObject.SetActive(false);
 
         // Clean up: Remove the listener to prevent future issues
@@ -553,47 +565,42 @@ public class DraftManager : MonoBehaviour
         if (GameManager.Instance.GetCurrentPlayer() == 1)
         {
             player1Characters.Add(selectedCharacter);
+            Debug.LogError(selectedCardObject.name + "added");
         }
         else if (GameManager.Instance.GetCurrentPlayer() == 2)
         {
             player2Characters.Add(selectedCharacter);
+            Debug.LogError(selectedCardObject.name + "added ");
         }
 
-        GameObject duplicateCard = Instantiate(selectedCardObject, UIManager.Instance.DraftPanel.transform);
-        duplicateCard.transform.position = selectedCardObject.transform.position;
-        duplicateCard.transform.localScale = selectedCardObject.transform.localScale;
+
 
         instantiatedCards.Remove(selectedCardObject);
         Destroy(selectedCardObject);
+        isSelectionLocked = false;
 
-        DoTweenHelper.FlyToTarget(
-            duplicateCard,
-            DraftMainIcon.transform,
-            1.5f,
-            1.5f,
-            () =>
-            {
-                isSelectionLocked = false;
-                if (instantiatedCards.Count == 1)
-                {
-                    RemoveLastCard();
-                    return;
-                }
-
-                GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
-                ChangeCurrentDraftMainICon(GameManager.Instance.currentPlayer);
-            }
-        );
-
+        StartPlacementForSelectedCard(selectedCharacter);
         UIManager.Instance.CloseSelectedCardPanel();
         UIManager.Instance.OpenDraftPanel();
-        selectedCharacter = null;
-        selectedCardObject = null;
-    }
 
+
+    }
+    private void StartPlacementForSelectedCard(CharacterData character)
+    {
+        // Implement the logic to place the selected character's token on the map
+        // This could involve calling a method similar to InstantiateAllPlayerTokens
+        // but for a single character, or any other logic specific to your game.
+        Debug.Log($"Starting placement for character: {character.characterName}");
+        GameManager.Instance.ChangePhase(GamePhase.Placement);
+        TransitionToPhase(GamePhase.Placement);
+        UIManager.Instance.CloseSelectedCardPanel();
+
+
+    }
     private void RemoveLastCard()
     {
         if (instantiatedCards.Count != 1) return;
+        isSelectionLocked = true;
 
         GameObject lastCard = instantiatedCards[0];
         CharacterData lastCharacter = gameData.GetCharacterByName(lastCard.name);
@@ -608,11 +615,18 @@ public class DraftManager : MonoBehaviour
             {
                 Debug.Log($"{lastCard.name} destroyed after scaling down.");
                 Destroy(lastCard); // Destroy the card after animation
-                GameManager.Instance.ChangePhase(GamePhase.Placement);
-                TransitionToPhase(GamePhase.Placement);
+
                 UIManager.Instance.CloseSelectedCardPanel();
+                if (AllTokenPlacedCheck())
+                {
+                    Debug.Log("All tokens placed.");
+                    GameManager.Instance.ChangePhase(GamePhase.GamePlay);
+                    TransitionToPhase(GamePhase.GamePlay);
+                }
             }
         );
+
+
     }
 
 
