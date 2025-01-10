@@ -76,6 +76,10 @@ public class PlacementManager : MonoBehaviour
             SetToDynamic();
 
         }
+        else
+        {
+            SetToKinematic();
+        }
         // Continuously check placement validity while dragging
         if (isBeingDragged)
         {
@@ -141,7 +145,12 @@ public class PlacementManager : MonoBehaviour
 
 
     }
+    public void SetToKinematic()
+    {
+        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
 
+
+    }
     public void CheckPlacementRules()
     {
         isValidPlacement = false;
@@ -151,12 +160,25 @@ public class PlacementManager : MonoBehaviour
         switch (characterType)
         {
             case CharacterType.Mermaid:
-                // Mermaid can be placed on Water or Base, but not on Land
-                isValidPlacement = (CheckPlacementWithRaycast("Water") || CheckPlacementWithRaycast("Base")) &&
-                                   !CheckPlacementWithRaycast("Land");
+                // Mermaid can be placed on Water or partially on Base with Water, but not fully on Base or on Land
+                bool onWater = CheckPlacementWithRaycast("Water");
+                bool onBase = CheckPlacementWithRaycast("Base");
+                bool onLand = CheckPlacementWithRaycast("Land");
 
+                // Mermaid is valid if:
+                // - On Water (valid if only on water)
+                // - Not on Land (invalid if on land)
+                // - On Base only if water is below it (base placement is valid only if there’s no water beneath it)
+                isValidPlacement = onWater && !onLand; // Mermaid is valid on water and not on land
+
+                // If it’s on base, check that there’s no water below it
+                if (onBase)
+                {
+                    isValidPlacement = isValidPlacement && IsWaterBelowBase();
+                }
 
                 break;
+
             case CharacterType.Knight:
                 isValidPlacement = CheckPlacementWithRaycast("Base");
                 break;
@@ -206,7 +228,22 @@ public class PlacementManager : MonoBehaviour
 
         }
     }
+    private void DebugDrawRay()
+    {
+        Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);
+    }
+    private bool IsWaterBelowBase()
+    {
+        // Check if there's water directly below the current position by casting a ray downwards
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, raycastMask); // Adjust ray length if needed
 
+        if (hit.collider != null && hit.collider.CompareTag("Water"))
+        {
+            return true; // There's water directly below
+        }
+
+        return false; // No water directly below
+    }
     private void HandleBorder()
     {
         Color playerColor = GameManager.Instance.GetPlayerColor(token.owner);
@@ -274,9 +311,6 @@ public class PlacementManager : MonoBehaviour
         EventManager.TriggerEvent<bool>("TokenPlaced", false);
     }
 
-    private void DebugDrawRay()
-    {
-        Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);
-    }
+
 }
 

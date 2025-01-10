@@ -362,12 +362,13 @@ public class GameManager : MonoBehaviour
         {
             tokenComponent.characterData = character;
             tokenComponent.owner = playerNumber;
+
         }
 
         if (placementManager != null)
         {
 
-            placementManager.isTokenPlaced = true;
+            placementManager.isTokenPlaced = false;
         }
      ;
         if (tokenComponent != null)
@@ -384,8 +385,8 @@ public class GameManager : MonoBehaviour
         }
 
         playerInfo.tokens.Add(tokenComponent);
-
-        draftManager.HandleSingleTokenPlaced(placementManager);
+        GameManager.Instance.ChangePhase(GamePhase.Placement);
+        //    draftManager.HandleSingleTokenPlaced(placementManager);
 
         MapScroll.Instance.SmoothTransitionToPosition(token.transform.position, 0.5f);
     }
@@ -426,8 +427,9 @@ public class GameManager : MonoBehaviour
             Debug.LogError($"Token with type {characterType} not found for Player {playerNumber}!");
             return;
         }
-
+        playerInfo.AddremoveCharterToLockedList(tokenToRemove);
         playerInfo.tokens.Remove(tokenToRemove);
+
         // Immediately check for game over
         if (IsTurnLimitReachedOrTokensEmpty())
         {
@@ -526,9 +528,11 @@ public class PlayerInfo
 {
     public Int32 PlayerNumber;
     public List<Token> tokens = new List<Token>();
+    public List<CharacterData> UnlockedCharacter = new List<CharacterData>();
+    public List<CharacterData> lockedCharacter = new List<CharacterData>();
     private Dictionary<CharacterData, bool> PlayerCards = new Dictionary<CharacterData, bool>();
     [SerializeField] private int _hasTurn;
-    private HashSet<CharacterData> currentCharacters; // Store unique CharacterData
+
     /// <summary>
     /// Gets or sets the HasTurn value with a maximum cap of 20.
     /// </summary>
@@ -544,29 +548,49 @@ public class PlayerInfo
             }
         }
     }
-    public void PrintPlayerCards()
+    void PopulateAndUpdateUnlockedCharacter()
     {
-        if (PlayerCards.Count == 0)
+
+
+        for (int i = UnlockedCharacter.Count - 1; i >= 0; i--)
         {
-            Debug.Log($"Player {PlayerNumber}: No PlayerCards available.");
-            return;
+            if (UnlockedCharacter[i] != tokens[i].characterData)
+            {
+                UnlockedCharacter.RemoveAt(i);
+            }
         }
-
-        Debug.LogError($"Player {PlayerNumber}: PlayerCards - Total Entries: {PlayerCards.Count}");
-        foreach (var entry in PlayerCards)
+        for (int i = lockedCharacter.Count - 1; i >= 0; i--)
         {
-            var character = entry.Key;
-            var isUnlocked = entry.Value;
-
-            Debug.Log($"Character: {character.characterType}, Ability: {character.ability}, IsUnlocked: {isUnlocked}");
+            if (lockedCharacter[i] == tokens[i].characterData)
+            {
+                lockedCharacter.RemoveAt(i);
+            }
         }
     }
+
+    public void PopulateLockedList()
+    {
+
+        foreach (var item in tokens)
+        {
+
+            UnlockedCharacter.Add(item.characterData);
+        }
+    }
+    public void AddremoveCharterToLockedList(Token token)
+    {
+        lockedCharacter.Add(token.characterData);
+        PopulateAndUpdateUnlockedCharacter();
+    }
+
     public PlayerInfo(Int32 PlayerNumber_, Token _tokens)
     {
+
         PlayerNumber = PlayerNumber_;
         tokens.Add(_tokens);// Initialize tokens if null
         Debug.Log($"{tokens.Count} tokens initialized for Player {PlayerNumber_}");
-        AddPlayerCardsData();
+
+
 
     }
 
@@ -578,69 +602,25 @@ public class PlayerInfo
     }
     public void UpdatePlayerCards()
     {
-        // Initialize and populate currentCharacters in the constructor
-        currentCharacters = tokens.Where(token => token != null && token.characterData != null)
-                                  .Select(token => token.characterData)
-                                  .ToHashSet();
+        PlayerCards.Clear(); // Clear the dictionary before adding new entries
 
-        // Check for removed characters and update their IsUnlocked status to false
-        foreach (var character in PlayerCards.Keys.ToList()) // Use ToList to safely modify during iteration
+        // Add unlocked characters with status 'true'
+        foreach (var unlockedCharacter in UnlockedCharacter)
         {
-
-            if (!currentCharacters.Contains(character))
-            {
-                PlayerCards[character] = false; // Set IsUnlocked to false for removed characters
-                Debug.Log($"Player {PlayerNumber}: Character {character.characterType} removed. IsUnlocked set to false.");
-            }
+            PlayerCards[unlockedCharacter] = true;
         }
 
-        // Add or update entries for current tokens
-        foreach (var token in tokens)
+        // Add locked characters with status 'false'
+        foreach (var lockedCharacter in lockedCharacter)
         {
-            if (token != null && token.characterData != null)
-            {
-                if (PlayerCards.ContainsKey(token.characterData))
-                {
-                    // Update IsUnlocked to true for existing characters
-                    PlayerCards[token.characterData] = true;
-                    Debug.Log($"Player {PlayerNumber}: Character {token.characterData.characterType} re-added. IsUnlocked set to true.");
-                }
-                else
-                {
-                    // Add new entries for new tokens
-                    PlayerCards[token.characterData] = token.IsUnlocked;
-                    Debug.Log($"Player {PlayerNumber}: New Character {token.characterData.characterType} added with IsUnlocked = {token.IsUnlocked}.");
-                }
-            }
+            PlayerCards[lockedCharacter] = false;
         }
 
-        Debug.Log($"Player {PlayerNumber}: PlayerCards updated. Total entries: {PlayerCards.Count}");
-    }
-
-    public void AddPlayerCardsData()
-    {
-        foreach (var token in tokens)
+        // Optional: Debug log to show the current state of PlayerCards
+        foreach (var entry in PlayerCards)
         {
-            if (token != null && token.characterData != null)
-            {
-                // Add the characterData and its IsUnlocked status to the dictionary
-                if (!PlayerCards.ContainsKey(token.characterData))
-                {
-                    PlayerCards[token.characterData] = token.IsUnlocked;
-                    //  Debug.LogError($"Player {PlayerNumber}: Character {token.characterData.characterType} added with IsUnlocked = {token.IsUnlocked}");
-                }
-                else
-                {
-                    Debug.LogError($"Duplicate characterData detected: {token.characterData.characterType}. Skipping...");
-                }
-            }
-            else
-            {
-                Debug.LogError($"Player {PlayerNumber}: Invalid token or missing CharacterData.");
-            }
+            Debug.Log($"Character: {entry.Key.ability}, Status: {entry.Value}");
         }
-
-        Debug.Log($"Player {PlayerNumber}: PlayerCards dictionary populated with {PlayerCards.Count} entries.");
     }
 
     // public List<CharacterData> GetAllCharacterDataOfPlayer(int playerNumber)

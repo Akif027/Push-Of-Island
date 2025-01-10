@@ -59,6 +59,7 @@ public class DraftManager : MonoBehaviour
 
     private bool isSelectionLocked = false;
 
+    private bool AllDraftTokenPlaced = false;
 
     // Start Placement Phase
     public void StartPlacementPhase()
@@ -188,7 +189,7 @@ public class DraftManager : MonoBehaviour
 
 
 
-    private bool AllTokenPlacedCheck()
+    private bool AllDraftTokenPlacedCheck()
     {
         foreach (PlacementManager t in PlacementManager)
         {
@@ -361,42 +362,36 @@ public class DraftManager : MonoBehaviour
         {
             UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
         }
-
-        // Assign a new listener reference
-        okButtonListener = () => OnTokenPlaced(p);
-
-        // Add the listener
-        UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
-    }
-
-
-    public void HandleSingleTokenPlaced(PlacementManager placementManager)
-    {
-        UIManager.Instance.OkButton.gameObject.SetActive(true);
-
-        // Remove previous listener if it exists
-        if (okButtonListener != null)
+        if (!AllDraftTokenPlaced)
         {
-            UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
+            // Assign a new listener reference
+            okButtonListener = () => OnTokenPlaced(p);
+
+        }
+        else
+        {
+            // Assign a new listener reference
+            okButtonListener = () => OnHiringTokenPlaced(p);
+
         }
 
-        // Assign a new listener reference
-        okButtonListener = () => OnSingleTokenPlaced(placementManager);
-
         // Add the listener
         UIManager.Instance.OkButton.onClick.AddListener(okButtonListener);
-
     }
 
-    private void OnSingleTokenPlaced(PlacementManager p)
+
+    private void OnHiringTokenPlaced(PlacementManager p)
     {
+
+
         p.ConfirmPlacement();
         SoundManager.Instance?.PlayDuringHiringChipPlaced();
         UIManager.Instance.OkButton.gameObject.SetActive(false);
-
-        // Clean up: Remove the listener to prevent future issues
+        GameManager.Instance.ChangePhase(GamePhase.GamePlay);
+        EventManager.TriggerEvent("OnTurnEnd");
         UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
         okButtonListener = null;
+
     }
     public void SetCoatOfArmsToLand()
     {
@@ -448,7 +443,7 @@ public class DraftManager : MonoBehaviour
 
         if (gameData.CharacterCardPrefab == null)
         {
-            Debug.LogError("CharacterCardPrefab is not assigned in GameData!");
+            Debug.LogError("CharacterCardPrefab is not assigned in GameData! ");
             return;
         }
 
@@ -625,11 +620,14 @@ public class DraftManager : MonoBehaviour
                 Destroy(lastCard); // Destroy the card after animation
 
                 UIManager.Instance.CloseSelectedCardPanel();
-                if (AllTokenPlacedCheck())
+                if (AllDraftTokenPlacedCheck())
                 {
+                    AllDraftTokenPlaced = true;
                     Debug.Log("All tokens placed.");
                     GameManager.Instance.ChangePhase(GamePhase.GamePlay);
                     TransitionToPhase(GamePhase.GamePlay);
+                    GameManager.Instance.GetPlayerInfo(1).PopulateLockedList();
+                    GameManager.Instance.GetPlayerInfo(2).PopulateLockedList();
                 }
             }
         );

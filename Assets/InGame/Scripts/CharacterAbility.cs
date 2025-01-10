@@ -14,7 +14,7 @@ public class CharacterAbility : ScriptableObject
 
     [Header("Vault Interaction")]
     public bool isVaultInteraction; // Flag for vault/base interaction
-    public int coinsPerCaptureVault = 0; // Coins gained for capturing a vault/base
+
     public int coinsPerCaptureBase = 0; // Coins gained for capturing a vault/base
 
     [Header("Placement Bonus")]
@@ -56,7 +56,7 @@ public class CharacterAbility : ScriptableObject
     public virtual void OnVaultInteraction(Token token)
     {
         if (GameManager.Instance.currentPhase != GamePhase.GamePlay) return;
-        if (isVaultInteraction && coinsPerCaptureVault > 0)
+        if (isVaultInteraction)
         {
 
             float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust this value as needed

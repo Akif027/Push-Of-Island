@@ -60,7 +60,7 @@ public class HiringManager : MonoBehaviour
 
         // Get player characters
         Dictionary<CharacterData, bool> playerCharacters = GameManager.Instance.GetPlayerInfo(playerNumber).GetPlayerCards();
-        GameManager.Instance.GetPlayerInfo(playerNumber).PrintPlayerCards();
+
         if (playerCharacters == null || playerCharacters.Count == 0) return;
 
         // Create character cards for the player
