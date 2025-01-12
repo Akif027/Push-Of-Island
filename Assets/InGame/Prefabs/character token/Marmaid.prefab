@@ -437,7 +437,6 @@ MonoBehaviour:
   BlueBorder: {fileID: 3897657333716920913}
   YellowBorder: {fileID: 6394746289307828754}
   isValidPlacement: 0
-  InitialPosition: {x: 0, y: 0, z: 0}
   rayLength: -3
   rayColor: {r: 1, g: 0, b: 0, a: 1}
   raycastMask:

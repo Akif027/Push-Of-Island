@@ -91,6 +91,7 @@ public class TokenManager : MonoBehaviour
             MapScroll.Instance.EnableScroll();
             selectedToken.OnTokenDeselected();
             selectedToken = null; // Clear the selected token reference
+            if (selectedToken.owner != GameManager.Instance.GetCurrentPlayer()) return;
             UIManager.Instance.OpenPlayLowerPanel();
             UIManager.Instance.ClosePlayAttackLowerPanel();
             Debug.Log("Token deselected.");
@@ -105,7 +106,7 @@ public class TokenManager : MonoBehaviour
         }
         MapScroll.Instance.DisableScroll();
         selectedToken = token;
-
+        if (selectedToken.owner != GameManager.Instance.GetCurrentPlayer()) return;
         UIManager.Instance.ClosePlayLowerPanel();
         UIManager.Instance.OpenPlayAttackLowerPanel();
         selectedToken.OnTokenSelected();
