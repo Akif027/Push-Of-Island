@@ -12,6 +12,7 @@ TagManager:
   - Vault
   - VaultMid
   - BaseIcon
+  - BaseBorder
   layers:
   - Default
   - TransparentFX

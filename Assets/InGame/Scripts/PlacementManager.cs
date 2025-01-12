@@ -1,114 +1,110 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class PlacementManager : MonoBehaviour
 {
-    CharacterType characterType;
+    private CharacterType characterType;
 
+    [Header("References")]
     public GameObject MainSpriteObj;
     public GameObject CannotPlaceInvalidObj;
     public GameObject BlueBorder;
     public GameObject YellowBorder;
-    [SerializeField] private bool isValidPlacement;
-    private SpriteRenderer spriteRenderer; // Renderer for the token sprite
-    public Vector3 InitialPosition;
-    private Vector3 offset;
-    private Camera mainCamera;
-    private bool isBeingDragged = false;
 
-    [Header("Raycast Settings")]
+    [Header("Settings")]
+    [SerializeField] private bool isValidPlacement = false;
     public float rayLength = 10f; // Length of the ray
-    public Color rayColor = Color.red; // Color of the ray for visualization
-    public LayerMask raycastMask; // LayerMask to exclude the object's own collider
+    public Color rayColor = Color.red; // Visualization color for ray
+    public LayerMask raycastMask; // Mask for raycast
+
+    private SpriteRenderer spriteRenderer;
+    private Camera mainCamera;
+    private Vector3 offset;
+    private bool isBeingDragged = false;
     public bool isTokenPlaced = false;
-    bool Drag = false;
+    private bool dragEnabled = false;
 
 
-    Token token;
+    private Token token;
+
+    private Dictionary<PolygonCollider2D, Vector2[]> polygonVerticesCache = new Dictionary<PolygonCollider2D, Vector2[]>();
+
     void Start()
     {
         token = GetComponent<Token>();
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
+        mainCamera = Camera.main;
+
         if (spriteRenderer == null)
         {
-            Debug.LogError("No SpriteRenderer found on the first child of the token! ");
+            Debug.LogError("SpriteRenderer not found on the token's first child.");
         }
 
-        DragEnableOrDisable(true);
-        InitialPosition = transform.position;
-        mainCamera = Camera.main;
+        EnableDrag(true);
 
         characterType = token.characterData.characterType;
         HandleBorder();
 
-        // Log initial position
-        Debug.Log($"Initial Token Position: {transform.position}");
-
-        // Delay the placement check
+        // Delay placement rule check for initialization
         StartCoroutine(DelayedCheckPlacementRules());
     }
 
     private IEnumerator DelayedCheckPlacementRules()
     {
-        yield return new WaitForEndOfFrame(); // Wait for one frame to ensure initialization
+        yield return new WaitForEndOfFrame();
         CheckPlacementRules();
     }
 
-    private void DragEnableOrDisable(bool isTrue)
+    private void EnableDrag(bool isEnabled)
     {
-
-        Drag = isTrue;
-
+        dragEnabled = isEnabled;
     }
 
-    public bool ReturnDragStatus()
-    {
-        return Drag;
-
-    }
-
-
-    void Update()
+    private void Update()
     {
         HandleDrag();
-        if (GameManager.Instance.getCurrentPhase() == GamePhase.GamePlay && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic && token.characterData.characterType != CharacterType.Golem)
-        {
-            SetToDynamic();
 
-        }
-        else
+        GamePhase currentPhase = GameManager.Instance.getCurrentPhase();
+
+        if (currentPhase == GamePhase.GamePlay && token.characterData.characterType != CharacterType.Golem && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic)
         {
-            SetToKinematic();
+            SetRigidbodyType(RigidbodyType2D.Dynamic);
         }
-        // Continuously check placement validity while dragging
+        else if (currentPhase == GamePhase.Placement)
+        {
+            SetRigidbodyType(RigidbodyType2D.Kinematic);
+        }
+
+        if (token.characterData.characterType == CharacterType.Golem && !token.IsImmobile() && GetComponent<Rigidbody2D>().bodyType != RigidbodyType2D.Dynamic)
+        {
+            SetRigidbodyType(RigidbodyType2D.Dynamic);
+            Debug.LogError("Golem is now dynamic.");
+        }
+
         if (isBeingDragged)
         {
             CheckPlacementRules();
         }
 
-        // Visualize the ray
         DebugDrawRay();
     }
 
     private void HandleDrag()
     {
-        // Do not allow dragging if Drag is disabled or the token does not belong to the current player
-        if (!Drag || isTokenPlaced) return;
+        if (!dragEnabled || isTokenPlaced) return;
 
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
             RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
 
-            // Allow drag only if the token itself is clicked
             if (hit.collider != null && hit.collider.gameObject == gameObject && token.IsCurrentPlayerOwner())
             {
                 isBeingDragged = true;
-
                 MapScroll.Instance.DisableScroll();
                 Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
-
             }
         }
 
@@ -123,14 +119,12 @@ public class PlacementManager : MonoBehaviour
         if (Input.GetMouseButtonUp(0) && isBeingDragged)
         {
             isBeingDragged = false;
-            MapScroll.Instance.EnableScroll(); // Reset interaction state
-
-            // Validate placement after drag ends
+            MapScroll.Instance.EnableScroll();
             CheckPlacementRules();
 
             if (isValidPlacement)
             {
-                EventManager.TriggerEvent<PlacementManager>("TokenPlaced", GetComponent<PlacementManager>());
+                EventManager.TriggerEvent<PlacementManager>("TokenPlaced", this);
             }
             else
             {
@@ -138,153 +132,70 @@ public class PlacementManager : MonoBehaviour
             }
         }
     }
+    // void OnDrawGizmos()
+    // {
+    //     float radius = GetComponent<CircleCollider2D>().radius;
+    //     Vector3 position = transform.position;
 
-    public void SetToDynamic()
+    //     // Create an array of points around the perimeter of the circle
+    //     int numRays = 360; // Number of rays to cast
+    //     for (int i = 0; i < numRays; i++)
+    //     {
+    //         float angle = i * Mathf.Deg2Rad * (360f / numRays);
+    //         Vector3 rayOrigin = position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+    //         // Draw the ray in the Scene view with Z = -1 and direction along the Z axis
+    //         Gizmos.color = Color.green; // Set the ray color to green
+    //         Gizmos.DrawLine(new Vector3(rayOrigin.x, rayOrigin.y, rayOrigin.z), new Vector3(rayOrigin.x, rayOrigin.y, -1) + Vector3.forward * 3);
+    //     }
+    // }
+    private void SetRigidbodyType(RigidbodyType2D type)
     {
-        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Dynamic;
-
-
+        GetComponent<Rigidbody2D>().bodyType = type;
     }
-    public void SetToKinematic()
-    {
-        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
 
-
-    }
     public void CheckPlacementRules()
     {
         isValidPlacement = false;
 
-
-        // Determine placement validity based on character type and raycast results
         switch (characterType)
         {
             case CharacterType.Mermaid:
-                // Mermaid can be placed on Water or partially on Base with Water, but not fully on Base or on Land
-                bool onWater = CheckPlacementWithRaycast("Water");
-                bool onBase = CheckPlacementWithRaycast("Base");
-                bool onLand = CheckPlacementWithRaycast("Land");
 
-                // Mermaid is valid if:
-                // - On Water (valid if only on water)
-                // - Not on Land (invalid if on land)
-                // - On Base only if water is below it (base placement is valid only if there’s no water beneath it)
-                isValidPlacement = onWater && !onLand; // Mermaid is valid on water and not on land
-
-                // If it’s on base, check that there’s no water below it
-                if (onBase)
-                {
-                    isValidPlacement = isValidPlacement && IsWaterBelowBase();
-                }
+                isValidPlacement = token.characterData.ability.CheckPlacementForMermaid(this);
 
                 break;
 
-            case CharacterType.Knight:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Golem:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Dwarf:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.King:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Gryphon:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Thief:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Rogue:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Enchantress:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
-            case CharacterType.Satyr:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
-                break;
             default:
-                isValidPlacement = CheckPlacementWithRaycast("Base");
+                isValidPlacement = CheckPlacement("Base");
                 break;
         }
 
-        // Handle visuals based on placement validity
-        if (isValidPlacement)
-        {
-            MainSpriteObj.SetActive(true);
-            CannotPlaceInvalidObj.SetActive(false);
-
-        }
-        else
-        {
-
-
-
-            MainSpriteObj.SetActive(false);
-            CannotPlaceInvalidObj.SetActive(true);
-
-        }
+        MainSpriteObj.SetActive(isValidPlacement);
+        CannotPlaceInvalidObj.SetActive(!isValidPlacement);
     }
+
     private void DebugDrawRay()
     {
         Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);
     }
-    private bool IsWaterBelowBase()
+
+    private bool CheckPlacement(string tag)
     {
-        // Check if there's water directly below the current position by casting a ray downwards
-        RaycastHit2D hit = Physics2D.Raycast(transform.position, Vector2.down, 1f, raycastMask); // Adjust ray length if needed
-
-        if (hit.collider != null && hit.collider.CompareTag("Water"))
-        {
-            return true; // There's water directly below
-        }
-
-        return false; // No water directly below
-    }
-    private void HandleBorder()
-    {
-        Color playerColor = GameManager.Instance.GetPlayerColor(token.owner);
-        GameManager.Instance.PrintAllSetColors();
-        if (playerColor == Color.yellow)
-        {
-            YellowBorder.SetActive(true);
-            BlueBorder.SetActive(false);
-        }
-        else
-        {
-            YellowBorder.SetActive(false);
-            BlueBorder.SetActive(true);
-        }
-
-    }
-
-    private bool CheckPlacementWithRaycast(string tag)
-    {
-
-        float radius = GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
-
-        // Perform an OverlapCircle check
+        float radius = GetComponent<CircleCollider2D>().radius;
         Collider2D[] colliders = Physics2D.OverlapCircleAll(transform.position, radius, raycastMask);
 
         foreach (Collider2D collider in colliders)
         {
             Base playerBase = collider.GetComponent<Base>();
-            if (playerBase != null)
+            if (playerBase != null && (playerBase.ownerID != token.owner && playerBase.ownerID != 0))
             {
-                // Validate ownership if necessary
-                if (playerBase.ownerID != token.owner && playerBase.ownerID != 0 /*|| playerBase.ownerID == -1*/)
-                {
-                    return false;
-                }
-                Debug.Log($"OverlapCircle hit {collider.gameObject.name} with tag {collider.tag}");
-                // Check if the collider's tag matches the specified tag
-                if (collider.CompareTag(tag))
-                {
-                    return true;
-                }
+                return false;
+            }
+
+            if (collider.CompareTag(tag))
+            {
+                return true;
             }
         }
         return false;
@@ -293,15 +204,14 @@ public class PlacementManager : MonoBehaviour
     public void ConfirmPlacement()
     {
         Debug.Log($"{characterType} placed successfully at {transform.position}");
-
-        // Disable dragging and mark the token as placed
-        DragEnableOrDisable(false);
+        EnableDrag(false);
         isTokenPlaced = true;
-
-        // Set Rigidbody to Kinematic to prevent further movement
-        GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Kinematic;
+        SetRigidbodyType(RigidbodyType2D.Kinematic);
         token.OnTokenPlaced();
-
+    }
+    private void DebugDrawEdge(Vector2 closestPoint)
+    {
+        Debug.DrawLine(transform.position, closestPoint, Color.green, 0.1f);
     }
     private void ResetPosition()
     {
@@ -309,8 +219,16 @@ public class PlacementManager : MonoBehaviour
         Handheld.Vibrate();
         SoundManager.Instance?.PlayNotPossiblePlacement();
         EventManager.TriggerEvent<bool>("TokenPlaced", false);
+
+    }
+
+    private void HandleBorder()
+    {
+        Color playerColor = GameManager.Instance.GetPlayerColor(token.owner);
+        YellowBorder.SetActive(playerColor == Color.yellow);
+        BlueBorder.SetActive(playerColor != Color.yellow);
     }
 
 
-}
 
+}

@@ -94,7 +94,7 @@ public class Token : MonoBehaviour
             SetImmobile();
         }
 
-        Debug.Log($"{characterData.characterName} placed successfully.");
+        Debug.Log($"{characterData.characterName} placed successfully.  ");
     }
 
     public void SetImmobile()
@@ -125,7 +125,7 @@ public class Token : MonoBehaviour
         // Unlock the Golem's movement but keep it immobile until explicitly moved
         isImmobile = false;
         tokenRigidbody.bodyType = RigidbodyType2D.Kinematic; // Keep it kinematic to prevent movement by other tokens
-        Debug.Log($"{characterData.characterName} has been unlocked for movement but remains immobile.");
+        Debug.Log($"{characterData.characterName} has been unlocked for movement but remains immobile.   ");
     }
 
 

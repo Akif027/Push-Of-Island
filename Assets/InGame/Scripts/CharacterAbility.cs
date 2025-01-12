@@ -180,62 +180,175 @@ public class CharacterAbility : ScriptableObject
     /// <summary>
     /// Validates the token's final position based on its ability.
     /// </summary>
+    /// <summary>
+    /// Validates the token's final position based on its ability and terrain interaction.
+    /// </summary>
     public virtual bool ValidateFinalPosition(Token token)
     {
-        // Define the circle's radius
-        float radius = token.GetComponent<CircleCollider2D>().radius; // Adjust this value as needed
-        LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base", "Vault", "VaultMid");
-
-        // Use OverlapCircle to detect colliders within the specified radius
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(token.transform.position, radius, layerMask);
-
-        if (hitColliders.Length > 0)
+        // Check if the character is not a Mermaid
+        if (token.characterData.characterType != CharacterType.Mermaid)
         {
+            // Define the circle's radius
+            float radius = token.GetComponent<CircleCollider2D>().radius;
+            LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base");
+
+            // Use OverlapCircle to detect colliders within the specified radius
+            Collider2D[] hitColliders = Physics2D.OverlapCircleAll(token.transform.position, radius, layerMask);
+
             foreach (Collider2D collider in hitColliders)
             {
-
-                // Mermaid-specific logic
-                if (token.characterData.characterType == CharacterType.Mermaid)
+                // Check for valid terrain for non-water characters
+                if (collider.CompareTag("Land") || collider.CompareTag("Base"))
                 {
-                    if (collider.CompareTag("Water") || collider.CompareTag("BaseIcon") || collider.CompareTag("Vault") || collider.CompareTag("VaultMid"))
-                    {
-                        Debug.Log($"{token.characterData.characterName} is safely on water  . ");
-                        return true;
-                    }
-                    if (collider.CompareTag("Land") && collider.CompareTag("Water"))
-                    {
-                        Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {collider.gameObject.name}");
-                        return true;
-                    }
-                    if (collider.CompareTag("Land"))
-                    {
-                        Debug.LogError($"{token.characterData.characterName} is on invalid terrain: {collider.gameObject.name}");
-                        return false;
-                    }
-
+                    Debug.Log($"{token.characterData.characterName} is safely on land or base. ");
+                    return true; // Valid for land-based characters
                 }
-
-
-                // General logic for other characters
-                else
+                if (collider.CompareTag("Water"))
                 {
-                    if (collider.CompareTag("Land") || collider.CompareTag("Base") || collider.CompareTag("Base") && collider.CompareTag("Water") || collider.CompareTag("Land") && collider.CompareTag("Water"))
-                    {
-                        Debug.Log($"{token.characterData.characterName} is safely on land or base.");
-                        return true; // Valid for land-based characters
-                    }
-                    if (collider.CompareTag("Water"))
-                    {
-                        Debug.LogError($"{token.characterData.characterName} cannot be on water.");
-                        return false; // Invalid for non-water characters
-                    }
+                    Debug.LogError($"{token.characterData.characterName} cannot be on water.");
+                    return false; // Invalid for non-water characters
+                }
+            }
+
+            Debug.LogError($"{token.characterData.characterName} is not on any valid terrain.");
+            return false; // Default invalid if no valid terrain is found
+        }
+        else
+        {
+            // For Mermaid, use the specific placement check
+            return CheckPlacementForMermaid(token);
+        }
+    }
+
+    public bool CheckPlacementForMermaid(PlacementManager token)
+    {
+        float radius = token.GetComponent<CircleCollider2D>().radius;
+        Vector2 position = (Vector2)token.transform.position;
+
+        // Create an array of points around the perimeter of the circle
+        int numRays = 360; // Number of rays to cast (you can adjust this for more precision)
+        bool isTouchingWater = false;
+        bool isTouchingBase = false;
+        bool isTouchingLand = false;
+
+        for (int i = 0; i < numRays; i++)
+        {
+            float angle = i * Mathf.Deg2Rad * (360f / numRays);
+            Vector3 rayOrigin = (Vector3)position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+            // Raycast along Vector3.forward (Z-axis)
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector3.forward, -3, token.raycastMask); // Raycast along the Z-axis
+
+            if (hit.collider != null)
+            {
+                if (hit.collider.CompareTag("Water"))
+                {
+                    isTouchingWater = true; // If any point touches Water, it's valid
+                }
+                if (hit.collider.CompareTag("Land"))
+                {
+                    isTouchingLand = true; // If any point touches Water, it's valid
+                }
+                else if (hit.collider.CompareTag("Base"))
+                {
+                    isTouchingBase = true; // If any point touches Base, mark it as touching base
+                }
+            }
+        }
+        if (isTouchingLand && !isTouchingWater)
+        {
+            return false; // Invalid if fully touching the Base without Water
+        }
+        // If the mermaid is touching both Water and Base, it's valid
+        // But if it's fully on top of a Base and not touching Water, it's invalid
+        if (isTouchingBase && !isTouchingWater)
+        {
+            return false; // Invalid if fully touching the Base without Water
+        }
+
+        return isTouchingWater || isTouchingBase || isTouchingLand; // Valid if touching Water or Base (with condition)
+    }
+    public bool CheckPlacementForMermaid(Token token)
+    {
+        float radius = token.GetComponent<CircleCollider2D>().radius;
+        Vector2 position = (Vector2)token.transform.position;
+        LayerMask layerMask = LayerMask.GetMask("Water", "Land", "Base", "Vault", "VaultMid", "BaseIcon");
+
+        // Create an array of points around the perimeter of the circle
+        int numRays = 360; // Number of rays to cast (you can adjust this for more precision)
+        bool isTouchingWater = false;
+        bool isTouchingBase = false;
+        bool isTouchingLand = false;
+        bool isTouchingVault = false;
+        bool midVault = false;
+        bool isTouchingbaseIcon = false;
+        bool isOwnersBase = false;
+        for (int i = 0; i < numRays; i++)
+        {
+            float angle = i * Mathf.Deg2Rad * (360f / numRays);
+            Vector3 rayOrigin = (Vector3)position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+
+            // Raycast along Vector3.forward (Z-axis)
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector3.forward, -3, layerMask); // Raycast along the Z-axis
+
+            if (hit.collider != null)
+            {
+                Base OwnerBase = hit.collider.GetComponent<Base>();
+                if (OwnerBase != null && (OwnerBase.ownerID == token.owner && OwnerBase.ownerID != 0))
+                {
+                    isOwnersBase = true;
+                }
+                if (hit.collider.CompareTag("Water"))
+                {
+                    isTouchingWater = true; // If any point touches Water, it's valid
+                }
+                else if (hit.collider.CompareTag("Land"))
+                {
+                    isTouchingLand = true; // If any point touches Water, it's valid
+                }
+                else if (hit.collider.CompareTag("Vault"))
+                {
+                    isTouchingVault = true;
+                }
+                else if (hit.collider.CompareTag("BaseIcon"))
+                {
+                    isTouchingbaseIcon = true;
+                }
+                else if (hit.collider.CompareTag("VaultMid"))
+                {
+                    midVault = true;
+                }
+                else if (hit.collider.CompareTag("Base"))
+                {
+                    isTouchingBase = true; // If any point touches Base, mark it as touching base
                 }
             }
         }
 
-        Debug.LogError($"{token.characterData.characterName} is not on any valid terrain.");
-        return false; // Default invalid
+        if (isTouchingBase && isTouchingbaseIcon && !isOwnersBase)
+        {
+            return true;
+        }
+        if (isTouchingLand && isTouchingVault)
+        {
+            return true;
+        }
+        if (isTouchingLand && midVault)
+        {
+            return true;
+        }
+        if (isTouchingLand && !isTouchingWater)
+        {
+            return false; // Invalid if fully touching the Base without Water
+        }
+
+        // If the mermaid is touching both Water and Base, it's valid
+        // But if it's fully on top of a Base and not touching Water, it's invalid
+        if (isTouchingBase && !isTouchingWater)
+        {
+            return false; // Invalid if fully touching the Base without Water
+        }
+
+        return isTouchingWater || isTouchingBase || isTouchingLand || midVault || isTouchingVault || isTouchingbaseIcon; // Valid if touching Water or Base (with condition)
     }
-
-
 }

@@ -13,7 +13,7 @@ public class ForceSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPo
     public RectTransform pointer; // Pointer that follows the fill force
 
     private Image[] fillImages;
-    private float currentFillPercent = 0.1f; // Current fill percentage (0 to 1)
+    private float currentFillPercent = 0.05f; // Current fill percentage (0 to 1)
     private bool isDragging = false;
 
     void Start()
@@ -27,7 +27,7 @@ public class ForceSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPo
             image.sprite = emptySprite;
         }
 
-        Debug.Log("ForceArea initialized!");
+        Debug.Log("ForceArea initialized!    ");
     }
 
     void UpdateFill()
@@ -55,7 +55,7 @@ public class ForceSlider : MonoBehaviour, IPointerDownHandler, IDragHandler, IPo
     public float GetForce()
     {
         // Map currentFillPercent (0 to 1) to the desired range (10 to 100)
-        return Mathf.Lerp(2, maxForce, currentFillPercent);
+        return Mathf.Lerp(0.5f, maxForce, currentFillPercent);
     }
 
     public void OnPointerDown(PointerEventData eventData)
