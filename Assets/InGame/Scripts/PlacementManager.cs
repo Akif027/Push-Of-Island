@@ -203,7 +203,7 @@ public class PlacementManager : MonoBehaviour
 
     public void ConfirmPlacement()
     {
-        Debug.Log($"{characterType} placed successfully at {transform.position}");
+        Debug.Log($"{characterType} placed successfully at  {transform.position}");
         EnableDrag(false);
         isTokenPlaced = true;
         SetRigidbodyType(RigidbodyType2D.Kinematic);

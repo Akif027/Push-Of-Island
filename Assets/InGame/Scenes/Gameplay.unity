@@ -6721,7 +6721,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 034b374bd1aa27447b2790064d82e990, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gameData: {fileID: 11400000, guid: 391552b65b94641429361ebe34c28d8e, type: 2}
+  gameData: {fileID: 11400000, guid: 0e7a01797a175f747a3bf7bc48781631, type: 2}
   draftManager: {fileID: 792811142}
   currentPlayer: 1
   currentPhase: 4
@@ -6767,8 +6767,10 @@ MonoBehaviour:
   - {fileID: 2065493945}
   SelectedDraftIconPlayer1: {fileID: 353305840}
   SelectedDraftIconPlayer2: {fileID: 1715283812}
-  SelectedWinnerIconPlayer1: {fileID: 183034004}
-  SelectedWinnerIconPlayer2: {fileID: 1579891810}
+  SelectedWinnerIconPlayer1: {fileID: 996427400}
+  SelectedWinnerIconPlayer2: {fileID: 1166036271}
+  SelectedWinnercoinPlayer1: {fileID: 183034004}
+  SelectedWinnercoinPlayer2: {fileID: 1960493530}
   InfoIconPlayer1: {fileID: 183034004}
   InfoIconPlayer2: {fileID: 1960493530}
   UpperPanelforCoinIconPlayer1: {fileID: 4867660414978101706}

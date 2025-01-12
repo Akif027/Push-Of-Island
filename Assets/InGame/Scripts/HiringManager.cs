@@ -16,6 +16,7 @@ public class HiringManager : MonoBehaviour
     /// </summary>
     public void OpenHiringPanel()
     {
+        GameManager.Instance.GetPlayerInfo(GameManager.Instance.GetCurrentPlayer()).PopulateAndUpdateUnlockedCharacter();
         ShowPlayerCharacters(GameManager.Instance.GetCurrentPlayer(), gridLayout, false);
         UIManager.Instance.OpenHiringPanel();
     }
@@ -27,7 +28,7 @@ public class HiringManager : MonoBehaviour
     {
         int currentPlayer = GameManager.Instance.GetCurrentPlayer();
         int nextPlayer = currentPlayer == 1 ? 2 : 1;
-
+        GameManager.Instance.GetPlayerInfo(nextPlayer).PopulateAndUpdateUnlockedCharacter();
         UIManager.Instance.OpenInfoPanel();
 
         // Clear existing info cards
@@ -138,7 +139,7 @@ public class HiringManager : MonoBehaviour
 
         if (playerCoins < character.CharacterCost)
         {
-            Debug.Log($"Player {playerNumber} doesn't have enough coins to purchase {character.characterName}.");
+            Debug.Log($"Player {playerNumber} doesn't have enough coins to purchase {character.characterName}. ");
             return;
         }
 

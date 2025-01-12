@@ -108,7 +108,7 @@ public class CharacterAbility : ScriptableObject
                 {
                     EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
                     Basealreadycaptured = true;
-                    Debug.LogError($"Player {token.owner} has captured the base.");
+                    Debug.LogError($"Player {token.owner} has captured the base. ");
                     SoundManager.Instance?.PlayScore();
                 }
             }
@@ -130,6 +130,7 @@ public class CharacterAbility : ScriptableObject
 
     public void OutOfBound(Token token, Vector2 boundarySize)
     {
+
         Rigidbody2D rb = token.GetRigidbody2D();
         if (rb == null) return;
 
@@ -138,7 +139,7 @@ public class CharacterAbility : ScriptableObject
         // Check if the token is out of the horizontal bounds
         if (Mathf.Abs(position.x) > boundarySize.x / 2f || Mathf.Abs(position.y) > boundarySize.y / 2f)
         {
-            Debug.Log($"{token.name} is out of bounds and will be eliminated.");
+            Debug.LogError($"{token.name} is out of bounds and will be eliminated.  ");
             token.EliminateToken();
             token.ChangeTurn();
         }

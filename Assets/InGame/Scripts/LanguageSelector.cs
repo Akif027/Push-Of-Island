@@ -16,22 +16,25 @@ public class LanguageSelector : MonoBehaviour
 
     private bool isEnglishSelected = true;
 
+    private const string LanguageKey = "SelectedLanguage"; // Key for saving language in PlayerPrefs
+
     private void Start()
     {
         // Add listeners to the buttons
         englishButton.onClick.AddListener(() => ChangeLanguage("English"));
         russianButton.onClick.AddListener(() => ChangeLanguage("Russian"));
 
-        // Initialize with English selected by default
-        ChangeLanguage("English");
+        LoadLang();
     }
 
     public void ChangeLanguage(string language)
     {
         SoundManager.Instance?.PlayButtonTap();
+
         if (language == "English")
         {
             isEnglishSelected = true;
+
             // Update button icons
             englishButton.GetComponent<Image>().sprite = englishSelectedIcon;
             russianButton.GetComponent<Image>().sprite = russianDeselectedIcon;
@@ -43,6 +46,7 @@ public class LanguageSelector : MonoBehaviour
         else if (language == "Russian")
         {
             isEnglishSelected = false;
+
             // Update button icons
             englishButton.GetComponent<Image>().sprite = englishDeselectedIcon;
             russianButton.GetComponent<Image>().sprite = russianSelectedIcon;
@@ -51,11 +55,16 @@ public class LanguageSelector : MonoBehaviour
             mainButton1.SetActive(true);
             mainButton2.SetActive(false);
         }
+
+        // Save the selected language in PlayerPrefs
+        PlayerPrefs.SetString(LanguageKey, language);
+        PlayerPrefs.Save();
     }
 
-    public bool LangChecker()
+    public void LoadLang()
     {
-
-        return isEnglishSelected;
+        // Load the saved language or initialize with English as the default
+        string savedLanguage = PlayerPrefs.GetString(LanguageKey, "English");
+        ChangeLanguage(savedLanguage);
     }
 }

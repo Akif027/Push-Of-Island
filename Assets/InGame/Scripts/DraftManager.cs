@@ -28,6 +28,8 @@ public class DraftManager : MonoBehaviour
     [SerializeField] private GameObject SelectedDraftIconPlayer2;
     [SerializeField] private GameObject SelectedWinnerIconPlayer1;
     [SerializeField] private GameObject SelectedWinnerIconPlayer2;
+    [SerializeField] private GameObject SelectedWinnercoinPlayer1;
+    [SerializeField] private GameObject SelectedWinnercoinPlayer2;
     [SerializeField] private GameObject InfoIconPlayer1;
     [SerializeField] private GameObject InfoIconPlayer2;
 
@@ -145,7 +147,7 @@ public class DraftManager : MonoBehaviour
             PlacementManager.Add(placementManager);
         }
 
-        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}  .");
+        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber} . ");
 
 
     }
@@ -155,6 +157,8 @@ public class DraftManager : MonoBehaviour
         SelectedDraftIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
         SelectedWinnerIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
         SelectedWinnerIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        SelectedWinnercoinPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedWinnercoinPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
         InfoIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
         InfoIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
         UpperPanelforCoinIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);

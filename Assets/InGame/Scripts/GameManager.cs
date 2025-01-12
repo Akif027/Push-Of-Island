@@ -318,8 +318,13 @@ public class GameManager : MonoBehaviour
     }
     private void gameFinised()
     {
-        Debug.LogError("winner is Player " + winner);
-        UIManager.Instance.OnWinningPanel(winner);
+
+
+        if (winner != 0)
+        {
+            UIManager.Instance.OnWinningPanel(winner);
+        }
+
 
     }
     public GamePhase getCurrentPhase()
@@ -374,7 +379,7 @@ public class GameManager : MonoBehaviour
         if (tokenComponent != null)
         {
             tokenComponent.IsUnlocked = true;
-            Debug.LogError($"Token instantiated for Player {playerNumber}: {character.characterName}");
+            Debug.LogError($"Token instantiated for Player   {playerNumber}: {character.characterName}");
         }
 
         PlayerInfo playerInfo = GetPlayerInfo(playerNumber);
@@ -404,7 +409,7 @@ public class GameManager : MonoBehaviour
         CharacterData character = gameData.characters.FirstOrDefault(c => c.characterType == characterType);
         if (character == null)
         {
-            Debug.LogError($"Character with type {characterType} not found in gameData!");
+            Debug.LogError($"Character with type {characterType} not found in gameData! ");
             return;
         }
 
@@ -548,21 +553,20 @@ public class PlayerInfo
             }
         }
     }
-    void PopulateAndUpdateUnlockedCharacter()
+    public void PopulateAndUpdateUnlockedCharacter()
     {
 
-
-        for (int i = UnlockedCharacter.Count - 1; i >= 0; i--)
+        UnlockedCharacter.Clear();
+        foreach (var item in tokens)
         {
-            if (UnlockedCharacter[i] != tokens[i].characterData)
-            {
-                UnlockedCharacter.RemoveAt(i);
-            }
+            UnlockedCharacter.Add(item.characterData);
         }
         for (int i = lockedCharacter.Count - 1; i >= 0; i--)
         {
-            if (lockedCharacter[i] == tokens[i].characterData)
+            // Check if any token has a matching characterData
+            if (tokens.Any(token => token.characterData == lockedCharacter[i]))
             {
+                // Remove the matching characterData from lockedCharacter
                 lockedCharacter.RemoveAt(i);
             }
         }
@@ -570,7 +574,6 @@ public class PlayerInfo
 
     public void PopulateLockedList()
     {
-
         foreach (var item in tokens)
         {
 
@@ -580,7 +583,7 @@ public class PlayerInfo
     public void AddremoveCharterToLockedList(Token token)
     {
         lockedCharacter.Add(token.characterData);
-        PopulateAndUpdateUnlockedCharacter();
+
     }
 
     public PlayerInfo(Int32 PlayerNumber_, Token _tokens)

@@ -6,7 +6,6 @@ using UnityEngine;
 public class Token : MonoBehaviour
 {
     [SerializeField] private bool isUnlocked;
-    private Vector3 lastPosition;
     public bool IsUnlocked
     {
         get => isUnlocked;
@@ -136,7 +135,7 @@ public class Token : MonoBehaviour
 
             characterData.ability.OnBaseCapture(this);
             characterData.ability?.OnVaultInteraction(this);
-            ChangeTurn();
+
             ResetToken(); // Reset token for the next turn
         }
     }
@@ -161,27 +160,35 @@ public class Token : MonoBehaviour
 
                         EliminateToken();
 
+                        ChangeTurn();
+
                         return;
                     }
-                    lastPosition = transform.position; // Update last position
+
+
                 }
+
             }
         }
     }
 
     public void ChangeTurn()
     {
+        if (isThrown)
+        {
+            EventManager.TriggerEvent("OnTurnEnd");
+            isThrown = false;
+        }
 
-        EventManager.TriggerEvent("OnTurnEnd");
     }
 
 
 
     public void EliminateToken()
     {
+
         SoundManager.Instance?.PlayTokenLeaving();
         GameManager.Instance.RemoveTokenFromPlayer(owner, characterData.characterType);
-
         isUnlocked = false;
         Destroy(gameObject);
     }
@@ -268,10 +275,12 @@ public class Token : MonoBehaviour
 
     private void ResetToken()
     {
-
+        ChangeTurn();
         isThrown = false;
         StopMovement();
         arrow.gameObject.SetActive(false);
+
+
         // UIManager.Instance.OpenPlayLowerPanel();
         // UIManager.Instance.ClosePlayAttackLowerPanel();
     }
