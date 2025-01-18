@@ -17,9 +17,8 @@ MonoBehaviour:
   canMoveOnWater: 0
   becomesImmobileOnPlacement: 0
   isVaultInteraction: 1
-  coinsPerCaptureVault: 20
   coinsPerCaptureBase: 15
   bonusPointsOnPlaced: 0
   bonusCoins: 30
-  speedMultiplier: 2
-  weightMultiplier: 1.5
+  speedMultiplier: 0.6
+  weightMultiplier: 0.5

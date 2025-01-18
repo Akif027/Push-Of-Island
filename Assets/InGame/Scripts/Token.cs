@@ -57,15 +57,15 @@ public class Token : MonoBehaviour
 
 
     }
-
+    private bool hasHandledMovement = false;
     private void Update()
     {
 
 
         CheckTokenPosition(); // Call the method if movement is detected
 
-        if (isThrown)
-            HandleTokenMovement();
+        // if (isThrown)
+        //     HandleTokenMovement();
         // Check if the character ability is active and if reflection is needed
         if (characterData.characterType == CharacterType.Satyr && characterData.ability != null)
         {
@@ -82,6 +82,7 @@ public class Token : MonoBehaviour
     {
         return tokenRigidbody;
     }
+
     public void OnTokenPlaced()
     {
         if (characterData?.ability == null) return;
@@ -167,7 +168,16 @@ public class Token : MonoBehaviour
 
 
                 }
+                if (!hasHandledMovement)
+                {
+                    HandleTokenMovement();
+                    hasHandledMovement = true;
+                }
 
+            }
+            else
+            {
+                hasHandledMovement = false;
             }
         }
     }

@@ -26,7 +26,9 @@ public class PlacementManager : MonoBehaviour
     private bool dragEnabled = false;
 
 
-    private Token token;
+    public Token token;
+
+
 
     private Dictionary<PolygonCollider2D, Vector2[]> polygonVerticesCache = new Dictionary<PolygonCollider2D, Vector2[]>();
 
@@ -97,14 +99,18 @@ public class PlacementManager : MonoBehaviour
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-            RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+            RaycastHit2D[] hits = Physics2D.RaycastAll(ray.origin, ray.direction);
 
-            if (hit.collider != null && hit.collider.gameObject == gameObject && token.IsCurrentPlayerOwner())
+            foreach (var hit in hits)
             {
-                isBeingDragged = true;
-                MapScroll.Instance.DisableScroll();
-                Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
+                if (hit.collider != null && hit.collider.gameObject == gameObject && token.IsCurrentPlayerOwner())
+                {
+                    isBeingDragged = true;
+                    MapScroll.Instance.DisableScroll();
+                    Vector3 mousePosition = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                    offset = transform.position - new Vector3(mousePosition.x, mousePosition.y, transform.position.z);
+                    break;
+                }
             }
         }
 
@@ -132,23 +138,7 @@ public class PlacementManager : MonoBehaviour
             }
         }
     }
-    // void OnDrawGizmos()
-    // {
-    //     float radius = GetComponent<CircleCollider2D>().radius;
-    //     Vector3 position = transform.position;
 
-    //     // Create an array of points around the perimeter of the circle
-    //     int numRays = 360; // Number of rays to cast
-    //     for (int i = 0; i < numRays; i++)
-    //     {
-    //         float angle = i * Mathf.Deg2Rad * (360f / numRays);
-    //         Vector3 rayOrigin = position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
-
-    //         // Draw the ray in the Scene view with Z = -1 and direction along the Z axis
-    //         Gizmos.color = Color.green; // Set the ray color to green
-    //         Gizmos.DrawLine(new Vector3(rayOrigin.x, rayOrigin.y, rayOrigin.z), new Vector3(rayOrigin.x, rayOrigin.y, -1) + Vector3.forward * 3);
-    //     }
-    // }
     private void SetRigidbodyType(RigidbodyType2D type)
     {
         GetComponent<Rigidbody2D>().bodyType = type;

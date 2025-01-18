@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "New Character Ability", menuName = "Abilities/Generic Character Ability")]
@@ -27,18 +28,22 @@ public class CharacterAbility : ScriptableObject
 
 
 
+    public bool KingRecivedBonus = false;
+
     /// <summary>
     /// Called when the token is activated.
     /// </summary>
     public virtual void Activate(Token token)
     {
-        Debug.Log($"{token.name} activated {abilityName}: {description}");
+        Debug.Log($"{token.name} activated {abilityName}: {description} {KingRecivedBonus}");
 
         // Bonus coins when placed
-        if (bonusPointsOnPlaced && bonusCoins > 0)
+        if (bonusPointsOnPlaced && bonusCoins > 0 && !KingRecivedBonus)
         {
             EventManager.TriggerCoinAdd(token.owner, bonusCoins); SoundManager.Instance.PlayCoinCollect();
-            Debug.LogError($"{token.name} awarded {bonusCoins} bonus coins on placement.");
+            Debug.Log($"{token.name} awarded {bonusCoins} bonus coins on placement.");
+            KingRecivedBonus = true;
+
         }
 
         // Handle immobility on placement for Golem
@@ -69,12 +74,27 @@ public class CharacterAbility : ScriptableObject
             {
                 if (hitCollider.CompareTag("Vault"))
                 {
-                    EventManager.TriggerCoinAdd(token.owner, 20);
+                    if (token.characterData.characterType != CharacterType.Thief)
+                    {
+                        EventManager.TriggerCoinAdd(token.owner, 20);
+                    }
+                    else
+                    {
+                        EventManager.TriggerCoinAdd(token.owner, 5);
+                    }
+
                     SoundManager.Instance.PlayCoinCollect();
                 }
                 else if (hitCollider.CompareTag("VaultMid"))
                 {
-                    EventManager.TriggerCoinAdd(token.owner, 10);
+                    if (token.characterData.characterType != CharacterType.Thief)
+                    {
+                        EventManager.TriggerCoinAdd(token.owner, 10);
+                    }
+                    else
+                    {
+                        EventManager.TriggerCoinAdd(token.owner, 5);
+                    }
                     SoundManager.Instance.PlayCoinCollect();
                 }
             }
@@ -100,11 +120,11 @@ public class CharacterAbility : ScriptableObject
 
             if (hitCollider != null && hitCollider.CompareTag("BaseIcon"))
             {
-                Base baseS = hitCollider.GetComponentInParent<Base>();
 
-                if (baseS == null) return;
 
-                if (baseS.ownerID != token.owner && !Basealreadycaptured) // Only capture opponent bases
+
+
+                if (!Basealreadycaptured) // Only capture opponent bases
                 {
                     EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
                     Basealreadycaptured = true;
@@ -112,13 +132,7 @@ public class CharacterAbility : ScriptableObject
                     SoundManager.Instance?.PlayScore();
                 }
             }
-            // else if (hitCollider != null && hitCollider.CompareTag("Base") && token.characterData.characterType == CharacterType.Mermaid)
-            // {
 
-            //     token.EliminateToken();
-            //     Basealreadycaptured = false;
-            // }
-            else
             {
                 Basealreadycaptured = false;
 
@@ -224,51 +238,72 @@ public class CharacterAbility : ScriptableObject
     public bool CheckPlacementForMermaid(PlacementManager token)
     {
         float radius = token.GetComponent<CircleCollider2D>().radius;
-        Vector2 position = (Vector2)token.transform.position;
+        Vector2 position = token.transform.position;
 
-        // Create an array of points around the perimeter of the circle
-        int numRays = 360; // Number of rays to cast (you can adjust this for more precision)
+        int numRays = 360; // Number of rays to cast
         bool isTouchingWater = false;
-        bool isTouchingBase = false;
         bool isTouchingLand = false;
+        bool isTouchingBase = false;
+        bool isOwnersBase = false;
 
         for (int i = 0; i < numRays; i++)
         {
             float angle = i * Mathf.Deg2Rad * (360f / numRays);
             Vector3 rayOrigin = (Vector3)position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-            // Raycast along Vector3.forward (Z-axis)
-            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector3.forward, -3, token.raycastMask); // Raycast along the Z-axis
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector3.forward, -3, token.raycastMask);
 
             if (hit.collider != null)
             {
+                Base ownerBase = hit.collider.GetComponent<Base>();
+                if (ownerBase != null && ownerBase.ownerID == token.token.owner && ownerBase.ownerID != 0)
+                {
+                    isOwnersBase = true;
+                }
+
                 if (hit.collider.CompareTag("Water"))
                 {
-                    isTouchingWater = true; // If any point touches Water, it's valid
+                    isTouchingWater = true;
                 }
-                if (hit.collider.CompareTag("Land"))
+                else if (hit.collider.CompareTag("Land"))
                 {
-                    isTouchingLand = true; // If any point touches Water, it's valid
+                    isTouchingLand = true;
                 }
                 else if (hit.collider.CompareTag("Base"))
                 {
-                    isTouchingBase = true; // If any point touches Base, mark it as touching base
+                    isTouchingBase = true;
                 }
             }
         }
-        if (isTouchingLand && !isTouchingWater)
+
+        // Disallow placement if touching both land and water
+        if (isTouchingWater && isTouchingLand)
         {
-            return false; // Invalid if fully touching the Base without Water
-        }
-        // If the mermaid is touching both Water and Base, it's valid
-        // But if it's fully on top of a Base and not touching Water, it's invalid
-        if (isTouchingBase && !isTouchingWater)
-        {
-            return false; // Invalid if fully touching the Base without Water
+            return false;
         }
 
-        return isTouchingWater || isTouchingBase || isTouchingLand; // Valid if touching Water or Base (with condition)
+        // Allow placement if touching water and either (it's the owner's base or not touching any base)
+        if (isTouchingWater && (isOwnersBase || !isTouchingBase))
+        {
+            return true;
+        }
+
+        // Disallow placement if not touching water or touching land
+        if (!isTouchingWater || isTouchingLand)
+        {
+            return false;
+        }
+
+        // Disallow placement if not the owner's base and touching water or base
+        if (!isOwnersBase && (isTouchingWater || isTouchingBase))
+        {
+            return false;
+        }
+
+        // Default case: false
+        return false;
     }
+
     public bool CheckPlacementForMermaid(Token token)
     {
         float radius = token.GetComponent<CircleCollider2D>().radius;

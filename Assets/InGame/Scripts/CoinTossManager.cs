@@ -90,7 +90,7 @@ public class CoinTossManager : MonoBehaviour
         // Trigger the event after a short delay
         DOVirtual.DelayedCall(1.5f, () =>
         {
-            EventManager.TriggerEvent("TossResult", winnerSprite, loserSprite); // Correctly uses the two-parameter TriggerEvent
+            GameManager.Instance.OnTossResult(winnerSprite, loserSprite);
             coinPanel.SetActive(false);
         });
     }

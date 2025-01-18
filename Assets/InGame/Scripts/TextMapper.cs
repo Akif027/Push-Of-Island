@@ -64,6 +64,7 @@ public class TextMapper : MonoBehaviour
 
     public void UpdateTurn(int amount)
     {
+        if (amount == 0) return;
         UpdateNumberImages(amount, turnContainer, numberSprites);
     }
 

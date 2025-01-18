@@ -6781,6 +6781,7 @@ MonoBehaviour:
   player1Characters: []
   player2Characters: []
   PlacementManager: []
+  CharacterSpawnerobj: {fileID: 805193118}
   WinnerFirstPlayerSelectedCard: {fileID: 1896815386}
   WinnerSecondPlayerSelectedCard: {fileID: 1237827724}
   FirstPlayerSelectedCard: {fileID: 1204502113}

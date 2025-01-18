@@ -49,7 +49,7 @@ public class DraftManager : MonoBehaviour
     public List<CharacterData> player2Characters = new List<CharacterData>(); // List of Player 2's selected characters
 
     public List<PlacementManager> PlacementManager = new List<PlacementManager>(); // List of placement managers
-
+    [SerializeField] GameObject CharacterSpawnerobj;
     public GameObject WinnerFirstPlayerSelectedCard;
     public GameObject WinnerSecondPlayerSelectedCard;
 
@@ -63,6 +63,16 @@ public class DraftManager : MonoBehaviour
 
     private bool AllDraftTokenPlaced = false;
 
+    void OnEnable()
+    {
+
+        EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
+    }
+    void OnDisable()
+    {
+        EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
+        UIManager.Instance.OkButton.onClick.RemoveAllListeners();
+    }
     // Start Placement Phase
     public void StartPlacementPhase()
     {
@@ -75,7 +85,7 @@ public class DraftManager : MonoBehaviour
         selectedCharacter = null;
         selectedCardObject = null;
 
-        EventManager.Subscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
+
     }
     private void TransitionToPlacementPhase()
     {
@@ -86,45 +96,34 @@ public class DraftManager : MonoBehaviour
     }
     private void SetAlltokentoInactive(bool isTrue)
     {
-        if (PlacementManager == null) return;
-        foreach (var item in PlacementManager)
-        {
-            item.gameObject.SetActive(isTrue);
-        }
+        CharacterSpawnerobj.SetActive(isTrue);
     }
+
+    private List<Vector3> usedPositionsPlayer1 = new List<Vector3>();
+    private List<Vector3> usedPositionsPlayer2 = new List<Vector3>();
 
     private void InstantiatePlayerTokens(CharacterData character, int playerNumber)
     {
-
-        // Determine the spawn area for the player
         Transform spawnAreaCenter = playerNumber == 1 ? GameManager.Instance.spawnTokenPositionPlayer1 : GameManager.Instance.spawnTokenPositionPlayer2;
-
-        // Handle special spawn logic for Mermaid tokens
         Transform mermaidSpawnArea = playerNumber == 1 ? GameManager.Instance.MermaidSpawnAreaPlayer1 : GameManager.Instance.MermaidSpawnAreaPlayer2;
 
-        // Parameters for spacing and positioning
-        float spawnRadius = 1f; // Radius within which tokens are spawned
-        float tokenSpacing = 0.5f; // Minimum distance between tokens
+        float spawnRadius = 1f;
+        float tokenSpacing = 0.5f;
 
-        List<Vector3> usedPositions = new List<Vector3>(); // Tracks used positions to avoid overlap
-
+        List<Vector3> usedPositions = playerNumber == 1 ? usedPositionsPlayer1 : usedPositionsPlayer2;
         Vector3 spawnPositionFinal;
 
         if (character.characterType == CharacterType.Mermaid)
         {
-            // Fixed position for Mermaid tokens
             spawnPositionFinal = new Vector3(mermaidSpawnArea.position.x, mermaidSpawnArea.position.y, mermaidSpawnArea.position.z - 0.6f);
         }
         else
         {
-            // Generate a random spawn position for other characters
             spawnPositionFinal = GetNonOverlappingSpawnPosition(spawnAreaCenter.position, usedPositions, spawnRadius, tokenSpacing);
         }
 
-        // Instantiate the token prefab
         GameObject tokenObject = Instantiate(character.TokenPrefab, spawnPositionFinal, Quaternion.identity, character.characterType == CharacterType.Mermaid ? mermaidSpawnArea : spawnAreaCenter);
 
-        // Configure the token
         Token tokenComponent = tokenObject.GetComponent<Token>();
         PlacementManager placementManager = tokenObject.GetComponent<PlacementManager>();
 
@@ -132,41 +131,21 @@ public class DraftManager : MonoBehaviour
         {
             tokenComponent.characterData = character;
             tokenComponent.owner = playerNumber;
-            tokenComponent.IsUnlocked = true; // Unlock the token
+            tokenComponent.IsUnlocked = true;
 
-
-            // Create and set PlayerInfo for this player
             PlayerInfo playerInfo = new PlayerInfo(playerNumber, tokenComponent);
             GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
         }
 
         if (placementManager != null)
         {
-
-            placementManager.isTokenPlaced = false; // Mark token as not placed initially
+            placementManager.isTokenPlaced = false;
             PlacementManager.Add(placementManager);
         }
 
-        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber} . ");
-
-
+        Debug.Log($"Token for {character.characterName} instantiated for Player {playerNumber}.");
     }
-    public void SetSelectedIcons()
-    {
-        SelectedDraftIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        SelectedDraftIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
-        SelectedWinnerIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        SelectedWinnerIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
-        SelectedWinnercoinPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        SelectedWinnercoinPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
-        InfoIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        InfoIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
-        UpperPanelforCoinIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        UpperPanelforCoinIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
-        UpperPanelforTurnIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
-        UpperPanelforTurnIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
 
-    }
     /// <summary>
     /// Generate a non-overlapping spawn position for a token.
     /// </summary>
@@ -189,6 +168,34 @@ public class DraftManager : MonoBehaviour
         // Add the position to the list of used positions
         usedPositions.Add(randomPosition);
         return randomPosition;
+    }
+
+    private bool IsOverlapping(Vector3 position, List<Vector3> usedPositions, float spacing)
+    {
+        foreach (var usedPosition in usedPositions)
+        {
+            if (Vector3.Distance(position, usedPosition) < spacing)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    public void SetSelectedIcons()
+    {
+        SelectedDraftIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedDraftIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        SelectedWinnerIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedWinnerIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        SelectedWinnercoinPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        SelectedWinnercoinPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        InfoIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        InfoIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        UpperPanelforCoinIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        UpperPanelforCoinIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+        UpperPanelforTurnIconPlayer1.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(1);
+        UpperPanelforTurnIconPlayer2.GetComponent<Image>().sprite = GameManager.Instance.GetPlayerIcon(2);
+
     }
 
 
@@ -221,17 +228,7 @@ public class DraftManager : MonoBehaviour
         Debug.Log($"Tilemap opacity set to {newOpacity}");
     }
 
-    private bool IsOverlapping(Vector3 position, List<Vector3> usedPositions, float spacing)
-    {
-        foreach (var usedPosition in usedPositions)
-        {
-            if (Vector3.Distance(position, usedPosition) < spacing)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
+
 
 
     public void TransitionToPhase(GamePhase newPhase)
@@ -253,7 +250,7 @@ public class DraftManager : MonoBehaviour
                 GameManager.Instance.ChangePlayerTurn(1);
                 UIManager.Instance.OpenDraftPanel();
                 UIManager.Instance.CloseSelectedCardPanel();
-                ChangeCurrentDraftMainICon(1);
+                ChangeCurrentDraftMainICon();
                 break;
 
             case GamePhase.Placement:
@@ -275,7 +272,7 @@ public class DraftManager : MonoBehaviour
         DraftCanvas.SetActive(true);
         UIManager.Instance.OpenDisplayAllCardPanel();
         DisplaySelectedCards();
-        EventManager.Unsubscribe<PlacementManager>("TokenPlaced", HandleTokenPlaced);
+
 
         StartCoroutine(Delay());
     }
@@ -364,11 +361,12 @@ public class DraftManager : MonoBehaviour
         // Remove previous listener if it exists
         if (okButtonListener != null)
         {
+
             UIManager.Instance.OkButton.onClick.RemoveListener(okButtonListener);
         }
         if (!AllDraftTokenPlaced)
         {
-            // Assign a new listener reference
+            // Debug.LogWarning("OkButton " + GameManager.Instance.GetCurrentPlayer());
             okButtonListener = () => OnTokenPlaced(p);
 
         }
@@ -414,22 +412,28 @@ public class DraftManager : MonoBehaviour
     void TransitionToSelectionPhase()
     {
         UIManager.Instance.OkButton.gameObject.SetActive(false);
-        SetAlltokentoInactive(false);
-        GameManager.Instance.ChangePhase(GamePhase.Selection);
-        Mapobj.SetActive(false);
-        DraftCanvas.SetActive(true);
+
+
         UIManager.Instance.CloseSelectedCardPanel();
         UIManager.Instance.OpenDraftPanel();
-        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
-        ChangeCurrentDraftMainICon(GameManager.Instance.currentPlayer);
+        SetAlltokentoInactive(false);
+
+        Mapobj.SetActive(false);
+        DraftCanvas.SetActive(true);
+
+
         RemoveLastCard();
     }
 
     private void OnTokenPlaced(PlacementManager p)
     {
+
         p.ConfirmPlacement();
         TransitionToSelectionPhase();
 
+        GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
+        ChangeCurrentDraftMainICon();
+        GameManager.Instance.ChangePhase(GamePhase.Selection);
         UIManager.Instance.OkButton.gameObject.SetActive(false);
 
         // Clean up: Remove the listener to prevent future issues
@@ -438,7 +442,7 @@ public class DraftManager : MonoBehaviour
     }
     private void InitializeDraftUI()
     {
-        ChangeCurrentDraftMainICon(2);
+        ChangeCurrentDraftMainICon();
         foreach (var card in instantiatedCards)
         {
             Destroy(card);
@@ -460,9 +464,13 @@ public class DraftManager : MonoBehaviour
         }
     }
 
-    public void ChangeCurrentDraftMainICon(Int32 player)
+    public void ChangeCurrentDraftMainICon()
     {
+        // Debug.LogWarning(DraftMainIcon.sprite);
         DraftMainIcon.sprite = GameManager.Instance.GetCurrentPlayerIcon();
+
+
+
     }
 
     public void InitializeCharacterCard(GameObject card, CharacterData character, bool CanaddListner)
@@ -572,12 +580,12 @@ public class DraftManager : MonoBehaviour
         if (GameManager.Instance.GetCurrentPlayer() == 1)
         {
             player1Characters.Add(selectedCharacter);
-            Debug.LogError(selectedCardObject.name + "added");
+
         }
         else if (GameManager.Instance.GetCurrentPlayer() == 2)
         {
             player2Characters.Add(selectedCharacter);
-            Debug.LogError(selectedCardObject.name + "added ");
+
         }
 
 
@@ -632,6 +640,7 @@ public class DraftManager : MonoBehaviour
                     TransitionToPhase(GamePhase.GamePlay);
                     GameManager.Instance.GetPlayerInfo(1).PopulateLockedList();
                     GameManager.Instance.GetPlayerInfo(2).PopulateLockedList();
+                    PlacementManager.Clear();
                 }
             }
         );

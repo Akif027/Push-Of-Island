@@ -150,6 +150,7 @@ public class UIManager : MonoBehaviour
         SoundManager.Instance?.PlayEndScreenOpen();
         WinningPanel.SetActive(true);
         GameManager.Instance.draftManager.SetSelectedIcons();
+        Debug.LogWarning("Winning panelOpen winner is " + Playerno);
         PlayerOneWinnerimg.SetActive(Playerno == 1 ? true : false);
         PlayerTwoWinnerimg.SetActive(Playerno == 2 ? true : false);
 

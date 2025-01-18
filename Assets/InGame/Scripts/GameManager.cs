@@ -28,7 +28,7 @@ public class GameManager : MonoBehaviour
     public Transform spawnTokenPositionIsland3Player2;
     public Transform MermaidSpawnAreaPlayer1;
     public Transform MermaidSpawnAreaPlayer2;
-
+    bool isGameover = false;
     public ScoreManager scoreManager;
     int winner;
 
@@ -55,15 +55,15 @@ public class GameManager : MonoBehaviour
     void OnDisable()
     {
         EventManager.Unsubscribe("OnTurnEnd", HandleTurn);
-
+        playerIcons.Clear();
 
     }
     private void HandleTurn()
     {
-
+        Debug.LogWarning("Player turn Changed");
         if (IsTurnLimitReachedOrTokensEmpty())
         {
-            TriggerGameOver();
+
             return;
         }
         SoundManager.Instance?.PlayTurnChange();
@@ -85,20 +85,30 @@ public class GameManager : MonoBehaviour
 
     private void TriggerGameOver()
     {
-        ChangePhase(GamePhase.Gameover);
+
         winner = GetWinnerPlayerNumber();
         Debug.Log($"Game Over! Winner is Player {winner}");
+        ChangePhase(GamePhase.Gameover);
     }
 
+    void Update()
+    {
 
+        if (IsTurnLimitReachedOrTokensEmpty() && !isGameover)
+        {
+            Debug.LogError("GameOVer");
+            TriggerGameOver();
+            isGameover = true;
+        }
+    }
 
     private void InitializeCoinToss()
     {
         Debug.Log("Phase 1: Coin Toss");
-        EventManager.Subscribe("TossResult", (Action<Sprite, Sprite>)OnTossResult);
+
     }
 
-    private void OnTossResult(Sprite winnerSprite, Sprite loserSprite)
+    public void OnTossResult(Sprite winnerSprite, Sprite loserSprite)
     {
         SetPlayerIcons(1, winnerSprite);
         SetPlayerIcons(2, loserSprite);
@@ -106,16 +116,18 @@ public class GameManager : MonoBehaviour
         ChangePhase(GamePhase.Elimination);
         draftManager?.TransitionToPhase(GamePhase.Elimination);
 
-        EventManager.Unsubscribe("TossResult", (Action<Sprite, Sprite>)OnTossResult);
+
     }
 
     public Sprite GetCurrentPlayerIcon()
     {
+        // PrintAllPlayerIcons();
         return GetPlayerIcon(currentPlayer);
     }
 
     public void ChangePlayerTurn(int playerNumber)
     {
+        Debug.LogWarning("Chaning player turn to " + playerNumber);
         if (!playerIcons.ContainsKey(playerNumber))
         {
             Debug.LogError($"Invalid player number: {playerNumber}. Must be a valid key in playerIcons ");
@@ -126,15 +138,23 @@ public class GameManager : MonoBehaviour
         currentPlayer = playerNumber;
 
         UpdateTurnIfo();
+
         Debug.Log($"Player turn changed to: Player {currentPlayer}");
     }
-
+    public void PrintAllPlayerIcons()
+    {
+        foreach (var entry in playerIcons)
+        {
+            string iconName = entry.Value != null ? entry.Value.name : "None";
+            Debug.Log($"Player {entry.Key}: Icon {iconName}");
+        }
+    }
     public void UpdateTurnIfo()
     {
         if (currentPhase == GamePhase.GamePlay || playerInfos.Count != 0)
         {
             textMapper.UpdateTurnIcon(currentPlayer);
-            textMapper.UpdateTurn(GetPlayerHasTurnCount());
+            //  textMapper.UpdateTurn(GetPlayerHasTurnCount());
         }
     }
     /// <summary>
@@ -151,7 +171,7 @@ public class GameManager : MonoBehaviour
                 if (token == null || token.characterData == null) continue;
 
                 // Check if the token is a thief and is interacting with a vault
-                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingBase(token) && token.IsCurrentPlayerOwner())
+                if (token.characterData.characterType == CharacterType.Thief && IsTokenTouchingBase(token)/* && token.IsCurrentPlayerOwner()*/)
                 {
                     EventManager.TriggerGloryPointAdd(token.owner, 5);
                     Debug.LogError($"Player {token.owner} has captured the base.");
@@ -273,7 +293,7 @@ public class GameManager : MonoBehaviour
 
         if (playerInfo == null)
         {
-            Debug.LogError($"PlayerInfo for Player {playerNumber} not found!");
+            Debug.LogError($"PlayerInfo for Player {playerNumber} not found! or not initilzed");
         }
 
         return playerInfo;
@@ -318,10 +338,11 @@ public class GameManager : MonoBehaviour
     }
     private void gameFinised()
     {
-
+        Debug.LogWarning("Winner is " + winner);
 
         if (winner != 0)
         {
+
             UIManager.Instance.OnWinningPanel(winner);
         }
 
@@ -436,10 +457,10 @@ public class GameManager : MonoBehaviour
         playerInfo.tokens.Remove(tokenToRemove);
 
         // Immediately check for game over
-        if (IsTurnLimitReachedOrTokensEmpty())
-        {
-            TriggerGameOver();
-        }
+        // if (IsTurnLimitReachedOrTokensEmpty())
+        // {
+        //     TriggerGameOver();
+        // }
         Debug.Log($"Removed token of type {characterType} from Player {playerNumber}.");
     }
 
@@ -460,10 +481,12 @@ public class GameManager : MonoBehaviour
     }
     public int GetPlayerHasTurnCount()
     {
-
-
         PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
-
+        if (playerInfo == null)
+        {
+            Debug.LogError($"PlayerInfo for current player not found!");
+            return 0; // Return a default value, such as 0
+        }
         return playerInfo.HasTurn;
     }
 
@@ -501,19 +524,24 @@ public class GameManager : MonoBehaviour
     public bool IsTurnLimitReachedOrTokensEmpty()
     {
         // Get the PlayerInfo for the current player
-        PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
-
-        if (playerInfo == null)
+        PlayerInfo playerInfo = GetPlayerInfo(1);
+        PlayerInfo playerInfo2 = GetPlayerInfo(2);
+        if (playerInfo == null || playerInfo2 == null)
         {
             Debug.LogError($"PlayerInfo for Player {currentPlayer} not found!");
             return false;
         }
 
         // Check if HasTurn has reached 20 or the token list is empty
-        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count == 0)
+        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count <= 0 || playerInfo2.HasTurn >= 20 || playerInfo2.tokens.Count <= 0)
         {
             return true;
         }
+        // else
+        // {
+        //     Debug.LogError("Returing false for gameOver player 1 " + playerInfo.HasTurn + playerInfo.tokens.Count);
+        //     Debug.LogError("Returing false for gameOver player 2 " + playerInfo.HasTurn + playerInfo.tokens.Count);
+        // }
 
         return false;
     }
