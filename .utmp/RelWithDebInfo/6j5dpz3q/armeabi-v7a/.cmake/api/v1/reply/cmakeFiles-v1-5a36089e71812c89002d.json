@@ -49,7 +49,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeSystem.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeSystem.cmake"
 		},
 		{
 			"isExternal" : true,
@@ -324,7 +324,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCCompiler.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -558,7 +558,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCXXCompiler.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCXXCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -722,7 +722,7 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCCompiler.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCCompiler.cmake"
 		},
 		{
 			"isCMake" : true,
@@ -816,31 +816,31 @@
 		},
 		{
 			"isGenerated" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCXXCompiler.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a/CMakeFiles/3.22.1-g37088a8-dirty/CMakeCXXCompiler.cmake"
 		},
 		{
 			"path" : "GameActivity/CMakeLists.txt"
 		},
 		{
 			"isExternal" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/game-activity/game-activityConfig.cmake"
 		},
 		{
 			"path" : "FramePacing/CMakeLists.txt"
 		},
 		{
 			"isExternal" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake"
 		},
 		{
 			"isExternal" : true,
-			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake"
+			"path" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/prefab/armeabi-v7a/prefab/lib/arm-linux-androideabi/cmake/games-frame-pacing/games-frame-pacingConfig.cmake"
 		}
 	],
 	"kind" : "cmakeFiles",
 	"paths" : 
 	{
-		"build" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/arm64-v8a",
+		"build" : "F:/UNityProjects/Push-Of-Island/.utmp/RelWithDebInfo/6j5dpz3q/armeabi-v7a",
 		"source" : "F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/src/main/cpp"
 	},
 	"version" : 
