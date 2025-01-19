@@ -249,9 +249,9 @@ public class CharacterAbility : ScriptableObject
         for (int i = 0; i < numRays; i++)
         {
             float angle = i * Mathf.Deg2Rad * (360f / numRays);
-            Vector3 rayOrigin = (Vector3)position + new Vector3(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
+            Vector2 rayOrigin = position + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
-            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector3.forward, -3, token.raycastMask);
+            RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.zero, 0f, token.raycastMask);
 
             if (hit.collider != null)
             {
@@ -282,28 +282,21 @@ public class CharacterAbility : ScriptableObject
             return false;
         }
 
-        // Allow placement if touching water and either (it's the owner's base or not touching any base)
+        // Disallow placement if only on water
+        if (isTouchingWater && !isTouchingLand && !isTouchingBase)
+        {
+            return false;
+        }
+
+        // Allow placement if touching water and either it's the owner's base or not touching any base
         if (isTouchingWater && (isOwnersBase || !isTouchingBase))
         {
             return true;
         }
 
-        // Disallow placement if not touching water or touching land
-        if (!isTouchingWater || isTouchingLand)
-        {
-            return false;
-        }
-
-        // Disallow placement if not the owner's base and touching water or base
-        if (!isOwnersBase && (isTouchingWater || isTouchingBase))
-        {
-            return false;
-        }
-
-        // Default case: false
+        // Disallow placement in all other cases
         return false;
     }
-
     public bool CheckPlacementForMermaid(Token token)
     {
         float radius = token.GetComponent<CircleCollider2D>().radius;
