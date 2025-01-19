@@ -1,12 +1,23 @@
 # ninja log v5
+3647	3891	7589981444897103	F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6j5dpz3q/obj/armeabi-v7a/libswappywrapper.so	b9fa6d468e737f94
 14	2499	7589981425793527	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	fddc45fc5ebb404e
-6	3045	7589981424407040	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	5c64f1ccaf419530
-10	3072	7589981430771840	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	156baa48aa04b4ad
-74	3474	7589981436642693	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	daf79baf7761297e
 83	3533	7589981431549996	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	611f3ecf145022d1
+6	3045	7589981424407040	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	5c64f1ccaf419530
+74	3474	7589981436642693	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	daf79baf7761297e
+10	3072	7589981430771840	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	156baa48aa04b4ad
 18	3640	7589981442222937	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	72f4f50afc48e92b
 2947	3647	7589981442212972	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	9e0c9373905807b5
 1	3656	7589981442452322	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	543054d6fbe720d8
-3647	3891	7589981444897103	F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6j5dpz3q/obj/armeabi-v7a/libswappywrapper.so	b9fa6d468e737f94
 65	4005	7589981446121023	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	2e09e203b2d1b75e
 4006	4375	7589981449784762	F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6j5dpz3q/obj/armeabi-v7a/libgame.so	f76962abc0eff49c
+12	1183	7590149913372892	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	fddc45fc5ebb404e
+19	1295	7590149914316309	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	72f4f50afc48e92b
+8	1358	7590149915039461	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	5c64f1ccaf419530
+22	1374	7590149915333801	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	daf79baf7761297e
+32	1439	7590149916191810	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	611f3ecf145022d1
+1184	1494	7590149916710423	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	9e0c9373905807b5
+15	1553	7590149917380496	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	156baa48aa04b4ad
+28	1680	7590149918696961	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	2e09e203b2d1b75e
+1494	1718	7590149919085920	F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6j5dpz3q/obj/armeabi-v7a/libswappywrapper.so	b9fa6d468e737f94
+3	1927	7590149921147559	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	543054d6fbe720d8
+1927	2058	7590149922511079	F:/UNityProjects/Push-Of-Island/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/6j5dpz3q/obj/armeabi-v7a/libgame.so	f76962abc0eff49c
