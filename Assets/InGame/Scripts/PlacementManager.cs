@@ -160,11 +160,97 @@ public class PlacementManager : MonoBehaviour
                 isValidPlacement = CheckPlacement("Base");
                 break;
         }
-
+        if (isValidPlacement && !isBeingDragged)
+        {
+            CheckAndRepositionToken();
+        }
         MainSpriteObj.SetActive(isValidPlacement);
         CannotPlaceInvalidObj.SetActive(!isValidPlacement);
     }
+    private void CheckAndRepositionToken()
+    {
+        if (token.characterData.characterType != CharacterType.Enchantress)
+        {
+            float minDistance = 0.2f; // Minimum distance between tokens to avoid overlap
+            float repositionStep = 0.5f; // Step distance to move token if overlapping
+            int maxAttempts = 10; // Maximum number of attempts to find a valid position
 
+            Collider2D[] colliders;
+            int attempts = 0;
+            bool isOverlapping = false;
+
+            do
+            {
+                // Check for overlapping tokens
+                colliders = Physics2D.OverlapCircleAll(transform.position, minDistance);
+                isOverlapping = false;
+
+                foreach (Collider2D collider in colliders)
+                {
+                    if (collider.gameObject != gameObject && collider.CompareTag("Token"))
+                    {
+                        isOverlapping = true;
+
+                        // Reposition the token slightly to resolve the overlap
+                        Vector3 randomDirection = Random.insideUnitCircle.normalized;
+                        transform.position += randomDirection * repositionStep;
+                        break;
+                    }
+                }
+
+                attempts++;
+            } while (isOverlapping && attempts < maxAttempts);
+
+            if (isOverlapping)
+            {
+                Debug.LogWarning($"{name} could not find a non-overlapping position after {maxAttempts} attempts.");
+            }
+            else
+            {
+                Debug.Log($"{name} successfully repositioned to a valid position.");
+            }
+        }
+        else
+        {
+            CheckAndRepositionTokenforEnchantress();
+        }
+
+    }
+    private void CheckAndRepositionTokenforEnchantress()
+    {
+        float minDistance = 0.2f; // Minimum distance between tokens to avoid overlap
+        float repositionStep = 0.5f; // Step distance to move token if overlapping
+        int maxAttempts = 10; // Maximum number of attempts to find a valid position
+
+        int attempts = 0;
+        bool isOverlapping = false;
+
+        do
+        {
+            // Check for overlapping token using a single overlap circle
+            Collider2D collider = Physics2D.OverlapCircle(transform.position, minDistance);
+
+            isOverlapping = collider != null && collider.gameObject != gameObject && collider.CompareTag("Token");
+
+            if (isOverlapping)
+            {
+                // Reposition the token slightly to resolve the overlap
+                Vector3 randomDirection = Random.insideUnitCircle.normalized;
+                transform.position += randomDirection * repositionStep;
+            }
+
+            attempts++;
+        } while (isOverlapping && attempts < maxAttempts);
+
+        if (isOverlapping)
+        {
+            Debug.LogWarning($"{name} could not find a non-overlapping position after {maxAttempts} attempts.");
+        }
+        else
+        {
+            Debug.Log($"{name} successfully repositioned to a valid position.");
+        }
+    }
     private void DebugDrawRay()
     {
         Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);
