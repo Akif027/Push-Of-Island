@@ -83,7 +83,15 @@ public class PlacementManager : MonoBehaviour
             SetRigidbodyType(RigidbodyType2D.Dynamic);
             Debug.LogError("Golem is now dynamic.");
         }
+        if (token.characterData.characterType == CharacterType.Enchantress && GameManager.Instance.getCurrentPhase() == GamePhase.Placement)
+        {
+            MainSpriteObj.GetComponentInChildren<CircleCollider2D>().enabled = false;
 
+        }
+        else
+        {
+            MainSpriteObj.GetComponentInChildren<CircleCollider2D>().enabled = true;
+        }
         if (isBeingDragged)
         {
             CheckPlacementRules();
@@ -169,74 +177,25 @@ public class PlacementManager : MonoBehaviour
     }
     private void CheckAndRepositionToken()
     {
-        if (token.characterData.characterType != CharacterType.Enchantress)
-        {
-            float minDistance = 0.2f; // Minimum distance between tokens to avoid overlap
-            float repositionStep = 0.5f; // Step distance to move token if overlapping
-            int maxAttempts = 10; // Maximum number of attempts to find a valid position
-
-            Collider2D[] colliders;
-            int attempts = 0;
-            bool isOverlapping = false;
-
-            do
-            {
-                // Check for overlapping tokens
-                colliders = Physics2D.OverlapCircleAll(transform.position, minDistance);
-                isOverlapping = false;
-
-                foreach (Collider2D collider in colliders)
-                {
-                    if (collider.gameObject != gameObject && collider.CompareTag("Token"))
-                    {
-                        isOverlapping = true;
-
-                        // Reposition the token slightly to resolve the overlap
-                        Vector3 randomDirection = Random.insideUnitCircle.normalized;
-                        transform.position += randomDirection * repositionStep;
-                        break;
-                    }
-                }
-
-                attempts++;
-            } while (isOverlapping && attempts < maxAttempts);
-
-            if (isOverlapping)
-            {
-                Debug.LogWarning($"{name} could not find a non-overlapping position after {maxAttempts} attempts.");
-            }
-            else
-            {
-                Debug.Log($"{name} successfully repositioned to a valid position.");
-            }
-        }
-        else
-        {
-            CheckAndRepositionTokenforEnchantress();
-        }
-
-    }
-    private void CheckAndRepositionTokenforEnchantress()
-    {
         float minDistance = 0.2f; // Minimum distance between tokens to avoid overlap
-        float repositionStep = 0.5f; // Step distance to move token if overlapping
         int maxAttempts = 10; // Maximum number of attempts to find a valid position
 
+        Collider2D[] colliders;
         int attempts = 0;
         bool isOverlapping = false;
 
         do
         {
-            // Check for overlapping token using a single overlap circle
-            Collider2D collider = Physics2D.OverlapCircle(transform.position, minDistance);
+            // Check for overlapping tokens
+            colliders = Physics2D.OverlapCircleAll(transform.position, minDistance);
+            isOverlapping = false;
 
-            isOverlapping = collider != null && collider.gameObject != gameObject && collider.CompareTag("Token");
-
-            if (isOverlapping)
+            foreach (Collider2D collider in colliders)
             {
-                // Reposition the token slightly to resolve the overlap
-                Vector3 randomDirection = Random.insideUnitCircle.normalized;
-                transform.position += randomDirection * repositionStep;
+                if (collider.gameObject != gameObject && collider.CompareTag("Token"))
+                {
+                    isOverlapping = true;
+                }
             }
 
             attempts++;
@@ -245,12 +204,14 @@ public class PlacementManager : MonoBehaviour
         if (isOverlapping)
         {
             Debug.LogWarning($"{name} could not find a non-overlapping position after {maxAttempts} attempts.");
+            isValidPlacement = false; // Mark placement as invalid if overlapping
         }
         else
         {
             Debug.Log($"{name} successfully repositioned to a valid position.");
         }
     }
+
     private void DebugDrawRay()
     {
         Debug.DrawRay(transform.position, Vector3.back * rayLength, rayColor);

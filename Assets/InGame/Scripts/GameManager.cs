@@ -127,6 +127,7 @@ public class GameManager : MonoBehaviour
 
     public void ChangePlayerTurn(int playerNumber)
     {
+
         Debug.LogWarning("Chaning player turn to " + playerNumber);
         if (!playerIcons.ContainsKey(playerNumber))
         {
@@ -289,7 +290,15 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public PlayerInfo GetPlayerInfo(int playerNumber)
     {
+
+
+
         var playerInfo = playerInfos.Find(p => p.PlayerNumber == playerNumber);
+
+        if (playerInfo == null)
+        {
+            Debug.LogError($"PlayerInfo for Player {playerNumber} not found! or not initialized");
+        }
 
         if (playerInfo == null)
         {
@@ -492,35 +501,37 @@ public class GameManager : MonoBehaviour
 
     public int GetWinnerPlayerNumber()
     {
+        // Retrieve PlayerInfo for both players
+        PlayerInfo player1Info = GetPlayerInfo(1);
+        PlayerInfo player2Info = GetPlayerInfo(2);
+
+
+
         // Check if any player has zero tokens (loser)
-        PlayerInfo losingPlayer = playerInfos.FirstOrDefault(player => player.tokens.Count == 0);
-        if (losingPlayer != null)
+        if (player1Info.tokens.Count == 0)
         {
-            // The other player wins
-            return playerInfos.First(player => player.PlayerNumber != losingPlayer.PlayerNumber).PlayerNumber;
+            Debug.LogError(player1Info.tokens.Count);
+            return 2; // Player 2 wins
+        }
+        if (player2Info.tokens.Count == 0)
+        {
+            Debug.LogError(player2Info.tokens.Count);
+            return 1; // Player 1 wins
         }
 
-        // Check if both players have reached 20 turns
-        bool bothPlayersAtMaxTurns = playerInfos.All(player => player.HasTurn >= 20);
-        if (bothPlayersAtMaxTurns)
-        {
-            // Compare glory points to determine the winner
+        // Check if both players have reached the turn limit
 
-            int player1Glory = scoreManager.GetGloryCoins(1);
-            int player2Glory = scoreManager.GetGloryCoins(2);
+        int player1Glory = scoreManager.GetGloryCoins(1);
+        int player2Glory = scoreManager.GetGloryCoins(2);
 
-            if (player1Glory > player2Glory) return 1; // Player 1 wins
-            if (player2Glory > player1Glory) return 2; // Player 2 wins
+        if (player1Glory > player2Glory) return 1; // Player 1 wins
+        if (player2Glory > player1Glory) return 2; // Player 2 wins
 
-            // In case of a tie in glory points, handle the tie (optional logic)
-            Debug.LogError("It's a tie in glory points!");
-            return -1; // Indicate a tie (or decide another tie-breaking logic)
-        }
+        // Handle tie in glory points
+        Debug.LogError("It's a tie in glory points!");
+        return -1; // Indicate a tie or decide another tie-breaking logic
 
-        // If neither condition is met, the game continues
-        return -1; // Indicate no winner yet
     }
-
     public bool IsTurnLimitReachedOrTokensEmpty()
     {
         // Get the PlayerInfo for the current player
@@ -533,15 +544,11 @@ public class GameManager : MonoBehaviour
         }
 
         // Check if HasTurn has reached 20 or the token list is empty
-        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count <= 0 || playerInfo2.HasTurn >= 20 || playerInfo2.tokens.Count <= 0)
+        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count <= 0 || playerInfo2.HasTurn >= 10 || playerInfo2.tokens.Count <= 0)
         {
             return true;
         }
-        // else
-        // {
-        //     Debug.LogError("Returing false for gameOver player 1 " + playerInfo.HasTurn + playerInfo.tokens.Count);
-        //     Debug.LogError("Returing false for gameOver player 2 " + playerInfo.HasTurn + playerInfo.tokens.Count);
-        // }
+
 
         return false;
     }
@@ -549,9 +556,9 @@ public class GameManager : MonoBehaviour
     {
         if (currentPhase != GamePhase.GamePlay && playerInfos != null) return;
         PlayerInfo playerInfo = GetPlayerInfo(currentPlayer);
-        textMapper.UpdateTurn(playerInfo.HasTurn);
-        playerInfo.HasTurn++;
 
+        playerInfo.HasTurn++;
+        textMapper.UpdateTurn(playerInfo.HasTurn);
 
     }
 }
