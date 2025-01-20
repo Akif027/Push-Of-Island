@@ -25,7 +25,7 @@ public class PlacementManager : MonoBehaviour
     public bool isTokenPlaced = false;
     private bool dragEnabled = false;
 
-
+    private bool KingRecivedBonusAtStart = false;
     public Token token;
 
 
@@ -34,6 +34,7 @@ public class PlacementManager : MonoBehaviour
 
     void Start()
     {
+
         token = GetComponent<Token>();
         spriteRenderer = transform.GetChild(0).GetComponent<SpriteRenderer>();
         mainCamera = Camera.main;

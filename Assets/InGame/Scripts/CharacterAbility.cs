@@ -28,23 +28,13 @@ public class CharacterAbility : ScriptableObject
 
 
 
-    public bool KingRecivedBonus = false;
+
 
     /// <summary>
     /// Called when the token is activated.
     /// </summary>
     public virtual void Activate(Token token)
     {
-        Debug.Log($"{token.name} activated {abilityName}: {description} {KingRecivedBonus}");
-
-        // Bonus coins when placed
-        if (bonusPointsOnPlaced && bonusCoins > 0 && !KingRecivedBonus)
-        {
-            EventManager.TriggerCoinAdd(token.owner, bonusCoins); SoundManager.Instance.PlayCoinCollect();
-            Debug.Log($"{token.name} awarded {bonusCoins} bonus coins on placement.");
-            KingRecivedBonus = true;
-
-        }
 
         // Handle immobility on placement for Golem
         if (becomesImmobileOnPlacement && token.characterData.characterType == CharacterType.Golem)
@@ -54,6 +44,17 @@ public class CharacterAbility : ScriptableObject
         }
 
     }
+    public void AddKingBonus(Token token)
+    {
+        if (bonusPointsOnPlaced && bonusCoins > 0)
+        {
+            EventManager.TriggerCoinAdd(token.owner, bonusCoins); SoundManager.Instance.PlayCoinCollect();
+            Debug.Log($"{token.name} awarded {bonusCoins} bonus coins on placement.");
+
+
+        }
+    }
+
 
     /// <summary>
     /// Called when the token interacts with a vault or base.

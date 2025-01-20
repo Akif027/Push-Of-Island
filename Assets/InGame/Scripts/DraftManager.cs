@@ -135,6 +135,7 @@ public class DraftManager : MonoBehaviour
 
             PlayerInfo playerInfo = new PlayerInfo(playerNumber, tokenComponent);
             GameManager.Instance.SetPlayerInfo(playerNumber, playerInfo);
+
         }
 
         if (placementManager != null)
@@ -429,6 +430,10 @@ public class DraftManager : MonoBehaviour
     {
 
         p.ConfirmPlacement();
+        if (p.token.characterData.characterType == CharacterType.King)
+        {
+            p.token.characterData.ability?.AddKingBonus(p.token);
+        }
         TransitionToSelectionPhase();
 
         GameManager.Instance.ChangePlayerTurn(GameManager.Instance.GetCurrentPlayer() == 1 ? 2 : 1);
