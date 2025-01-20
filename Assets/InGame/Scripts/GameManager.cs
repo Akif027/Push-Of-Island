@@ -544,7 +544,7 @@ public class GameManager : MonoBehaviour
         }
 
         // Check if HasTurn has reached 20 or the token list is empty
-        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count <= 0 || playerInfo2.HasTurn >= 10 || playerInfo2.tokens.Count <= 0)
+        if (playerInfo.HasTurn >= 20 || playerInfo.tokens.Count <= 0 || playerInfo2.HasTurn >= 20 || playerInfo2.tokens.Count <= 0)
         {
             return true;
         }
