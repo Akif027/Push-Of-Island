@@ -124,7 +124,7 @@ public class CharacterAbility : ScriptableObject
 
                 Base ownerBase = hitCollider.GetComponentInParent<Base>();
 
-                if (!Basealreadycaptured && ownerBase.ownerID != token.owner) // Only capture opponent bases
+                if (!Basealreadycaptured && ownerBase.ownerID != token.owner && token.characterData.characterType != CharacterType.Thief) // Only capture opponent bases
                 {
                     EventManager.TriggerGloryPointAdd(token.owner, coinsPerCaptureBase);
                     Basealreadycaptured = true;
